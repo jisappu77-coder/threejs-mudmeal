@@ -10,13 +10,17 @@ import { FollowCamera } from '../rendering/FollowCamera';
 import { createHighFidelityWorld } from '../world/HighFidelityWorld';
 
 export class Game {
+  private readonly isMobile =
+    window.matchMedia('(pointer: coarse)').matches ||
+    window.matchMedia('(max-width: 900px)').matches;
+
   private readonly scene = new THREE.Scene();
   private readonly renderer = new THREE.WebGLRenderer({
-    antialias: false,
-    powerPreference: 'high-performance',
+    antialias: true,
+    powerPreference: this.isMobile ? 'default' : 'high-performance',
   });
-  private readonly camera = new THREE.PerspectiveCamera(43, 1, 0.1, 350);
-  private readonly composer = new EffectComposer(this.renderer);
+  private readonly camera = new THREE.PerspectiveCamera(this.isMobile ? 50 : 43, 1, 0.1, 350);
+  private readonly composer = this.isMobile ? null : new EffectComposer(this.renderer);
   private readonly clock = new THREE.Clock();
   private readonly input = new InputManager();
   private readonly world = createHighFidelityWorld();
@@ -32,28 +36,31 @@ export class Game {
 
   constructor(private readonly mount: HTMLElement) {
     this.scene.background = new THREE.Color(0x91bac6);
-    this.scene.fog = new THREE.FogExp2(0xa9c4c7, 0.0068);
+    this.scene.fog = new THREE.FogExp2(0xa9c4c7, this.isMobile ? 0.0058 : 0.0068);
 
-    const pixelRatio = Math.min(window.devicePixelRatio, 1.65);
+    const pixelRatio = Math.min(window.devicePixelRatio, this.isMobile ? 1.15 : 1.65);
     this.renderer.setPixelRatio(pixelRatio);
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.shadowMap.type = this.isMobile ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
     this.renderer.toneMappingExposure = 1.06;
     this.mount.appendChild(this.renderer.domElement);
 
-    this.composer.setPixelRatio(pixelRatio);
-    this.composer.addPass(new RenderPass(this.scene, this.camera));
-    this.composer.addPass(new SMAAPass());
-    this.composer.addPass(new OutputPass());
+    if (this.composer) {
+      this.composer.setPixelRatio(pixelRatio);
+      this.composer.addPass(new RenderPass(this.scene, this.camera));
+      this.composer.addPass(new SMAAPass());
+      this.composer.addPass(new OutputPass());
+    }
 
-    this.scene.add(new THREE.HemisphereLight(0xeef8ff, 0x56623b, 1.45));
+    this.scene.add(new THREE.HemisphereLight(0xeef8ff, 0x56623b, this.isMobile ? 1.65 : 1.45));
 
-    const key = new THREE.DirectionalLight(0xffe1b2, 4.2);
+    const key = new THREE.DirectionalLight(0xffe1b2, this.isMobile ? 3.8 : 4.2);
     key.position.set(-28, 40, -20);
     key.castShadow = true;
-    key.shadow.mapSize.set(2048, 2048);
+    const shadowSize = this.isMobile ? 1024 : 2048;
+    key.shadow.mapSize.set(shadowSize, shadowSize);
     key.shadow.camera.near = 1;
     key.shadow.camera.far = 120;
     key.shadow.camera.left = -52;
@@ -64,7 +71,7 @@ export class Game {
     key.shadow.normalBias = 0.018;
     this.scene.add(key);
 
-    const fill = new THREE.DirectionalLight(0x8fc8e0, 0.92);
+    const fill = new THREE.DirectionalLight(0x8fc8e0, this.isMobile ? 1.05 : 0.92);
     fill.position.set(35, 20, 28);
     this.scene.add(fill);
 
@@ -74,6 +81,7 @@ export class Game {
     this.mount.appendChild(this.hud);
 
     window.addEventListener('resize', this.resize);
+    window.addEventListener('orientationchange', this.resize);
     this.resize();
   }
 
@@ -85,13 +93,14 @@ export class Game {
   dispose(): void {
     cancelAnimationFrame(this.animationFrame);
     window.removeEventListener('resize', this.resize);
+    window.removeEventListener('orientationchange', this.resize);
     this.input.dispose();
-    this.composer.dispose();
+    this.composer?.dispose();
     this.renderer.dispose();
   }
 
   private setupHud(): void {
-    this.hud.className = 'game-ui';
+    this.hud.className = this.isMobile ? 'game-ui mobile-ui' : 'game-ui';
     this.hud.innerHTML = `
       <section class="brand-card">
         <div class="brand-title">MUD <span>MEALS</span> 🌴</div>
@@ -103,7 +112,7 @@ export class Game {
         <div>
           <strong>Biryani delivery</strong>
           <div>◷ <span id="mission-time">02:45</span></div>
-          <div>📦 Food 92%</div>
+          <div class="mission-secondary">📦 Food 92%</div>
           <div>₹ Reward ₹280</div>
         </div>
       </section>
@@ -123,22 +132,19 @@ export class Game {
         <div class="mini-player">▲</div>
       </section>
 
-      <button class="pause-button" aria-label="Pause">Ⅱ</button>
-
       <section class="status-pill" id="status-pill">Biryani pickup</section>
 
-      <section class="touch-controls steer-pad">
+      <section class="touch-controls steer-pad" aria-label="Steering controls">
         <button data-code="KeyA" aria-label="Steer left">◀</button>
         <div class="steer-dot"></div>
         <button data-code="KeyD" aria-label="Steer right">▶</button>
       </section>
 
-      <section class="touch-controls pedals">
-        <button class="brake" data-code="KeyS">◉<span>Brake</span></button>
-        <button class="accelerate" data-code="KeyW">⌃<span>Accelerate</span></button>
+      <section class="touch-controls pedals" aria-label="Driving controls">
+        <button class="brake" data-code="KeyS">●<span>Brake</span></button>
+        <button class="accelerate" data-code="KeyW">▲<span>Go</span></button>
       </section>
 
-      <section class="orders-pill">☷ Orders <b>2</b></section>
       <section class="speed-pill"><span id="speed-value">0</span> km/h</section>
     `;
 
@@ -164,12 +170,15 @@ export class Game {
   }
 
   private readonly resize = (): void => {
-    const width = this.mount.clientWidth;
-    const height = this.mount.clientHeight;
+    const width = Math.max(1, this.mount.clientWidth);
+    const height = Math.max(1, this.mount.clientHeight);
     this.camera.aspect = width / height;
+    this.camera.fov = this.isMobile
+      ? (height > width ? 58 : 50)
+      : 43;
     this.camera.updateProjectionMatrix();
     this.renderer.setSize(width, height, false);
-    this.composer.setSize(width, height);
+    this.composer?.setSize(width, height);
   };
 
   private readonly tick = (): void => {
@@ -189,6 +198,7 @@ export class Game {
     const missionTime = this.hud.querySelector<HTMLElement>('#mission-time');
     if (missionTime && this.delivery.getStage() === 'complete') missionTime.textContent = 'DONE';
 
-    this.composer.render(dt);
+    if (this.composer) this.composer.render(dt);
+    else this.renderer.render(this.scene, this.camera);
   };
 }
