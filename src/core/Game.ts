@@ -1,8 +1,10 @@
 import * as THREE from 'three';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RoomEnvironment } from 'three/addons/environments/RoomEnvironment.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { SMAAPass } from 'three/addons/postprocessing/SMAAPass.js';
+import { SSAOPass } from 'three/addons/postprocessing/SSAOPass.js';
 import { InputManager } from '../input/InputManager';
 import { DeliveryManager } from '../missions/DeliveryManager';
 import { MotorcycleController } from '../player/MotorcycleController';
@@ -44,19 +46,34 @@ export class Game {
     this.renderer.shadowMap.type = this.isMobile ? THREE.PCFShadowMap : THREE.PCFSoftShadowMap;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.06;
+    this.renderer.toneMappingExposure = this.isMobile ? 1.14 : 1.1;
+
+    const pmrem = new THREE.PMREMGenerator(this.renderer);
+    const environment = new RoomEnvironment();
+    this.scene.environment = pmrem.fromScene(environment, 0.04).texture;
+    this.scene.environmentIntensity = this.isMobile ? 0.82 : 1.05;
+    environment.dispose();
+    pmrem.dispose();
+
     this.mount.appendChild(this.renderer.domElement);
 
     if (this.composer) {
       this.composer.setPixelRatio(pixelRatio);
       this.composer.addPass(new RenderPass(this.scene, this.camera));
+
+      const ssao = new SSAOPass(this.scene, this.camera, 960, 540, 24);
+      ssao.kernelRadius = 11;
+      ssao.minDistance = 0.0025;
+      ssao.maxDistance = 0.075;
+      this.composer.addPass(ssao);
+
       this.composer.addPass(new SMAAPass());
       this.composer.addPass(new OutputPass());
     }
 
-    this.scene.add(new THREE.HemisphereLight(0xeef8ff, 0x56623b, this.isMobile ? 1.65 : 1.45));
+    this.scene.add(new THREE.HemisphereLight(0xfff2dc, 0x34452f, this.isMobile ? 1.3 : 1.05));
 
-    const key = new THREE.DirectionalLight(0xffe1b2, this.isMobile ? 3.8 : 4.2);
+    const key = new THREE.DirectionalLight(0xffd59b, this.isMobile ? 4.2 : 4.8);
     key.position.set(-28, 40, -20);
     key.castShadow = true;
     const shadowSize = this.isMobile ? 1024 : 2048;
@@ -71,7 +88,7 @@ export class Game {
     key.shadow.normalBias = 0.018;
     this.scene.add(key);
 
-    const fill = new THREE.DirectionalLight(0x8fc8e0, this.isMobile ? 1.05 : 0.92);
+    const fill = new THREE.DirectionalLight(0x92cfe4, this.isMobile ? 0.78 : 0.62);
     fill.position.set(35, 20, 28);
     this.scene.add(fill);
 
