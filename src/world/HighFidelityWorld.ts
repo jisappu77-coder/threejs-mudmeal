@@ -36,6 +36,15 @@ function spawnModel(
         if (!(object instanceof THREE.Mesh)) return;
         object.castShadow = true;
         object.receiveShadow = true;
+
+        const materials = Array.isArray(object.material) ? object.material : [object.material];
+        for (const material of materials) {
+          if (material instanceof THREE.MeshStandardMaterial) {
+            material.envMapIntensity = 1.2;
+            material.roughness = THREE.MathUtils.clamp(material.roughness, 0.28, 0.88);
+            material.metalness = THREE.MathUtils.clamp(material.metalness, 0, 0.45);
+          }
+        }
       });
 
       fitToGameplaySize(model, targetSizeFor(relativePath) * scale);
