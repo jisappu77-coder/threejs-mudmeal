@@ -7,7 +7,7 @@ import { InputManager } from '../input/InputManager';
 import { DeliveryManager } from '../missions/DeliveryManager';
 import { MotorcycleController } from '../player/MotorcycleController';
 import { FollowCamera } from '../rendering/FollowCamera';
-import { createHighFidelityWorld } from '../world/HighFidelityWorld';
+import { createReferenceHeroScene } from '../world/ReferenceHeroScene';
 
 export class Game {
   private readonly isMobile =
@@ -23,7 +23,7 @@ export class Game {
   private readonly composer = this.isMobile ? null : new EffectComposer(this.renderer);
   private readonly clock = new THREE.Clock();
   private readonly input = new InputManager();
-  private readonly world = createHighFidelityWorld();
+  private readonly world = createReferenceHeroScene();
   private readonly motorcycle = new MotorcycleController(
     this.input,
     this.world.bounds,
