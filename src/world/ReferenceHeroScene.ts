@@ -382,6 +382,15 @@ function spawn(
         if (!(node instanceof THREE.Mesh)) return;
         node.castShadow = true;
         node.receiveShadow = true;
+
+        const materials = Array.isArray(node.material) ? node.material : [node.material];
+        for (const material of materials) {
+          if (material instanceof THREE.MeshStandardMaterial) {
+            material.envMapIntensity = 1.25;
+            material.roughness = THREE.MathUtils.clamp(material.roughness, 0.24, 0.86);
+            material.metalness = THREE.MathUtils.clamp(material.metalness, 0, 0.5);
+          }
+        }
       });
 
       fit(model, targetSize);
@@ -391,6 +400,25 @@ function spawn(
       container.position.copy(position);
       container.rotation.y = rotationY;
       container.add(model);
+
+      if (!relativePath.includes('coconut-palm')) {
+        const bounds = new THREE.Box3().setFromObject(model);
+        const size = bounds.getSize(new THREE.Vector3());
+        const shadow = new THREE.Mesh(
+          new THREE.CircleGeometry(0.5, 28),
+          new THREE.MeshBasicMaterial({
+            color: 0x11130f,
+            transparent: true,
+            opacity: relativePath.includes('delivery-bike') ? 0.28 : 0.2,
+            depthWrite: false,
+          }),
+        );
+        shadow.rotation.x = -Math.PI / 2;
+        shadow.position.y = 0.025;
+        shadow.scale.set(Math.max(0.8, size.x * 0.62), Math.max(0.8, size.z * 0.62), 1);
+        container.add(shadow);
+      }
+
       root.add(container);
     })
     .catch((error: unknown) => {
