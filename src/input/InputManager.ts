@@ -21,6 +21,11 @@ export class InputManager {
     return codes.some((code) => this.down.has(code));
   }
 
+  setVirtual(code: string, pressed: boolean): void {
+    if (pressed) this.down.add(code);
+    else this.down.delete(code);
+  }
+
   dispose(): void {
     window.removeEventListener('keydown', this.onKeyDown);
     window.removeEventListener('keyup', this.onKeyUp);
