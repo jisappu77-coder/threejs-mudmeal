@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import type { InputManager } from '../input/InputManager';
 
 export type RideBounds = {
@@ -27,7 +28,7 @@ export class MotorcycleController {
     private readonly bounds: RideBounds,
     private readonly obstacles: readonly THREE.Box2[],
   ) {
-    this.root.add(this.createBikeVisual());
+    this.loadBikeModel();
     this.reset();
   }
 
@@ -81,6 +82,31 @@ export class MotorcycleController {
     this.root.rotation.set(0, 0, 0);
     this.speed = 0;
     this.yaw = 0;
+  }
+
+  private loadBikeModel(): void {
+    const loader = new GLTFLoader();
+    loader.load(
+      `${import.meta.env.BASE_URL}models/delivery-bike.glb`,
+      (gltf) => {
+        const model = gltf.scene;
+        model.name = 'delivery-bike-glb';
+        model.traverse((object) => {
+          if (!(object instanceof THREE.Mesh)) return;
+          object.castShadow = true;
+          object.receiveShadow = true;
+          if (object.material instanceof THREE.MeshStandardMaterial) {
+            object.material.envMapIntensity = 1.05;
+          }
+        });
+        this.root.add(model);
+      },
+      undefined,
+      (error) => {
+        console.error('Failed to load delivery bike GLB; using fallback geometry.', error);
+        this.root.add(this.createBikeVisual());
+      },
+    );
   }
 
   private isBlocked(): boolean {
