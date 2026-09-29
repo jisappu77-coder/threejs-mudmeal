@@ -5,8 +5,8 @@ type DeliveryStage = 'pickup' | 'dropoff' | 'complete';
 export class DeliveryManager {
   readonly root = new THREE.Group();
 
-  private readonly pickup = new THREE.Vector3(-2, 0, 8);
-  private readonly dropoff = new THREE.Vector3(24, 0, 18);
+  private readonly pickup = new THREE.Vector3(-5.8, 0, 8.2);
+  private readonly dropoff = new THREE.Vector3(23.4, 0, 24.2);
   private readonly pickupMarker = this.createMarker(0xffa726);
   private readonly dropoffMarker = this.createMarker(0x00d8ff);
 
@@ -25,13 +25,13 @@ export class DeliveryManager {
     active.rotation.y += dt * 1.8;
     active.position.y = 0.15 + Math.sin(performance.now() * 0.004) * 0.08;
 
-    if (this.stage === 'pickup' && playerPosition.distanceToSquared(this.pickup) <= 9) {
+    if (this.stage === 'pickup' && playerPosition.distanceToSquared(this.pickup) <= 12) {
       this.stage = 'dropoff';
       this.syncMarkers();
       return;
     }
 
-    if (this.stage === 'dropoff' && playerPosition.distanceToSquared(this.dropoff) <= 9) {
+    if (this.stage === 'dropoff' && playerPosition.distanceToSquared(this.dropoff) <= 12) {
       this.stage = 'complete';
       this.reward += 280;
       this.syncMarkers();
