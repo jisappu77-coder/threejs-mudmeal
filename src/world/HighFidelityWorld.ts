@@ -177,14 +177,20 @@ function createMaterials(t: ReturnType<typeof createTextures>) {
     roughness: 0.96,
   });
 
-  const leaf = new THREE.MeshStandardMaterial({
-    color: 0x367737,
-    roughness: 0.78,
+  const leaf = new THREE.MeshPhysicalMaterial({
+    color: 0x2f7434,
+    roughness: 0.62,
+    sheen: 0.2,
+    sheenColor: new THREE.Color(0x8fbd73),
+    sheenRoughness: 0.75,
   });
 
-  const leafBright = new THREE.MeshStandardMaterial({
-    color: 0x65a93f,
-    roughness: 0.8,
+  const leafBright = new THREE.MeshPhysicalMaterial({
+    color: 0x72ad43,
+    roughness: 0.6,
+    sheen: 0.24,
+    sheenColor: new THREE.Color(0xb4d47a),
+    sheenRoughness: 0.72,
   });
 
   const trunk = new THREE.MeshStandardMaterial({
@@ -201,18 +207,19 @@ function createMaterials(t: ReturnType<typeof createTextures>) {
   });
 
   const water = new THREE.MeshPhysicalMaterial({
-    color: 0x22a9bc,
+    color: 0x1d9fb7,
     map: t.water,
     bumpMap: t.water,
-    bumpScale: 0.14,
-    roughness: 0.12,
+    bumpScale: 0.19,
+    roughness: 0.08,
     metalness: 0,
-    transmission: 0.12,
-    thickness: 0.65,
+    transmission: 0.16,
+    thickness: 0.85,
     transparent: true,
-    opacity: 0.92,
+    opacity: 0.9,
     clearcoat: 1,
-    clearcoatRoughness: 0.09,
+    clearcoatRoughness: 0.05,
+    envMapIntensity: 1.35,
   });
 
   const roadPaint = new THREE.MeshStandardMaterial({
