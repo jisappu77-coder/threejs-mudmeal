@@ -5,6 +5,7 @@ import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { SMAAPass } from 'three/addons/postprocessing/SMAAPass.js';
 import { SSAOPass } from 'three/addons/postprocessing/SSAOPass.js';
+import { Sky } from 'three/addons/objects/Sky.js';
 import { InputManager } from '../input/InputManager';
 import { DeliveryManager } from '../missions/DeliveryManager';
 import { MotorcycleController } from '../player/MotorcycleController';
@@ -37,8 +38,24 @@ export class Game {
   private animationFrame = 0;
 
   constructor(private readonly mount: HTMLElement) {
-    this.scene.background = new THREE.Color(0x91bac6);
-    this.scene.fog = new THREE.FogExp2(0xa9c4c7, this.isMobile ? 0.0058 : 0.0068);
+    this.scene.background = new THREE.Color(0x9fc8d2);
+    this.scene.fog = new THREE.FogExp2(0xb9cfd0, this.isMobile ? 0.0048 : 0.0058);
+
+    const sky = new Sky();
+    sky.scale.setScalar(450000);
+    const skyUniforms = sky.material.uniforms;
+    skyUniforms.turbidity.value = 7.5;
+    skyUniforms.rayleigh.value = 1.7;
+    skyUniforms.mieCoefficient.value = 0.0045;
+    skyUniforms.mieDirectionalG.value = 0.82;
+
+    const sunDirection = new THREE.Vector3().setFromSphericalCoords(
+      1,
+      THREE.MathUtils.degToRad(58),
+      THREE.MathUtils.degToRad(228),
+    );
+    skyUniforms.sunPosition.value.copy(sunDirection);
+    this.scene.add(sky);
 
     const pixelRatio = Math.min(window.devicePixelRatio, this.isMobile ? 1.15 : 1.65);
     this.renderer.setPixelRatio(pixelRatio);
