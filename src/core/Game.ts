@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { InputManager } from '../input/InputManager';
+import { DeliveryManager } from '../missions/DeliveryManager';
 import { MotorcycleController } from '../player/MotorcycleController';
 import { FollowCamera } from '../rendering/FollowCamera';
 import { createPrototypeWorld } from '../world/PrototypeWorld';
@@ -16,6 +17,7 @@ export class Game {
     this.world.bounds,
     this.world.obstacles,
   );
+  private readonly delivery = new DeliveryManager();
   private readonly followCamera = new FollowCamera(this.camera, this.motorcycle.root);
   private readonly hud = document.createElement('div');
   private animationFrame = 0;
@@ -34,7 +36,7 @@ export class Game {
     sun.castShadow = true;
     this.scene.add(sun);
 
-    this.scene.add(this.world.root, this.motorcycle.root);
+    this.scene.add(this.world.root, this.motorcycle.root, this.delivery.root);
 
     this.hud.className = 'hud';
     this.mount.appendChild(this.hud);
@@ -68,9 +70,13 @@ export class Game {
     const dt = Math.min(this.clock.getDelta(), 1 / 20);
 
     this.motorcycle.update(dt);
+    this.delivery.update(this.motorcycle.root.position, dt);
     this.followCamera.update(dt, this.motorcycle.getSpeedRatio());
+
     this.hud.textContent =
-      `${Math.round(this.motorcycle.getSpeedKph())} km/h\nWASD / Arrows • Space brake • R reset`;
+      `${Math.round(this.motorcycle.getSpeedKph())} km/h\n` +
+      `${this.delivery.getHudText(this.motorcycle.root.position)}\n` +
+      'WASD / Arrows • Space brake • R reset';
     this.hud.style.whiteSpace = 'pre-line';
 
     this.renderer.render(this.scene, this.camera);
