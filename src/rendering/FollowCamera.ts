@@ -3,9 +3,8 @@ import * as THREE from 'three';
 export class FollowCamera {
   private readonly desired = new THREE.Vector3();
   private readonly lookAt = new THREE.Vector3();
-  private readonly backward = new THREE.Vector3();
-  private readonly forward = new THREE.Vector3();
-  private readonly heightOffset = new THREE.Vector3();
+  private readonly offset = new THREE.Vector3(-18, 22, -22);
+  private readonly lookAhead = new THREE.Vector3(5.5, 0.5, 8.5);
 
   constructor(
     readonly camera: THREE.PerspectiveCamera,
@@ -13,29 +12,24 @@ export class FollowCamera {
   ) {}
 
   update(dt: number, speedRatio: number): void {
-    this.backward.set(0, 0, -1).applyQuaternion(this.target.quaternion);
-    this.forward.copy(this.backward).negate();
-
-    const distance = THREE.MathUtils.lerp(17.5, 20.5, speedRatio);
-    this.heightOffset.set(0, THREE.MathUtils.lerp(15.5, 18.5, speedRatio), 0);
+    const speedLift = THREE.MathUtils.lerp(0, 2.5, speedRatio);
 
     this.desired
       .copy(this.target.position)
-      .addScaledVector(this.backward, distance)
-      .add(this.heightOffset);
+      .add(this.offset)
+      .add(new THREE.Vector3(0, speedLift, 0));
 
-    const positionT = 1 - Math.exp(-4.8 * dt);
+    const positionT = 1 - Math.exp(-3.8 * dt);
     this.camera.position.lerp(this.desired, positionT);
 
     this.lookAt
       .copy(this.target.position)
-      .add(new THREE.Vector3(0, 0.35, 0))
-      .addScaledVector(this.forward, THREE.MathUtils.lerp(6.0, 9.0, speedRatio));
+      .add(this.lookAhead);
 
     this.camera.lookAt(this.lookAt);
 
-    const targetFov = THREE.MathUtils.lerp(43, 47, speedRatio);
-    this.camera.fov = THREE.MathUtils.damp(this.camera.fov, targetFov, 4, dt);
+    const targetFov = THREE.MathUtils.lerp(41, 45, speedRatio);
+    this.camera.fov = THREE.MathUtils.damp(this.camera.fov, targetFov, 3.5, dt);
     this.camera.updateProjectionMatrix();
   }
 }
