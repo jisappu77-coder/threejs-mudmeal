@@ -1,212 +1,174 @@
-html, body, #app { width: 100%; height: 100%; margin: 0; overflow: hidden; }
+html, body, #app {
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  overflow: hidden;
+  overscroll-behavior: none;
+}
 body {
   font-family: Inter, ui-sans-serif, system-ui, sans-serif;
-  background: #111;
+  background: #101717;
   color: #fff;
+  touch-action: none;
 }
-canvas { display: block; }
+canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+}
 
 .game-ui {
   position: fixed;
   inset: 0;
   pointer-events: none;
   user-select: none;
-  --panel: rgb(12 25 27 / 91%);
+  -webkit-user-select: none;
+  --panel: rgb(12 25 27 / 88%);
   --accent: #ff7a24;
-  --cyan: #18d6ef;
 }
 
 .brand-card,
 .mission-card,
 .wallet-bar > div,
 .status-pill,
-.orders-pill,
 .speed-pill {
   background: var(--panel);
   border: 1px solid rgb(255 255 255 / 12%);
-  box-shadow: 0 8px 30px rgb(0 0 0 / 30%);
-  backdrop-filter: blur(10px);
+  box-shadow: 0 8px 24px rgb(0 0 0 / 28%);
+  backdrop-filter: blur(8px);
 }
 
 .brand-card {
   position: absolute;
-  left: 18px;
-  top: 16px;
-  padding: 10px 15px;
-  border-radius: 16px;
+  left: 16px;
+  top: 14px;
+  padding: 9px 13px;
+  border-radius: 14px;
 }
-.brand-title {
-  font-size: clamp(22px, 2.2vw, 36px);
-  font-weight: 950;
-  letter-spacing: -0.04em;
-  line-height: 1;
-}
+.brand-title { font-size: 28px; font-weight: 950; letter-spacing: -.04em; line-height: 1; }
 .brand-title span { color: var(--accent); }
-.brand-location {
-  margin-top: 7px;
-  font-size: 12px;
-  font-weight: 800;
-  opacity: .92;
-}
+.brand-location { margin-top: 6px; font-size: 11px; font-weight: 800; opacity: .9; }
 
 .mission-card {
   position: absolute;
-  left: 18px;
-  top: 100px;
+  left: 16px;
+  top: 88px;
   display: grid;
-  grid-template-columns: 84px 1fr;
-  gap: 12px;
-  width: min(280px, 40vw);
-  padding: 11px;
-  border-radius: 16px;
-  line-height: 1.45;
+  grid-template-columns: 72px 1fr;
+  gap: 10px;
+  width: 250px;
+  padding: 10px;
+  border-radius: 14px;
+  line-height: 1.4;
 }
 .mission-thumb {
   display: grid;
   place-items: center;
-  min-height: 82px;
-  border-radius: 12px;
-  font-size: 42px;
+  min-height: 68px;
+  border-radius: 10px;
+  font-size: 36px;
   background: radial-gradient(circle at 40% 35%, #77a744, #315b2d);
 }
-.mission-card strong { font-size: 17px; }
+.mission-card strong { font-size: 15px; }
 
 .wallet-bar {
   position: absolute;
-  top: 16px;
+  top: 14px;
   left: 50%;
   transform: translateX(-50%);
   display: flex;
-  gap: 10px;
+  gap: 8px;
 }
 .wallet-bar > div {
-  min-width: 150px;
-  padding: 10px 16px;
-  border-radius: 14px;
+  min-width: 125px;
+  padding: 9px 12px;
+  border-radius: 12px;
   display: flex;
-  gap: 10px;
+  gap: 8px;
   align-items: center;
 }
-.wallet-bar span { opacity: .85; }
 .wallet-bar strong { margin-left: auto; }
 
 .minimap {
   position: absolute;
-  right: 22px;
-  top: 18px;
-  width: clamp(160px, 16vw, 220px);
+  right: 16px;
+  top: 14px;
+  width: 165px;
   aspect-ratio: 1;
-  border: 8px solid #0e1718;
+  border: 6px solid #0e1718;
   border-radius: 50%;
   overflow: hidden;
-  background:
-    radial-gradient(circle at 70% 30%, #6cad54 0 9%, transparent 10%),
-    linear-gradient(125deg, #6fa358 0 38%, #2a8ca6 39% 51%, #83ad58 52%);
-  box-shadow: 0 10px 35px rgb(0 0 0 / 35%);
+  background: linear-gradient(125deg, #6fa358 0 38%, #2a8ca6 39% 51%, #83ad58 52%);
+  box-shadow: 0 8px 28px rgb(0 0 0 / 34%);
 }
-.mini-road {
-  position: absolute;
-  background: #d3d4ca;
-  border: 3px solid #879087;
-}
+.mini-road { position: absolute; background: #d3d4ca; border: 2px solid #879087; }
 .r1 { width: 150%; height: 15%; top: 43%; left: -25%; transform: rotate(-28deg); }
 .r2 { width: 18%; height: 140%; top: -20%; left: 38%; transform: rotate(12deg); }
 .mini-water { position:absolute; right:12%; top:-10%; width:23%; height:120%; background:#2199b5; transform:rotate(8deg); }
-.mini-home { position:absolute; left:26%; top:31%; font-size:24px; color:#ffe5b5; z-index:3; }
-.mini-pin { position:absolute; right:24%; top:24%; color:#00d8ff; font-size:36px; z-index:4; text-shadow:0 2px 4px #000; }
-.mini-player { position:absolute; left:48%; top:50%; color:#ff7a24; font-size:34px; z-index:5; transform:translate(-50%,-50%); text-shadow:0 2px 4px #000; }
+.mini-home { position:absolute; left:26%; top:31%; font-size:20px; z-index:3; }
+.mini-pin { position:absolute; right:24%; top:24%; color:#00d8ff; font-size:28px; z-index:4; }
+.mini-player { position:absolute; left:48%; top:50%; color:#ff7a24; font-size:28px; z-index:5; transform:translate(-50%,-50%); }
 .minimap-n { position:absolute; top:2px; left:50%; transform:translateX(-50%); z-index:6; font-weight:900; }
-
-.pause-button {
-  pointer-events: auto;
-  position: absolute;
-  right: 12px;
-  top: 16px;
-  width: 44px;
-  height: 44px;
-  transform: translateX(48%);
-  border: 0;
-  border-radius: 12px;
-  background: #101b1c;
-  color: #fff;
-  font-size: 20px;
-  font-weight: 900;
-}
 
 .status-pill {
   position: absolute;
   left: 50%;
-  bottom: 106px;
+  bottom: 94px;
   transform: translateX(-50%);
-  padding: 9px 16px;
+  max-width: 70vw;
+  padding: 8px 14px;
   border-radius: 999px;
   font-weight: 800;
+  text-align: center;
 }
-
-.orders-pill {
-  position: absolute;
-  left: 50%;
-  bottom: 18px;
-  transform: translateX(-50%);
-  padding: 10px 18px;
-  border-radius: 999px;
-  font-weight: 800;
-}
-.orders-pill b {
-  display: inline-grid;
-  place-items: center;
-  width: 23px;
-  height: 23px;
-  margin-left: 8px;
-  border-radius: 50%;
-  background: var(--accent);
-}
-
 .speed-pill {
   position: absolute;
   left: 50%;
-  bottom: 64px;
+  bottom: 52px;
   transform: translateX(-50%);
-  padding: 7px 13px;
+  padding: 7px 12px;
   border-radius: 999px;
   font-size: 12px;
-  opacity: .86;
 }
 
 .touch-controls { pointer-events: auto; }
 .touch-controls button {
   touch-action: none;
-  border: 1px solid rgb(255 255 255 / 55%);
-  color: white;
-  background: rgb(16 29 28 / 72%);
-  backdrop-filter: blur(9px);
-  box-shadow: 0 8px 24px rgb(0 0 0 / 28%);
+  border: 1px solid rgb(255 255 255 / 50%);
+  color: #fff;
+  background: rgb(16 29 28 / 70%);
+  box-shadow: 0 7px 20px rgb(0 0 0 / 26%);
+  font: inherit;
 }
-.touch-controls button:active { transform: scale(.96); background: rgb(255 122 36 / 80%); }
+.touch-controls button:active {
+  background: rgb(255 122 36 / 88%);
+  transform: scale(.96);
+}
 
 .steer-pad {
   position: absolute;
-  left: 28px;
-  bottom: 28px;
-  width: 150px;
-  height: 150px;
-  border: 2px solid rgb(255 255 255 / 48%);
+  left: max(18px, env(safe-area-inset-left));
+  bottom: max(18px, env(safe-area-inset-bottom));
+  width: 132px;
+  height: 132px;
+  border: 2px solid rgb(255 255 255 / 44%);
   border-radius: 50%;
-  background: rgb(14 27 27 / 52%);
+  background: rgb(14 27 27 / 45%);
   display: grid;
-  grid-template-columns: 1fr 38px 1fr;
+  grid-template-columns: 1fr 32px 1fr;
   align-items: center;
   overflow: hidden;
 }
-.steer-pad button { height:100%; border:0; background:transparent; font-size:28px; }
-.steer-dot { width:38px; height:38px; border-radius:50%; background:#efe9d6; }
+.steer-pad button { height:100%; border:0; background:transparent; font-size:26px; }
+.steer-dot { width:32px; height:32px; border-radius:50%; background:#efe9d6; }
 
 .pedals {
   position: absolute;
-  right: 30px;
-  bottom: 28px;
+  right: max(18px, env(safe-area-inset-right));
+  bottom: max(18px, env(safe-area-inset-bottom));
   display: flex;
-  gap: 14px;
+  gap: 12px;
   align-items: end;
 }
 .pedals button {
@@ -217,27 +179,76 @@ canvas { display: block; }
   align-items: center;
   font-weight: 900;
 }
-.pedals span { font-size: 13px; margin-top: 5px; }
-.brake { width:112px; height:112px; font-size:26px; }
-.accelerate { width:132px; height:132px; font-size:38px; }
+.pedals span { font-size: 12px; margin-top: 3px; }
+.brake { width: 92px; height: 92px; font-size: 23px; }
+.accelerate { width: 108px; height: 108px; font-size: 31px; }
 
-@media (max-width: 760px) {
-  .brand-card { left:10px; top:10px; padding:8px 10px; }
-  .brand-title { font-size:20px; }
-  .brand-location { font-size:10px; }
-  .mission-card { left:10px; top:76px; width:210px; grid-template-columns:58px 1fr; font-size:12px; }
-  .mission-thumb { min-height:58px; font-size:30px; }
-  .mission-card strong { font-size:14px; }
-  .wallet-bar { top:10px; gap:6px; }
-  .wallet-bar > div { min-width:auto; padding:8px 10px; font-size:11px; }
-  .wallet-bar span { display:none; }
-  .minimap { right:12px; top:64px; width:130px; border-width:6px; }
-  .pause-button { right:16px; top:10px; transform:none; }
-  .steer-pad { width:120px; height:120px; left:18px; bottom:18px; }
-  .pedals { right:18px; bottom:18px; }
-  .brake { width:88px; height:88px; }
-  .accelerate { width:102px; height:102px; }
-  .orders-pill { bottom:14px; font-size:12px; }
-  .status-pill { bottom:82px; max-width:50vw; text-align:center; font-size:12px; }
-  .speed-pill { bottom:50px; }
+.mobile-ui .wallet-bar { display: none; }
+.mobile-ui .brand-location,
+.mobile-ui .mission-secondary { display: none; }
+
+@media (max-width: 900px) {
+  .brand-card {
+    left: max(8px, env(safe-area-inset-left));
+    top: max(8px, env(safe-area-inset-top));
+    padding: 7px 9px;
+  }
+  .brand-title { font-size: 18px; }
+  .brand-location { display: none; }
+
+  .mission-card {
+    left: max(8px, env(safe-area-inset-left));
+    top: calc(max(8px, env(safe-area-inset-top)) + 48px);
+    width: 154px;
+    grid-template-columns: 36px 1fr;
+    gap: 6px;
+    padding: 7px;
+    font-size: 10px;
+    border-radius: 10px;
+  }
+  .mission-thumb { min-height: 36px; font-size: 22px; border-radius: 8px; }
+  .mission-card strong { font-size: 11px; }
+
+  .minimap {
+    right: max(8px, env(safe-area-inset-right));
+    top: max(8px, env(safe-area-inset-top));
+    width: 88px;
+    border-width: 4px;
+  }
+  .mini-home { font-size:14px; }
+  .mini-pin, .mini-player { font-size:18px; }
+
+  .steer-pad {
+    width: 108px;
+    height: 108px;
+    grid-template-columns: 1fr 26px 1fr;
+  }
+  .steer-dot { width:26px; height:26px; }
+  .steer-pad button { font-size:22px; }
+
+  .brake { width: 74px; height: 74px; font-size:19px; }
+  .accelerate { width: 88px; height: 88px; font-size:25px; }
+  .pedals { gap: 8px; }
+
+  .status-pill {
+    bottom: calc(max(18px, env(safe-area-inset-bottom)) + 92px);
+    max-width: 48vw;
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+  .speed-pill {
+    bottom: calc(max(18px, env(safe-area-inset-bottom)) + 58px);
+    font-size: 10px;
+    padding: 5px 8px;
+  }
+}
+
+@media (max-width: 520px) and (orientation: portrait) {
+  .mission-card { display: none; }
+  .minimap { width: 76px; }
+  .steer-pad { width: 100px; height: 100px; }
+  .brake { width: 68px; height: 68px; }
+  .accelerate { width: 82px; height: 82px; }
+  .status-pill { bottom: 112px; max-width: 58vw; }
+  .speed-pill { bottom: 82px; }
 }
