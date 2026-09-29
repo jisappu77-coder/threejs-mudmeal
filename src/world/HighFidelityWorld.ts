@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
 import type { RideBounds } from '../player/MotorcycleController';
 
 export type HighFidelityWorld = {
@@ -8,6 +9,48 @@ export type HighFidelityWorld = {
 };
 
 const MAX_ANISO = 8;
+const gltfLoader = new GLTFLoader();
+const modelCache = new Map<string, Promise<THREE.Group>>();
+
+function spawnModel(
+  root: THREE.Group,
+  relativePath: string,
+  position: THREE.Vector3,
+  scale = 1,
+  rotationY = 0,
+  fallback?: () => THREE.Object3D,
+): void {
+  const url = `${import.meta.env.BASE_URL}models/${relativePath}`;
+  let pending = modelCache.get(url);
+  if (!pending) {
+    pending = gltfLoader.loadAsync(url).then(({ scene }) => scene);
+    modelCache.set(url, pending);
+  }
+
+  pending
+    .then((source) => {
+      const model = source.clone(true);
+      model.position.copy(position);
+      model.rotation.y = rotationY;
+      model.scale.setScalar(scale);
+      model.traverse((object) => {
+        if (!(object instanceof THREE.Mesh)) return;
+        object.castShadow = true;
+        object.receiveShadow = true;
+      });
+      root.add(model);
+    })
+    .catch((error: unknown) => {
+      console.error(`Failed to load GLB: ${relativePath}`, error);
+      if (!fallback) return;
+      const object = fallback();
+      object.position.copy(position);
+      object.rotation.y = rotationY;
+      object.scale.multiplyScalar(scale);
+      root.add(object);
+    });
+}
+
 
 export function createHighFidelityWorld(): HighFidelityWorld {
   const root = new THREE.Group();
@@ -319,10 +362,14 @@ function addRiceFields(root: THREE.Group, m: Materials): void {
 }
 
 function addRestaurant(root: THREE.Group, m: Materials, obstacles: THREE.Box2[]): void {
-  const hotel = createBuilding(m, 9.7, 5.1, 8.2, 0xe8bf78, true);
-  hotel.position.set(-11.1, 0, 8.3);
-  hotel.rotation.y = 0.02;
-  root.add(hotel);
+  spawnModel(
+    root,
+    'world/kerala-shop.glb',
+    new THREE.Vector3(-11.1, 0, 8.3),
+    1.35,
+    0.02,
+    () => createBuilding(m, 7.0, 3.5, 5.8, 0xe8bf78, true),
+  );
   addObstacle(obstacles, -11.1, 8.3, 9.7, 8.2, 0.65);
 
   const sign = signMesh('അച്ചായൻസ്\nHOTEL', '#963a2b', 6.6, 1.65);
@@ -353,9 +400,14 @@ function addRestaurant(root: THREE.Group, m: Materials, obstacles: THREE.Box2[])
 }
 
 function addDestination(root: THREE.Group, m: Materials, obstacles: THREE.Box2[]): void {
-  const house = createBuilding(m, 8.4, 4.8, 7.8, 0xf2d797, false);
-  house.position.set(23.4, 0, 28.2);
-  root.add(house);
+  spawnModel(
+    root,
+    'world/kerala-house.glb',
+    new THREE.Vector3(23.4, 0, 28.2),
+    1.06,
+    0,
+    () => createBuilding(m, 8.2, 4.2, 7.1, 0xf2d797, false),
+  );
   addObstacle(obstacles, 23.4, 28.2, 8.4, 7.8, 0.75);
 
   for (const z of [23.8, 32.3]) {
@@ -382,15 +434,26 @@ function addVillage(root: THREE.Group, m: Materials, obstacles: THREE.Box2[]): v
   ] as const;
 
   for (const [x, z, w, d, c] of sites) {
-    const h = createBuilding(m, w, 4.2 + (Math.abs(z) % 4) * 0.16, d, c, false);
-    h.position.set(x, 0, z);
-    root.add(h);
+    const scale = w / 8.2;
+    spawnModel(
+      root,
+      'world/kerala-house.glb',
+      new THREE.Vector3(x, 0, z),
+      scale,
+      ((x + z) % 7) * 0.015,
+      () => createBuilding(m, 8.2, 4.2, 7.1, c, false),
+    );
     addObstacle(obstacles, x, z, w, d, 0.7);
   }
 
-  const snack = createBuilding(m, 6.4, 3.2, 5.2, 0xe6b66d, true);
-  snack.position.set(12.5, 0, 7.4);
-  root.add(snack);
+  spawnModel(
+    root,
+    'world/kerala-shop.glb',
+    new THREE.Vector3(12.5, 0, 7.4),
+    0.92,
+    0,
+    () => createBuilding(m, 7.0, 3.5, 5.8, 0xe6b66d, true),
+  );
   addObstacle(obstacles, 12.5, 7.4, 6.4, 5.2, 0.6);
 
   const snackSign = signMesh('CHAYA CHAYA\nSNACKS • MEALS', '#263235', 3.6, 2.3);
@@ -460,11 +523,16 @@ function addVegetation(root: THREE.Group, m: Materials): void {
     [51,28,1.18], [60,46,1.15],
   ] as const;
 
-  for (const [x, z, s] of palmSites) {
-    const p = createPalm(m, s);
-    p.position.set(x, 0, z);
-    p.rotation.y = ((x * 13 + z * 7) % 360) * Math.PI / 180;
-    root.add(p);
+  for (const [x, z, scale] of palmSites) {
+    const rotation = ((x * 13 + z * 7) % 360) * Math.PI / 180;
+    spawnModel(
+      root,
+      'world/coconut-palm.glb',
+      new THREE.Vector3(x, 0, z),
+      scale,
+      rotation,
+      () => createPalm(m, 1),
+    );
   }
 
   for (let i = 0; i < 34; i++) {
@@ -510,16 +578,25 @@ function addTraffic(root: THREE.Group, m: Materials): void {
     [2.55,-12,0.05], [-2.6,-1,0.02], [2.55,13,-0.02], [-2.6,31,0.03],
     [13.5,14.6,Math.PI / 2],
   ] as const;
-  for (const [x, z, r] of autos) {
-    const auto = createRickshaw(m);
-    auto.position.set(x, 0.12, z);
-    auto.rotation.y = r;
-    root.add(auto);
+  for (const [x, z, rotation] of autos) {
+    spawnModel(
+      root,
+      'world/auto-rickshaw.glb',
+      new THREE.Vector3(x, 0.12, z),
+      1,
+      rotation,
+      () => createRickshaw(m),
+    );
   }
 
-  const bus = createBus(m);
-  bus.position.set(-2.9, 0.12, -27);
-  root.add(bus);
+  spawnModel(
+    root,
+    'world/ksrtc-bus.glb',
+    new THREE.Vector3(-2.9, 0.12, -27),
+    1,
+    0,
+    () => createBus(m),
+  );
 
   const car = createCar(m, 0xdde7ec);
   car.position.set(2.5, 0.12, -41);
@@ -614,16 +691,22 @@ function addStreetDetails(root: THREE.Group, m: Materials): void {
   const poles: THREE.Vector3[] = [];
 
   for (const [x, z] of poleSites) {
-    const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.13, 7.4, 18), m.metal);
-    pole.position.set(x, 3.7, z);
-    pole.castShadow = true;
-    root.add(pole);
+    spawnModel(
+      root,
+      'world/utility-pole.glb',
+      new THREE.Vector3(x, 0, z),
+      1,
+      0,
+      () => {
+        const group = new THREE.Group();
+        const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.13, 7.4, 18), m.metal);
+        pole.position.y = 3.7;
+        pole.castShadow = true;
+        group.add(pole);
+        return group;
+      },
+    );
     poles.push(new THREE.Vector3(x, 6.6, z));
-
-    const arm = new THREE.Mesh(new THREE.CylinderGeometry(0.045, 0.045, 1.8, 12), m.metal);
-    arm.rotation.z = Math.PI / 2;
-    arm.position.set(x + 0.72, 6.15, z);
-    root.add(arm);
   }
 
   for (let i = 0; i < poles.length - 1; i++) {
