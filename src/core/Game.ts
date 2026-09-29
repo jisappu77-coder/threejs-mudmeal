@@ -23,17 +23,30 @@ export class Game {
   private animationFrame = 0;
 
   constructor(private readonly mount: HTMLElement) {
-    this.scene.background = new THREE.Color(0xa9d6e5);
-    this.scene.fog = new THREE.Fog(0xa9d6e5, 55, 150);
+    this.scene.background = new THREE.Color(0x9fc4cf);
+    this.scene.fog = new THREE.FogExp2(0xa8c6cc, 0.008);
 
     this.renderer.setPixelRatio(Math.min(window.devicePixelRatio, 1.75));
     this.renderer.shadowMap.enabled = true;
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+    this.renderer.outputColorSpace = THREE.SRGBColorSpace;
+    this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
+    this.renderer.toneMappingExposure = 1.05;
     this.mount.appendChild(this.renderer.domElement);
 
-    this.scene.add(new THREE.HemisphereLight(0xffffff, 0x506040, 1.8));
-    const sun = new THREE.DirectionalLight(0xffffff, 2.4);
-    sun.position.set(12, 20, -8);
+    this.scene.add(new THREE.HemisphereLight(0xd9f2ff, 0x45553d, 1.35));
+
+    const sun = new THREE.DirectionalLight(0xfff0d5, 3.1);
+    sun.position.set(-18, 28, -12);
     sun.castShadow = true;
+    sun.shadow.mapSize.set(1536, 1536);
+    sun.shadow.camera.near = 1;
+    sun.shadow.camera.far = 90;
+    sun.shadow.camera.left = -42;
+    sun.shadow.camera.right = 42;
+    sun.shadow.camera.top = 42;
+    sun.shadow.camera.bottom = -42;
+    sun.shadow.bias = -0.0004;
     this.scene.add(sun);
 
     this.scene.add(this.world.root, this.motorcycle.root, this.delivery.root);
