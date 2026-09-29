@@ -1,11 +1,20 @@
 import * as THREE from 'three';
 import type { InputManager } from '../input/InputManager';
 
+export type RideBounds = {
+  minX: number;
+  maxX: number;
+  minZ: number;
+  maxZ: number;
+};
+
 export class MotorcycleController {
   readonly root = new THREE.Group();
+
   private speed = 0;
   private yaw = 0;
   private steerVisual = 0;
+  private readonly previousPosition = new THREE.Vector3();
 
   private readonly maxForwardSpeed = 22;
   private readonly maxReverseSpeed = 5;
@@ -13,7 +22,11 @@ export class MotorcycleController {
   private readonly braking = 22;
   private readonly rollingDrag = 4.5;
 
-  constructor(private readonly input: InputManager) {
+  constructor(
+    private readonly input: InputManager,
+    private readonly bounds: RideBounds,
+    private readonly obstacles: readonly THREE.Box2[],
+  ) {
     this.root.add(this.createBikeVisual());
     this.reset();
   }
@@ -22,7 +35,9 @@ export class MotorcycleController {
     const throttle = this.input.isDown('KeyW', 'ArrowUp') ? 1 : 0;
     const brake = this.input.isDown('KeyS', 'ArrowDown') ? 1 : 0;
     const hardBrake = this.input.isDown('Space');
-    const steer = Number(this.input.isDown('KeyA', 'ArrowLeft')) - Number(this.input.isDown('KeyD', 'ArrowRight'));
+    const steer =
+      Number(this.input.isDown('KeyA', 'ArrowLeft')) -
+      Number(this.input.isDown('KeyD', 'ArrowRight'));
 
     if (throttle) this.speed += this.acceleration * dt;
     if (brake) this.speed -= (this.speed > 0 ? this.braking : this.acceleration * 0.45) * dt;
@@ -37,9 +52,15 @@ export class MotorcycleController {
       this.yaw += steer * steeringAuthority * Math.sign(this.speed) * dt;
     }
 
+    this.previousPosition.copy(this.root.position);
     this.root.rotation.y = this.yaw;
     this.root.position.x += Math.sin(this.yaw) * this.speed * dt;
     this.root.position.z += Math.cos(this.yaw) * this.speed * dt;
+
+    if (this.isBlocked()) {
+      this.root.position.copy(this.previousPosition);
+      this.speed *= -0.18;
+    }
 
     this.steerVisual = THREE.MathUtils.damp(this.steerVisual, steer, 8, dt);
     this.root.rotation.z = -this.steerVisual * speedRatio * 0.28;
@@ -51,11 +72,30 @@ export class MotorcycleController {
     return Math.abs(this.speed) * 3.6;
   }
 
+  getSpeedRatio(): number {
+    return Math.min(Math.abs(this.speed) / this.maxForwardSpeed, 1);
+  }
+
   reset(): void {
-    this.root.position.set(0, 0.45, 0);
+    this.root.position.set(0, 0.45, -35);
     this.root.rotation.set(0, 0, 0);
     this.speed = 0;
     this.yaw = 0;
+  }
+
+  private isBlocked(): boolean {
+    const { x, z } = this.root.position;
+    if (
+      x < this.bounds.minX ||
+      x > this.bounds.maxX ||
+      z < this.bounds.minZ ||
+      z > this.bounds.maxZ
+    ) {
+      return true;
+    }
+
+    const point = new THREE.Vector2(x, z);
+    return this.obstacles.some((obstacle) => obstacle.containsPoint(point));
   }
 
   private createBikeVisual(): THREE.Group {
