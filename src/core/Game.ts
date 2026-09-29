@@ -10,7 +10,12 @@ export class Game {
   private readonly camera = new THREE.PerspectiveCamera(60, 1, 0.1, 300);
   private readonly clock = new THREE.Clock();
   private readonly input = new InputManager();
-  private readonly motorcycle = new MotorcycleController(this.input);
+  private readonly world = createPrototypeWorld();
+  private readonly motorcycle = new MotorcycleController(
+    this.input,
+    this.world.bounds,
+    this.world.obstacles,
+  );
   private readonly followCamera = new FollowCamera(this.camera, this.motorcycle.root);
   private readonly hud = document.createElement('div');
   private animationFrame = 0;
@@ -29,7 +34,7 @@ export class Game {
     sun.castShadow = true;
     this.scene.add(sun);
 
-    this.scene.add(createPrototypeWorld(), this.motorcycle.root);
+    this.scene.add(this.world.root, this.motorcycle.root);
 
     this.hud.className = 'hud';
     this.mount.appendChild(this.hud);
@@ -63,8 +68,9 @@ export class Game {
     const dt = Math.min(this.clock.getDelta(), 1 / 20);
 
     this.motorcycle.update(dt);
-    this.followCamera.update(dt);
-    this.hud.textContent = `${Math.round(this.motorcycle.getSpeedKph())} km/h\nWASD / Arrows • Space brake • R reset`;
+    this.followCamera.update(dt, this.motorcycle.getSpeedRatio());
+    this.hud.textContent =
+      `${Math.round(this.motorcycle.getSpeedKph())} km/h\nWASD / Arrows • Space brake • R reset`;
     this.hud.style.whiteSpace = 'pre-line';
 
     this.renderer.render(this.scene, this.camera);
