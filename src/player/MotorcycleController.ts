@@ -85,12 +85,17 @@ export class MotorcycleController {
   }
 
   private loadBikeModel(): void {
+    const fallback = this.createBikeVisual();
+    fallback.name = 'delivery-bike-fallback';
+    this.root.add(fallback);
+
     const loader = new GLTFLoader();
     loader.load(
       `${import.meta.env.BASE_URL}models/delivery-bike.glb`,
       (gltf) => {
         const model = gltf.scene;
         model.name = 'delivery-bike-glb';
+
         model.traverse((object) => {
           if (!(object instanceof THREE.Mesh)) return;
           object.castShadow = true;
@@ -99,14 +104,34 @@ export class MotorcycleController {
             object.material.envMapIntensity = 1.05;
           }
         });
+
+        this.fitModel(model, 2.45);
+        this.root.remove(fallback);
         this.root.add(model);
       },
       undefined,
       (error) => {
-        console.error('Failed to load delivery bike GLB; using fallback geometry.', error);
-        this.root.add(this.createBikeVisual());
+        console.warn('Failed to load delivery bike GLB; keeping fallback geometry.', error);
       },
     );
+  }
+
+  private fitModel(model: THREE.Object3D, targetMaxDimension: number): void {
+    model.updateMatrixWorld(true);
+    const initialBox = new THREE.Box3().setFromObject(model);
+    const size = initialBox.getSize(new THREE.Vector3());
+    const maxDimension = Math.max(size.x, size.y, size.z);
+
+    if (Number.isFinite(maxDimension) && maxDimension > 0.0001) {
+      model.scale.setScalar(targetMaxDimension / maxDimension);
+    }
+
+    model.updateMatrixWorld(true);
+    const box = new THREE.Box3().setFromObject(model);
+    const center = box.getCenter(new THREE.Vector3());
+    model.position.x -= center.x;
+    model.position.z -= center.z;
+    model.position.y -= box.min.y;
   }
 
   private isBlocked(): boolean {
