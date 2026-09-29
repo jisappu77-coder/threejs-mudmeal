@@ -15,7 +15,7 @@ export class Game {
     antialias: false,
     powerPreference: 'high-performance',
   });
-  private readonly camera = new THREE.PerspectiveCamera(60, 1, 0.1, 300);
+  private readonly camera = new THREE.PerspectiveCamera(50, 1, 0.1, 300);
   private readonly composer = new EffectComposer(this.renderer);
   private readonly clock = new THREE.Clock();
   private readonly input = new InputManager();
@@ -31,16 +31,16 @@ export class Game {
   private animationFrame = 0;
 
   constructor(private readonly mount: HTMLElement) {
-    this.scene.background = new THREE.Color(0x93b7c2);
-    this.scene.fog = new THREE.FogExp2(0xa7c1c4, 0.0075);
+    this.scene.background = new THREE.Color(0x91bac6);
+    this.scene.fog = new THREE.FogExp2(0xa9c4c7, 0.0068);
 
-    const pixelRatio = Math.min(window.devicePixelRatio, 1.75);
+    const pixelRatio = Math.min(window.devicePixelRatio, 1.65);
     this.renderer.setPixelRatio(pixelRatio);
     this.renderer.shadowMap.enabled = true;
     this.renderer.shadowMap.type = THREE.PCFShadowMap;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.08;
+    this.renderer.toneMappingExposure = 1.12;
     this.mount.appendChild(this.renderer.domElement);
 
     this.composer.setPixelRatio(pixelRatio);
@@ -48,29 +48,29 @@ export class Game {
     this.composer.addPass(new SMAAPass());
     this.composer.addPass(new OutputPass());
 
-    this.scene.add(new THREE.HemisphereLight(0xdcefff, 0x3f4f38, 1.15));
+    this.scene.add(new THREE.HemisphereLight(0xe5f4ff, 0x4e5d39, 1.15));
 
-    const key = new THREE.DirectionalLight(0xffedcf, 3.4);
-    key.position.set(-24, 34, -18);
+    const key = new THREE.DirectionalLight(0xffe7bd, 3.6);
+    key.position.set(-28, 40, -20);
     key.castShadow = true;
     key.shadow.mapSize.set(2048, 2048);
     key.shadow.camera.near = 1;
-    key.shadow.camera.far = 100;
-    key.shadow.camera.left = -46;
-    key.shadow.camera.right = 46;
-    key.shadow.camera.top = 46;
-    key.shadow.camera.bottom = -46;
+    key.shadow.camera.far = 120;
+    key.shadow.camera.left = -52;
+    key.shadow.camera.right = 52;
+    key.shadow.camera.top = 52;
+    key.shadow.camera.bottom = -52;
     key.shadow.bias = -0.00025;
     key.shadow.normalBias = 0.018;
     this.scene.add(key);
 
-    const fill = new THREE.DirectionalLight(0x8fb9d6, 0.7);
-    fill.position.set(30, 16, 24);
+    const fill = new THREE.DirectionalLight(0x8dc4dd, 0.75);
+    fill.position.set(35, 20, 28);
     this.scene.add(fill);
 
     this.scene.add(this.world.root, this.motorcycle.root, this.delivery.root);
 
-    this.hud.className = 'hud';
+    this.setupHud();
     this.mount.appendChild(this.hud);
 
     window.addEventListener('resize', this.resize);
@@ -90,6 +90,79 @@ export class Game {
     this.renderer.dispose();
   }
 
+  private setupHud(): void {
+    this.hud.className = 'game-ui';
+    this.hud.innerHTML = `
+      <section class="brand-card">
+        <div class="brand-title">MUD <span>MEALS</span> 🌴</div>
+        <div class="brand-location">📍 KOCHI OUTSKIRTS</div>
+      </section>
+
+      <section class="mission-card">
+        <div class="mission-thumb">🍛</div>
+        <div>
+          <strong>Biryani delivery</strong>
+          <div>◷ <span id="mission-time">02:45</span></div>
+          <div>📦 Food 92%</div>
+          <div>₹ Reward ₹280</div>
+        </div>
+      </section>
+
+      <section class="wallet-bar">
+        <div>💵 <span>Cash</span> <strong>₹1,240</strong></div>
+        <div>▣ <span>Bank</span> <strong>₹8,500</strong></div>
+      </section>
+
+      <section class="minimap">
+        <div class="minimap-n">N</div>
+        <div class="mini-road r1"></div>
+        <div class="mini-road r2"></div>
+        <div class="mini-water"></div>
+        <div class="mini-home">⌂</div>
+        <div class="mini-pin">●</div>
+        <div class="mini-player">▲</div>
+      </section>
+
+      <button class="pause-button" aria-label="Pause">Ⅱ</button>
+
+      <section class="status-pill" id="status-pill">Biryani pickup</section>
+
+      <section class="touch-controls steer-pad">
+        <button data-code="KeyA" aria-label="Steer left">◀</button>
+        <div class="steer-dot"></div>
+        <button data-code="KeyD" aria-label="Steer right">▶</button>
+      </section>
+
+      <section class="touch-controls pedals">
+        <button class="brake" data-code="KeyS">◉<span>Brake</span></button>
+        <button class="accelerate" data-code="KeyW">⌃<span>Accelerate</span></button>
+      </section>
+
+      <section class="orders-pill">☷ Orders <b>2</b></section>
+      <section class="speed-pill"><span id="speed-value">0</span> km/h</section>
+    `;
+
+    this.hud.querySelectorAll<HTMLButtonElement>('[data-code]').forEach((button) => {
+      const code = button.dataset.code;
+      if (!code) return;
+
+      const press = (event: PointerEvent): void => {
+        event.preventDefault();
+        button.setPointerCapture(event.pointerId);
+        this.input.setVirtual(code, true);
+      };
+      const release = (event: PointerEvent): void => {
+        event.preventDefault();
+        this.input.setVirtual(code, false);
+      };
+
+      button.addEventListener('pointerdown', press);
+      button.addEventListener('pointerup', release);
+      button.addEventListener('pointercancel', release);
+      button.addEventListener('lostpointercapture', release);
+    });
+  }
+
   private readonly resize = (): void => {
     const width = this.mount.clientWidth;
     const height = this.mount.clientHeight;
@@ -107,11 +180,14 @@ export class Game {
     this.delivery.update(this.motorcycle.root.position, dt);
     this.followCamera.update(dt, this.motorcycle.getSpeedRatio());
 
-    this.hud.textContent =
-      `${Math.round(this.motorcycle.getSpeedKph())} km/h\n` +
-      `${this.delivery.getHudText(this.motorcycle.root.position)}\n` +
-      'WASD / Arrows • Space brake • R reset';
-    this.hud.style.whiteSpace = 'pre-line';
+    const speed = this.hud.querySelector<HTMLElement>('#speed-value');
+    if (speed) speed.textContent = String(Math.round(this.motorcycle.getSpeedKph()));
+
+    const status = this.hud.querySelector<HTMLElement>('#status-pill');
+    if (status) status.textContent = this.delivery.getHudText(this.motorcycle.root.position);
+
+    const missionTime = this.hud.querySelector<HTMLElement>('#mission-time');
+    if (missionTime && this.delivery.getStage() === 'complete') missionTime.textContent = 'DONE';
 
     this.composer.render(dt);
   };
