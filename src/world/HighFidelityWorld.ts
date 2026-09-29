@@ -30,18 +30,22 @@ function spawnModel(
   pending
     .then((source) => {
       const model = source.clone(true);
-      model.position.copy(position);
-      model.rotation.y = rotationY;
-      model.scale.setScalar(scale);
+      const container = new THREE.Group();
+
       model.traverse((object) => {
         if (!(object instanceof THREE.Mesh)) return;
         object.castShadow = true;
         object.receiveShadow = true;
       });
-      root.add(model);
+
+      fitToGameplaySize(model, targetSizeFor(relativePath) * scale);
+      container.position.copy(position);
+      container.rotation.y = rotationY;
+      container.add(model);
+      root.add(container);
     })
     .catch((error: unknown) => {
-      console.error(`Failed to load GLB: ${relativePath}`, error);
+      console.warn(`Failed to load GLB: ${relativePath}; using fallback.`, error);
       if (!fallback) return;
       const object = fallback();
       object.position.copy(position);
@@ -51,6 +55,34 @@ function spawnModel(
     });
 }
 
+function targetSizeFor(relativePath: string): number {
+  if (relativePath.includes('ksrtc-bus')) return 7.6;
+  if (relativePath.includes('auto-rickshaw')) return 2.6;
+  if (relativePath.includes('coconut-palm')) return 8.2;
+  if (relativePath.includes('utility-pole')) return 7.4;
+  if (relativePath.includes('kerala-shop')) return 8.2;
+  if (relativePath.includes('kerala-house')) return 8.4;
+  return 5;
+}
+
+function fitToGameplaySize(object: THREE.Object3D, targetMaxDimension: number): void {
+  object.updateMatrixWorld(true);
+  const initialBox = new THREE.Box3().setFromObject(object);
+  const size = initialBox.getSize(new THREE.Vector3());
+  const maxDimension = Math.max(size.x, size.y, size.z);
+
+  if (Number.isFinite(maxDimension) && maxDimension > 0.0001) {
+    object.scale.setScalar(targetMaxDimension / maxDimension);
+  }
+
+  object.updateMatrixWorld(true);
+  const fittedBox = new THREE.Box3().setFromObject(object);
+  const center = fittedBox.getCenter(new THREE.Vector3());
+
+  object.position.x -= center.x;
+  object.position.z -= center.z;
+  object.position.y -= fittedBox.min.y;
+}
 
 export function createHighFidelityWorld(): HighFidelityWorld {
   const root = new THREE.Group();
