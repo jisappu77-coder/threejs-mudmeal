@@ -1,24 +1,42 @@
 # Art Direction
 
 ## Visual target
-AAA-inspired real-time presentation within browser/mobile constraints.
+The supplied Mud Meals reference image is the primary visual acceptance target.
 
-The final look must avoid obvious primitive or low-poly presentation. Prioritize:
-- believable Kerala-inspired architecture and road scale
-- authored PBR materials with albedo, normal, roughness, and AO where useful
-- high-quality motorcycle and rider GLB assets
-- layered vegetation with strong silhouettes
-- realistic-but-controlled lighting and atmospheric depth
-- detailed roadside props, signage, shopfronts, wiring, drainage, walls, and street furniture
-- cinematic color response without sacrificing gameplay readability
+The goal is a premium stylized 3D scene with:
+- dense Kerala-inspired roadside composition
+- high-detail authored GLB assets
+- believable but vibrant PBR materials
+- red tiled roofs, painted plaster, tropical vegetation, turquoise backwater
+- strong contact/ambient shading
+- warm sunlight with cool environmental fill
+- cinematic atmospheric depth
+- polished mobile-game readability
+
+## Graphics-first rule
+Graphics is the first project gate. Gameplay/system expansion is paused until the hero scene is visually close to the supplied reference.
 
 ## Rendering
 - ACES filmic tone mapping
+- PMREM image-based/environment lighting
+- desktop SSAO/contact shading
 - SMAA post-process antialiasing
-- high-quality dynamic key shadows near the player
+- high-quality key shadows
+- mobile-safe direct rendering path
 - restrained fog / atmospheric perspective
 - physically plausible material response
-- quality scaling for mobile
 
 ## Asset quality
-Prototype procedural geometry is temporary. True AAA-class appearance requires production-quality GLB/PBR assets and authored textures; procedural primitives are not considered final art.
+Prototype procedural geometry and tiny placeholder GLBs are not considered final art.
+
+Production assets should include:
+- meaningful geometry detail
+- authored base-color/albedo
+- normal maps
+- roughness maps
+- AO where useful
+- sensible pivots/scales
+- LOD-ready topology
+- compressed textures for web/mobile delivery
+
+Current committed GLBs remain temporary visual stand-ins until replaced by production-quality assets.
