@@ -7,7 +7,7 @@ import { InputManager } from '../input/InputManager';
 import { DeliveryManager } from '../missions/DeliveryManager';
 import { MotorcycleController } from '../player/MotorcycleController';
 import { FollowCamera } from '../rendering/FollowCamera';
-import { createPrototypeWorld } from '../world/PrototypeWorld';
+import { createHighFidelityWorld } from '../world/HighFidelityWorld';
 
 export class Game {
   private readonly scene = new THREE.Scene();
@@ -15,11 +15,11 @@ export class Game {
     antialias: false,
     powerPreference: 'high-performance',
   });
-  private readonly camera = new THREE.PerspectiveCamera(50, 1, 0.1, 300);
+  private readonly camera = new THREE.PerspectiveCamera(43, 1, 0.1, 350);
   private readonly composer = new EffectComposer(this.renderer);
   private readonly clock = new THREE.Clock();
   private readonly input = new InputManager();
-  private readonly world = createPrototypeWorld();
+  private readonly world = createHighFidelityWorld();
   private readonly motorcycle = new MotorcycleController(
     this.input,
     this.world.bounds,
@@ -37,10 +37,10 @@ export class Game {
     const pixelRatio = Math.min(window.devicePixelRatio, 1.65);
     this.renderer.setPixelRatio(pixelRatio);
     this.renderer.shadowMap.enabled = true;
-    this.renderer.shadowMap.type = THREE.PCFShadowMap;
+    this.renderer.shadowMap.type = THREE.PCFSoftShadowMap;
     this.renderer.outputColorSpace = THREE.SRGBColorSpace;
     this.renderer.toneMapping = THREE.ACESFilmicToneMapping;
-    this.renderer.toneMappingExposure = 1.12;
+    this.renderer.toneMappingExposure = 1.06;
     this.mount.appendChild(this.renderer.domElement);
 
     this.composer.setPixelRatio(pixelRatio);
@@ -48,9 +48,9 @@ export class Game {
     this.composer.addPass(new SMAAPass());
     this.composer.addPass(new OutputPass());
 
-    this.scene.add(new THREE.HemisphereLight(0xe5f4ff, 0x4e5d39, 1.15));
+    this.scene.add(new THREE.HemisphereLight(0xeef8ff, 0x56623b, 1.45));
 
-    const key = new THREE.DirectionalLight(0xffe7bd, 3.6);
+    const key = new THREE.DirectionalLight(0xffe1b2, 4.2);
     key.position.set(-28, 40, -20);
     key.castShadow = true;
     key.shadow.mapSize.set(2048, 2048);
@@ -64,7 +64,7 @@ export class Game {
     key.shadow.normalBias = 0.018;
     this.scene.add(key);
 
-    const fill = new THREE.DirectionalLight(0x8dc4dd, 0.75);
+    const fill = new THREE.DirectionalLight(0x8fc8e0, 0.92);
     fill.position.set(35, 20, 28);
     this.scene.add(fill);
 
