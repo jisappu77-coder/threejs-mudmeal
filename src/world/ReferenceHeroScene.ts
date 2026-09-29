@@ -44,6 +44,7 @@ export function createReferenceHeroScene(): ReferenceHeroScene {
   addDestinationLife(root);
   addBridgeFlowers(root);
   addFieldDetails(root);
+  addSurfaceMicroDetail(root);
 
   return {
     root,
@@ -336,6 +337,69 @@ function addCanalProps(root: THREE.Group): void {
   boat.scale.set(0.55, 1, 0.35);
   boat.position.set(39.5, 0.15, -28);
   root.add(boat);
+}
+
+function addSurfaceMicroDetail(root: THREE.Group): void {
+  const roadPatchMaterial = new THREE.MeshBasicMaterial({
+    color: 0x17191a,
+    transparent: true,
+    opacity: 0.13,
+    depthWrite: false,
+  });
+  const roadPatchGeo = new THREE.CircleGeometry(1, 20);
+  const roadPatches = new THREE.InstancedMesh(roadPatchGeo, roadPatchMaterial, 34);
+  const dummy = new THREE.Object3D();
+
+  const curve = new THREE.CatmullRomCurve3(ROAD_POINTS, false, 'centripetal');
+  for (let i = 0; i < 34; i++) {
+    const t = (i + 0.7) / 35;
+    const p = curve.getPoint(t);
+    const tangent = curve.getTangent(t).normalize();
+    const side = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
+    const offset = ((i % 5) - 2) * 0.72;
+
+    dummy.position.copy(p).addScaledVector(side, offset);
+    dummy.position.y += 0.13;
+    dummy.rotation.set(-Math.PI / 2, 0, ((i * 23) % 17) * 0.08);
+    dummy.scale.set(
+      0.35 + (i % 4) * 0.12,
+      0.7 + (i % 3) * 0.18,
+      1,
+    );
+    dummy.updateMatrix();
+    roadPatches.setMatrixAt(i, dummy.matrix);
+  }
+  root.add(roadPatches);
+
+  const grassMaterial = new THREE.MeshStandardMaterial({
+    color: 0x4f8537,
+    roughness: 0.92,
+    side: THREE.DoubleSide,
+  });
+  const bladeGeo = new THREE.PlaneGeometry(0.12, 0.9);
+  bladeGeo.translate(0, 0.45, 0);
+  const grass = new THREE.InstancedMesh(bladeGeo, grassMaterial, 180);
+
+  let index = 0;
+  for (let i = 0; i < 90; i++) {
+    const t = i / 89;
+    const p = curve.getPoint(t);
+    const tangent = curve.getTangent(t).normalize();
+    const side = new THREE.Vector3(-tangent.z, 0, tangent.x).normalize();
+
+    for (const sign of [-1, 1]) {
+      const jitter = ((i * 37 + (sign > 0 ? 11 : 3)) % 17) * 0.055;
+      dummy.position.copy(p).addScaledVector(side, sign * (6.1 + jitter));
+      dummy.position.y = 0.08;
+      dummy.rotation.set(0, ((i * 19) % 29) * 0.1, 0);
+      const s = 0.6 + ((i * 13) % 7) * 0.055;
+      dummy.scale.set(s, 0.75 + ((i * 7) % 5) * 0.08, s);
+      dummy.updateMatrix();
+      grass.setMatrixAt(index++, dummy.matrix);
+    }
+  }
+  grass.castShadow = true;
+  root.add(grass);
 }
 
 function addMarker(root: THREE.Group, position: THREE.Vector3, color: number): void {
