@@ -45,6 +45,7 @@ export function createReferenceHeroScene(): ReferenceHeroScene {
   addBridgeFlowers(root);
   addFieldDetails(root);
   addSurfaceMicroDetail(root);
+  addTropicalUnderstory(root);
 
   return {
     root,
@@ -400,6 +401,92 @@ function addSurfaceMicroDetail(root: THREE.Group): void {
   }
   grass.castShadow = true;
   root.add(grass);
+}
+
+function addTropicalUnderstory(root: THREE.Group): void {
+  const leafMaterial = new THREE.MeshPhysicalMaterial({
+    color: 0x3f8b3d,
+    roughness: 0.62,
+    sheen: 0.24,
+    sheenColor: new THREE.Color(0x9fc36d),
+    sheenRoughness: 0.72,
+    side: THREE.DoubleSide,
+  });
+  const brightLeafMaterial = new THREE.MeshPhysicalMaterial({
+    color: 0x6eaa45,
+    roughness: 0.58,
+    sheen: 0.26,
+    sheenColor: new THREE.Color(0xb7d37d),
+    sheenRoughness: 0.7,
+    side: THREE.DoubleSide,
+  });
+
+  const leafGeo = new THREE.PlaneGeometry(0.36, 1.7, 1, 3);
+  leafGeo.translate(0, 0.8, 0);
+
+  const leftCluster = new THREE.InstancedMesh(leafGeo, leafMaterial, 96);
+  const rightCluster = new THREE.InstancedMesh(leafGeo, brightLeafMaterial, 96);
+  const dummy = new THREE.Object3D();
+
+  const clusters = [
+    [-10.5, 4.5], [-14, 12], [-18, 22], [-12, 31],
+    [12, 3], [16, 9], [21, 24], [27, 31],
+    [49, -30], [50, -15], [50, 4], [50, 23],
+  ] as const;
+
+  let li = 0;
+  let ri = 0;
+
+  for (let c = 0; c < clusters.length; c++) {
+    const [cx, cz] = clusters[c];
+    for (let i = 0; i < 16; i++) {
+      const angle = (i / 16) * Math.PI * 2 + c * 0.37;
+      const radius = 0.45 + (i % 5) * 0.18;
+      dummy.position.set(
+        cx + Math.cos(angle) * radius,
+        0.04,
+        cz + Math.sin(angle) * radius,
+      );
+      dummy.rotation.set(
+        -0.08 + (i % 3) * 0.06,
+        angle + Math.PI / 2,
+        -0.28 + (i % 5) * 0.14,
+      );
+      const scale = 0.72 + (i % 4) * 0.1;
+      dummy.scale.set(scale, scale, scale);
+      dummy.updateMatrix();
+
+      if ((c + i) % 2 === 0) leftCluster.setMatrixAt(li++, dummy.matrix);
+      else rightCluster.setMatrixAt(ri++, dummy.matrix);
+    }
+  }
+
+  leftCluster.count = li;
+  rightCluster.count = ri;
+  leftCluster.castShadow = rightCluster.castShadow = true;
+  root.add(leftCluster, rightCluster);
+
+  const shrubGeo = new THREE.IcosahedronGeometry(0.58, 1);
+  const shrubMat = new THREE.MeshStandardMaterial({ color: 0x356f36, roughness: 0.82 });
+  const shrubs = new THREE.InstancedMesh(shrubGeo, shrubMat, 70);
+
+  for (let i = 0; i < 70; i++) {
+    const side = i % 2 === 0 ? -1 : 1;
+    const z = -48 + (i % 35) * 2.75;
+    const x = side * (8.0 + ((i * 7) % 9) * 0.35);
+    dummy.position.set(x, 0.45, z);
+    dummy.rotation.set(0, ((i * 31) % 17) * 0.19, 0);
+    dummy.scale.set(
+      0.7 + (i % 4) * 0.12,
+      0.58 + (i % 3) * 0.1,
+      0.78 + (i % 5) * 0.08,
+    );
+    dummy.updateMatrix();
+    shrubs.setMatrixAt(i, dummy.matrix);
+  }
+
+  shrubs.castShadow = true;
+  root.add(shrubs);
 }
 
 function addMarker(root: THREE.Group, position: THREE.Vector3, color: number): void {
