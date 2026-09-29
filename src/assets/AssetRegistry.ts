@@ -10,6 +10,7 @@ export type AssetId =
 export type AssetDefinition = {
   id: AssetId;
   url: string;
+  scale?: number;
   castShadow?: boolean;
   receiveShadow?: boolean;
 };
