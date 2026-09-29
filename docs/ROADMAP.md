@@ -13,5 +13,18 @@
 - Collision prototype
 - Production build validation
 
+Status: production build passes in GitHub Actions. Driving feel still requires human playtesting.
+
 ## M2 — Delivery prototype
-Only after M1 driving feel is accepted: pickup, destination, marker, completion, reward.
+- Restaurant pickup marker
+- Customer drop-off marker
+- Distance guidance
+- Proximity pickup/drop-off
+- Reward on completion
+- Production build validation
+
+Deferred until later:
+- Mission generation
+- Economy
+- Upgrades
+- Multiple delivery types
