@@ -38,6 +38,8 @@ const circuit=app.extendedWorld.centerline;
 assert.ok(circuit.closed);assert.ok(circuit.getPointAt(0).distanceTo(circuit.getPointAt(1))<1e-8);
 assert.ok(circuit.getTangentAt(.00001).dot(circuit.getTangentAt(.99999))>.99,'Loop seam must have continuous direction');
 const circuitPoints=circuit.getSpacedPoints(1200);
+assert.ok(app.extendedWorld.route.getSpacedPoints(2400).some(p=>Math.hypot(p.x-app.deliveryStop.x,p.z-app.deliveryStop.z)<2.5),'Delivery must be reachable on the paved route');
+for(const b of app.plots.filter(p=>p.kind==='building')){const near=Math.min(...app.branchPoints.map(([x,z])=>Math.hypot(Math.max(0,Math.abs(x-b.x)-b.w/2),Math.max(0,Math.abs(z-b.z)-b.d/2))));assert.ok(near>1.775,'Bridge shortcut intersects a building');}
 const cross=(a,b,c)=>(b.x-a.x)*(c.z-a.z)-(b.z-a.z)*(c.x-a.x);
 for(let i=0;i<circuitPoints.length-1;i++)for(let j=i+3;j<circuitPoints.length-1;j++){
  if(i===0&&j===circuitPoints.length-2)continue;

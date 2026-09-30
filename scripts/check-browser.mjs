@@ -32,7 +32,7 @@ try {
   assert.equal(stable,true,'An unchanged scene must render identically on successive frames');
   await page.screenshot({path:'artifacts/reference-view.png'});
   // Whole-map overhead review catches disconnected asphalt hidden by the driving camera.
-  await page.evaluate(()=>{const a=window.__MUD_MEALS__;a.scene.userData.savedFog=a.scene.fog;a.scene.fog=null;a.camera.near=1;a.camera.far=900;a.camera.fov=45;a.camera.zoom=1;a.camera.position.set(10,480,15);a.camera.lookAt(10,0,-20);a.camera.updateProjectionMatrix();a.graphics.render()});
+  await page.evaluate(()=>{const a=window.__MUD_MEALS__;a.scene.userData.savedFog=a.scene.fog;a.scene.fog=null;a.camera.near=100;a.camera.far=800;a.camera.fov=45;a.camera.zoom=1;a.camera.position.set(10,480,15);a.camera.lookAt(10,0,-20);a.camera.updateProjectionMatrix();a.graphics.render()});
   await page.screenshot({path:'artifacts/road-circuit.png'});
   await page.evaluate(()=>{const a=window.__MUD_MEALS__;a.scene.fog=a.scene.userData.savedFog;delete a.scene.userData.savedFog;a.reset();a.graphics.render()});
   await page.setViewportSize({width:960,height:540});
