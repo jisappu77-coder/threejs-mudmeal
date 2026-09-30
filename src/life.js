@@ -10,7 +10,7 @@ export function createWorldLife(h){
  player.traverse(o=>{if(o.userData.wheelRadius)playerWheels.push(o)});
  function nearestS(g,road){let best=Infinity,s=0;for(let i=0;i<=1200;i++){const t=i/1200,p=roads[road].getPointAt(t),d=(p.x-g.position.x)**2+(p.z-g.position.z)**2;if(d<best){best=d;s=t*lengths[road];}}return s;}
  function addTraffic(g,type,road,s,direction){
-  const scale=g.scale.x,width=type==='bus'?2.85:type==='bike'?.85:type==='auto'?1.65:1.95,length=type==='bus'?7.4:type==='bike'?2.1:type==='auto'?2.4:type==='van'?3.7:3.3;
+  const scale=g.scale.x,width=type==='bus'?2.85:type==='bike'?.95:type==='auto'?1.65:1.95,length=type==='bus'?7.4:type==='bike'?2.3:type==='auto'?2.4:type==='van'?3.7:3.3;
   const wheels=[];g.traverse(o=>{if(o.userData.wheelRadius)wheels.push(o)});
   const v={g,type,road,s,direction,width:width*scale,length:length*scale,speed:0,cruise:type==='bus'?3.2:type==='bike'?4.2:3.8,wheels};traffic.push(v);return v;
  }
@@ -28,8 +28,10 @@ export function createWorldLife(h){
   const axes=v=>[new THREE.Vector2(Math.cos(v.g.rotation.y),-Math.sin(v.g.rotation.y)),new THREE.Vector2(Math.sin(v.g.rotation.y),Math.cos(v.g.rotation.y))],aa=axes(a),bb=axes(b),delta=new THREE.Vector2(b.g.position.x-a.g.position.x,b.g.position.z-a.g.position.z);
   return [...aa,...bb].every(axis=>Math.abs(delta.dot(axis))<(Math.abs(aa[0].dot(axis))*a.width+Math.abs(aa[1].dot(axis))*a.length+Math.abs(bb[0].dot(axis))*b.width+Math.abs(bb[1].dot(axis))*b.length)/2+margin);
  }
+ function riderFootprint(position=player.position){return {g:{position,rotation:player.rotation},width:1.24,length:3.05};}
  function blocked(position,radius=.62,ignore=player){
-  if(traffic.some(v=>v.g!==ignore&&Math.abs(v.g.position.y-position.y)<2&&rectangleDistance(position,v)<radius))return true;
+  if(ignore===player){if(traffic.some(v=>overlaps(riderFootprint(position),v,.1)))return true;}
+  else if(traffic.some(v=>v.g!==ignore&&Math.abs(v.g.position.y-position.y)<2&&rectangleDistance(position,v)<radius))return true;
   if(ignore!==player&&Math.abs(player.position.y-position.y)<2&&position.distanceTo(player.position)<radius+.65)return true;
   return false;
  }
@@ -41,7 +43,7 @@ export function createWorldLife(h){
  }
  const initialized=[];
  for(const v of traffic){for(let attempt=0;attempt<100;attempt++){
-  pose(v);const collision=initialized.some(other=>overlaps(v,other,.3))||v.g.position.distanceTo(player.position)<v.length/2+1.1;
+  pose(v);const collision=initialized.some(other=>overlaps(v,other,.3))||overlaps(v,riderFootprint(),.25);
   if(!collision)break;v.s=mod(v.s+2,lengths[v.road]);
  }initialized.push(v);v.initialS=v.s;}
  const occupied=npcs;
@@ -118,14 +120,14 @@ export function createWorldLife(h){
    for(const obstacle of [player,...traffic.filter(o=>o!==v).map(o=>o.g)]){
     if(Math.abs(obstacle.position.y-v.g.position.y)>2)continue;
     const delta=obstacle.position.clone().sub(v.g.position),ahead=delta.dot(forward),side=Math.abs(delta.x*forward.z-delta.z*forward.x);
-    const other=traffic.find(o=>o.g===obstacle),otherHalf=other?other.length/2:1.2;
+    const other=traffic.find(o=>o.g===obstacle),otherHalf=other?other.length/2:1.525;
     if(ahead>0&&side<v.width/2+(other?other.width/2:.6)+.15)gap=Math.min(gap,ahead-v.length/2-otherHalf-1.1);
    }
    v.speed=THREE.MathUtils.damp(v.speed,Math.min(v.cruise,Math.max(0,gap*.8)),2,dt);
    let step=Math.min(v.speed*dt,Math.max(0,gap));const oldS=v.s,before=v.g.position.clone();const candidate=v.s+step*v.direction;
    // Boundary respawns wait until the rider is away, so no vehicle jumps across their view.
    if((candidate<0||candidate>length)&&v.g.position.distanceTo(player.position)<60){step=0;v.speed=0;}v.s=mod(v.s+step*v.direction,length);pose(v);
-   if(traffic.some(other=>other!==v&&overlaps(v,other,.05))||rectangleDistance(player.position,v)<.65&&Math.abs(player.position.y-v.g.position.y)<2){v.s=oldS;v.speed=0;step=0;pose(v);}
+   if(traffic.some(other=>other!==v&&overlaps(v,other,.05))||overlaps(v,riderFootprint(),.1)){v.s=oldS;v.speed=0;step=0;pose(v);}
    for(const wheel of v.wheels)wheel.rotation.x-=step/wheel.userData.wheelRadius/v.g.scale.x;
    if(before.distanceTo(v.g.position)>20){v.speed=0;}
   }
@@ -137,5 +139,5 @@ export function createWorldLife(h){
   playerLast.copy(player.position);for(const wheel of playerWheels)wheel.rotation.x=0;windTime.value=0;sun.shadow.needsUpdate=true;
  }
  function audit(){return {plantsInRoad:plantings.filter(p=>h.roadClearance(p.x,p.z)<p.radius+.35),plantsInBuildings:plantings.filter(p=>plotBlocked(p.x,p.z,p.radius,true)),plantsInWater:plantings.filter(p=>waterAt(p.x,p.z)),pedestrians:npcs.length,walkingRoutes:npcs.filter(n=>n.pathLength>0).length,traffic:traffic.length};}
- return {update,reset,blocked,traffic,npcs,audit,walkable,overlaps};
+ return {update,reset,blocked,traffic,npcs,audit,walkable,overlaps,riderFootprint};
 }

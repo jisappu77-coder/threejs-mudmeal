@@ -42,6 +42,10 @@ for(const p of app.extendedWorld.roadPoints){
  const lakeDistance=((p.x-89)/39)**2+((p.z+92)/32)**2;assert.ok(lakeDistance>1,'Road center must stay outside the lake');
 }
 for(const p of app.plots.filter(p=>p.kind==='sign'))for(const r of app.extendedWorld.roadPoints){const gap=Math.hypot(Math.max(0,Math.abs(r.x-p.x)-p.w/2),Math.max(0,Math.abs(r.z-p.z)-p.d/2));assert.ok(gap>4.2,'Direction board encroaches on the carriageway');}
+const lead=app.life.traffic.find(v=>v.type==='car'),riderAngle=app.player.rotation.y;app.player.rotation.y=lead.g.rotation.y;
+const rear=lead.g.position.clone().addScaledVector(new THREE.Vector3(-Math.sin(lead.g.rotation.y),0,-Math.cos(lead.g.rotation.y)),-lead.length/2-1.2);
+assert.equal(app.life.blocked(rear,.62,app.player),true,'Rider wheels and cargo must stop before entering a vehicle');app.player.rotation.y=riderAngle;
+for(const v of app.life.traffic)assert.equal(app.life.overlaps(v,app.life.riderFootprint()),false,'Spawn overlaps rider');
 const trafficStarts=app.life.traffic.map(v=>v.g.position.clone());
 for(let i=0;i<120;i++)app.life.update(1/60,i/60);
 assert.ok(app.life.traffic.some((v,i)=>v.g.position.distanceTo(trafficStarts[i])>1));
@@ -49,6 +53,7 @@ assert.equal(app.life.audit().plantsInBuildings.length,0);
 // Check every vehicle footprint throughout a full minute, including tight bends.
 for(let frame=0;frame<1800;frame++){
  app.life.update(1/30,frame/30);
+ if(frame%30===0)for(const v of app.life.traffic)assert.equal(app.life.overlaps(v,app.life.riderFootprint()),false,'Traffic crossed the stationary rider');
  if(frame%30===0)for(let i=0;i<app.life.traffic.length;i++)for(let j=i+1;j<app.life.traffic.length;j++)assert.equal(app.life.overlaps(app.life.traffic[i],app.life.traffic[j]),false,`Traffic overlap: ${i},${j} at ${frame/30}s`);
 }
 assert.ok(app.npcs.some(n=>n.distance>0));

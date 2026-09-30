@@ -62,6 +62,7 @@ try {
     for(let i=0;i<900;i++){
       life.update(1/30,i/30);
       walked ||=life.npcs.some(n=>n.state==='walking');waved ||=life.npcs.some(n=>n.wave>.5);
+      if(i%30===0)for(const v of life.traffic)overlap ||=life.overlaps(v,life.riderFootprint());
       if(i%30===0)for(let j=0;j<life.traffic.length;j++)for(let k=j+1;k<life.traffic.length;k++)overlap ||=life.overlaps(life.traffic[j],life.traffic[k]);
     }
     const result={audit:life.audit(),overlap,walked,waved,moved:life.traffic.some((v,i)=>v.g.position.distanceTo(starts[i])>1)};
