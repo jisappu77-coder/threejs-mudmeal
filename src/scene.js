@@ -250,12 +250,32 @@ flush();
 let paused=false,freeCamera=false,speed=0,steer=0,travel=0,delivered=false;const keys=new Set();
 const toast=document.querySelector('#toast');let toastTimer;
 function notify(message){toast.textContent=message;toast.style.opacity=1;clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.style.opacity=0,2600)}
-function reset(){player.position.copy(playerStart);player.rotation.set(0,playerStartAngle,0);speed=0;travel=0;delivered=false;document.querySelector('#cash').textContent='₹1,240';camera.position.copy(originalPosition);camera.zoom=defaultZoom;camera.updateProjectionMatrix();controls.target.copy(originalTarget);controls.update()}
+const cameraDefaults={zoom:defaultZoom,tilt:Math.atan2(originalPosition.y,Math.hypot(originalPosition.x,originalPosition.z))*180/Math.PI,rotation:Math.atan2(originalPosition.x,originalPosition.z)*180/Math.PI,panX:0,panZ:0};
+const cameraLimits={zoom:[.7,2.2],tilt:[25,75],rotation:[-75,75],panX:[-12,12],panZ:[-15,15]};
+const cameraSettings={...cameraDefaults};
+try{const saved=JSON.parse(localStorage.getItem('mud-meals-camera')||'null');if(saved&&typeof saved==='object')for(const key of Object.keys(cameraLimits)){const value=saved[key];if(typeof value==='number'&&Number.isFinite(value))cameraSettings[key]=THREE.MathUtils.clamp(value,...cameraLimits[key])}}catch{}
+function saveCamera(){try{localStorage.setItem('mud-meals-camera',JSON.stringify(cameraSettings))}catch{}}
+function applyCameraSettings(){
+ freeCamera=false;controls.enabled=false;document.querySelector('#view').textContent='Free camera';
+ // Drain any orbit damping before applying an exact slider position.
+ controls.enableDamping=false;controls.update();
+ controls.target.set(cameraSettings.panX,0,cameraSettings.panZ);
+ camera.position.setFromSphericalCoords(originalPosition.distanceTo(originalTarget),THREE.MathUtils.degToRad(90-cameraSettings.tilt),THREE.MathUtils.degToRad(cameraSettings.rotation)).add(controls.target);
+ camera.zoom=cameraSettings.zoom;camera.updateProjectionMatrix();controls.update();controls.enableDamping=true;
+ for(const key of Object.keys(cameraLimits)){const input=document.querySelector('#camera-'+key);input.value=cameraSettings[key];document.querySelector('#camera-'+key+'-value').textContent=key==='zoom'?cameraSettings[key].toFixed(2)+'×':key==='tilt'||key==='rotation'?Math.round(cameraSettings[key])+'°':cameraSettings[key].toFixed(1)}
+}
+function resetCameraSettings(){Object.assign(cameraSettings,cameraDefaults);applyCameraSettings();saveCamera()}
+for(const key of Object.keys(cameraLimits))document.querySelector('#camera-'+key).addEventListener('input',event=>{cameraSettings[key]=THREE.MathUtils.clamp(Number(event.target.value),...cameraLimits[key]);applyCameraSettings();saveCamera()});
+document.querySelector('#camera-settings').onclick=()=>{document.querySelector('#camera-panel').hidden=false;document.querySelector('.tools').hidden=true;document.querySelector('#tools-toggle').setAttribute('aria-expanded','false')};
+document.querySelector('#close-camera').onclick=()=>document.querySelector('#camera-panel').hidden=true;
+document.querySelector('#reset-camera').onclick=()=>{resetCameraSettings();notify('Camera reset')};
+applyCameraSettings();
+function reset(){player.position.copy(playerStart);player.rotation.set(0,playerStartAngle,0);speed=0;travel=0;delivered=false;document.querySelector('#cash').textContent='₹1,240';resetCameraSettings()}
 function hold(button,key){const el=document.querySelector(button);el.addEventListener('pointerdown',e=>{keys.add(key);el.setPointerCapture(e.pointerId)});for(const ev of['pointerup','pointercancel','lostpointercapture'])el.addEventListener(ev,()=>keys.delete(key))}
 hold('#accelerate','ArrowUp');hold('#brake','ArrowDown');
 for(const btn of document.querySelectorAll('[data-steer]')){const n=Number(btn.dataset.steer);btn.addEventListener('pointerdown',e=>{steer=n;btn.setPointerCapture(e.pointerId)});for(const ev of['pointerup','pointercancel','lostpointercapture'])btn.addEventListener(ev,()=>steer=0)}
 document.querySelector('#pause').onclick=()=>{paused=!paused;document.querySelector('#pause').textContent=paused?'▶':'Ⅱ';document.querySelector('#pause').setAttribute('aria-label',paused?'Resume animation':'Pause animation')};
-document.querySelector('#view').onclick=()=>{freeCamera=!freeCamera;controls.enabled=freeCamera;document.querySelector('#view').textContent=freeCamera?'Locked camera':'Free camera';notify(freeCamera?'Drag to orbit · Scroll to zoom':'Reference camera restored');if(!freeCamera){camera.position.copy(originalPosition);controls.target.copy(originalTarget);camera.zoom=defaultZoom;camera.updateProjectionMatrix();camera.lookAt(originalTarget)}};
+document.querySelector('#view').onclick=()=>{freeCamera=!freeCamera;controls.enabled=freeCamera;document.querySelector('#view').textContent=freeCamera?'Locked camera':'Free camera';notify(freeCamera?'Drag to orbit · Scroll to zoom':'Camera settings restored');if(!freeCamera)applyCameraSettings()};
 document.querySelector('#reset').onclick=()=>{reset();notify('Scene reset')};
 document.querySelector('#orders').onclick=()=>document.querySelector('#order-panel').hidden=false;
 document.querySelector('#close-orders').onclick=()=>document.querySelector('#order-panel').hidden=true;
@@ -272,7 +292,7 @@ document.querySelector('#enter-landscape').onclick=enterLandscape;
 document.querySelector('#fullscreen').onclick=async()=>{if(document.fullscreenElement){try{await document.exitFullscreen();screen.orientation?.unlock?.()}catch{}}else await enterLandscape()};
 document.addEventListener('fullscreenchange',resize);
 
-window.addEventListener('keydown',e=>{if(e.target.tagName==='BUTTON'&&e.code==='Space')return;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();keys.add(e.key);if(e.key.toLowerCase()==='h')toggleHUD();if(e.key.toLowerCase()==='r')reset();if(e.code==='Space')document.querySelector('#pause').click()});window.addEventListener('keyup',e=>keys.delete(e.key));window.addEventListener('blur',()=>{keys.clear();steer=0});
+window.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName))return;if(e.target.tagName==='BUTTON'&&e.code==='Space')return;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();keys.add(e.key);if(e.key.toLowerCase()==='h')toggleHUD();if(e.key.toLowerCase()==='r')reset();if(e.code==='Space')document.querySelector('#pause').click()});window.addEventListener('keyup',e=>keys.delete(e.key));window.addEventListener('blur',()=>{keys.clear();steer=0});
 const mapCanvas=document.querySelector('#minimap'),ctx=mapCanvas.getContext('2d');
 function minimap(){ctx.clearRect(0,0,300,300);ctx.fillStyle='#7f9952';ctx.fillRect(0,0,300,300);const project=(x,z)=>[150+x*5,155+z*4];
  for(let i=0;i<100;i++){const x=(Math.sin(i*12.7)*.5+.5)*300,y=(Math.cos(i*4.3)*.5+.5)*300;ctx.fillStyle=['#608c3e','#a2b563','#547b3b'][i%3];ctx.beginPath();ctx.arc(x,y,3+i%5,0,Math.PI*2);ctx.fill()}
@@ -302,5 +322,5 @@ window.addEventListener('resize',resize);
 new ResizeObserver(resize).observe(document.querySelector('#game-stage'));
 resize();minimap();
 renderer.setAnimationLoop(()=>{update(Math.min(clock.getDelta(),.05));graphics.render()});
-window.__MUD_MEALS__={scene,camera,renderer,player,reset,graphics,resize,roadFrame,roadDetails,vehicles,stats:()=>({triangles:renderer.info.render.triangles,calls:renderer.info.render.calls,geometries:renderer.info.memory.geometries,objects:scene.children.length})};
+window.__MUD_MEALS__={scene,camera,renderer,player,reset,cameraSettings,resetCameraSettings,graphics,resize,roadFrame,roadDetails,vehicles,stats:()=>({triangles:renderer.info.render.triangles,calls:renderer.info.render.calls,geometries:renderer.info.memory.geometries,objects:scene.children.length})};
 renderer.compileAsync(scene,camera).then(()=>{document.querySelector('#loading').style.opacity=0;setTimeout(()=>document.querySelector('#loading').remove(),450)}).catch(()=>document.querySelector('#loading').remove());
