@@ -241,12 +241,13 @@ person(-11.3,-4.1);person(-8.1,-2.9,'#d7ac43',true);person(-5.85,-2.9,'#6874ba',
 const leaves=[];
 function leafGeometry(length,width,droop=0,torn=false){const v=[],idx=[],uv=[];for(let i=0;i<=18;i++){const t=i/18,w=Math.sin(t*Math.PI)**.7*width;const y=Math.sin(t*Math.PI)*length*.21-t*t*droop;for(const s of[-1,0,1]){v.push(s*w*(torn&&s!==0&&i>3&&i%4===0?.64:1),y+(s===0?.055:0),t*length);uv.push((s+1)/2,t)}if(i<18){const k=i*3;idx.push(k,k+3,k+1,k+1,k+3,k+4,k+1,k+4,k+2,k+2,k+4,k+5)}}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(v,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();return g}
 const leafMaterials=['#63951f','#79b425','#9abf2a','#4c8620'].map(c=>{const m=mat(c);m.side=THREE.DoubleSide;m.map=detailTexture('leaf');m.roughness=.68;m.needsUpdate=true;return m});
+const palmRing=new THREE.TorusGeometry(1,.065,8,16);
 const palmLeaf=leafGeometry(4.3,.025,1.8),palmLeaflet=leafGeometry(1,.055,.28),bananaLeaf=leafGeometry(2.8,.50,1.05,true);
 function treeClearance(x,z){return !roadPoints.some(p=>Math.hypot(p[0]-x,p[1]-z)<7.6)&&!bp.some(p=>Math.hypot(p[0]-x,p[1]-z)<5)}
 function palm(x,z,h=8){
  if(!treeClearance(x,z))return;
  const sway=rand(-.7,.7),trunk=mat('#8b7753');
- for(let i=0;i<24;i++){const t=i/24,next=(i+1)/24;bar(trunk,[x+sway*t*t,h*t,z],[x+sway*next*next,h*next,z],.19-.07*t);put(new THREE.TorusGeometry(.19-.07*t,.012,8,16),mat('#67573f'),[x+sway*t*t,h*t,z],[1,1,1],[Math.PI/2,0,0]);}
+ for(let i=0;i<24;i++){const t=i/24,next=(i+1)/24;bar(trunk,[x+sway*t*t,h*t,z],[x+sway*next*next,h*next,z],.19-.07*t);put(palmRing,mat('#67573f'),[x+sway*t*t,h*t,z],[.19-.07*t,.19-.07*t,.19-.07*t],[Math.PI/2,0,0]);}
  const cx=x+sway;
  for(let i=0;i<12;i++){
   const a=i*6.283/12+rand(-.11,.11),length=rand(3.4,4.5),lift=i<4?.38:.05;
