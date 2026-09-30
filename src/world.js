@@ -81,10 +81,16 @@ export function createExtendedWorld(h) {
     board('LIGHTHOUSE COAST',-117,42);for(let z=-10;z<76;z+=10)palm(-122,z,rand(8,11));
     for(let i=0;i<16;i++){const g=new THREE.PlaneGeometry(1,1);g.rotateX(-Math.PI/2);const wave=mesh(g,new THREE.MeshBasicMaterial({color:'#e5f4e9',transparent:true,opacity:.24,depthWrite:false}));wave.position.set(-143-i*.8,.05,-15+i*8);wave.scale.set(.45,1,14)}break;
    case 'fort-kochi':
-    footprints.push({x:-113,z:-47,w:9,d:10});
-    for(let i=0;i<6;i++){const x=-106,z=-85+i*9;building(x,z,7,6,5,['#e0c07b','#d4d8cf','#d99e72'][i%3],true);addSign(['SPICE MARKET','BAKERY','FORT CHAYA'][i%3],x,3.5,z+3.07,6,.8,'#3f6458','#f3e6c0',40);crate(x-2,z+4);pot(x+2,z+4);person(x,z+4,['#bb7139','#467e89','#ecd7ae'][i%3]);}
-    box(M.white,-113,4.3,-48,9,8.6,7);roof(-113,-48,9.5,7.5,8.6,3);box(M.white,-113,8.5,-43.7,2.8,17,3);put(new THREE.ConeGeometry(2.2,3.7,32),mat('#737a70'),[-113,18.7,-43.7]);bar(M.darkWood,[-113,20,-43.7],[-113,22,-43.7],.09);bar(M.darkWood,[-113.7,21.4,-43.7],[-112.3,21.4,-43.7],.09);
-    box(M.wood,-113,1.8,-42.15,1.8,3.5,.12);for(const x of[-116,-110]){box(M.glass,x,4.8,-44.45,1,2.6,.08);bar(M.cream,[x,3.6,-44.3],[x,6,-44.3],.04)}board('FORT KOCHI',-85,-54);break;
+    footprints.push({x:-119,z:-47,w:9,d:10});
+    for(let i=0;i<6;i++){
+     const x=-106,z=-85+i*9,title=['SPICE MARKET','BAKERY','FORT CHAYA'][i%3];building(x,z,7,6,5,['#e0c07b','#d4d8cf','#d99e72'][i%3],true);
+     box(M.darkWood,x+3.54,1.55,z,.12,2.7,5.2);box(M.glass,x+3.62,1.55,z,.03,2.35,4.9);
+     for(let zz=-2.4;zz<2.6;zz+=1.2)box(M.wood,x+3.65,1.6,z+zz,.08,2.6,.09);
+     for(let zz=-3;zz<3;zz+=.4)box(i%2?M.cream:mat('#508d8d'),x+4.2,2.9,z+zz,1.45,.12,.37);
+     addSign(title,x+3.65,3.65,z,6,.85,'#3f6458','#f3e6c0',40,Math.PI/2);crate(x+4.8,z-1.5);pot(x+4.8,z+2);person(x+4.7,z,['#bb7139','#467e89','#ecd7ae'][i%3]);
+    }
+    box(M.white,-119,4.3,-48,9,8.6,7);roof(-119,-48,9.5,7.5,8.6,3);box(M.white,-119,8.5,-43.7,2.8,17,3);put(new THREE.ConeGeometry(2.2,3.7,32),mat('#737a70'),[-119,18.7,-43.7]);bar(M.darkWood,[-119,20,-43.7],[-119,22,-43.7],.09);bar(M.darkWood,[-119.7,21.4,-43.7],[-118.3,21.4,-43.7],.09);
+    box(M.wood,-119,1.8,-42.15,1.8,3.5,.12);for(const x of[-122,-116]){box(M.glass,x,4.8,-44.45,1,2.6,.08);bar(M.cream,[x,3.6,-44.3],[x,6,-44.3],.04)}board('FORT KOCHI',-85,-54);break;
    case 'hills':
     box(M.stone,-59,-1.5,-126,8,3,6);building(-59,-126,7,5,3,'#e3c782',true);addSign('HILL ROAD\nCHAYA & SNACKS',-59,2.3,-123.4,6,1.1,'#733e26','#ffe3ad',42);table(-58,-122);chair(-58,-121);person(-58,-121,'#ddaa69',true);board('VIEWPOINT  →',-53,-120);break;
    case 'viewpoint':
