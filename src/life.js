@@ -136,6 +136,6 @@ export function createWorldLife(h){
   for(const n of npcs){n.g.position.copy(n.home);n.g.rotation.y=n.homeAngle;n.wait=n.variant*.63;n.distance=0;n.wave=0;n.state=n.sitting?'sitting':'idle';n.standing.g.position.y=0;n.standing.g.visible=!n.sitting;if(n.sitting)n.sitting.g.visible=true;animateRig(n.standing,0,0,false,0);if(n.sitting)animateRig(n.sitting,0,0,false,0);}
   playerLast.copy(player.position);for(const wheel of playerWheels)wheel.rotation.x=0;windTime.value=0;sun.shadow.needsUpdate=true;
  }
- function audit(){return {plantsInBuildings:plantings.filter(p=>plotBlocked(p.x,p.z,p.radius,true)),plantsInWater:plantings.filter(p=>waterAt(p.x,p.z)),pedestrians:npcs.length,walkingRoutes:npcs.filter(n=>n.pathLength>0).length,traffic:traffic.length};}
+ function audit(){return {plantsInRoad:plantings.filter(p=>h.roadClearance(p.x,p.z)<p.radius+.35),plantsInBuildings:plantings.filter(p=>plotBlocked(p.x,p.z,p.radius,true)),plantsInWater:plantings.filter(p=>waterAt(p.x,p.z)),pedestrians:npcs.length,walkingRoutes:npcs.filter(n=>n.pathLength>0).length,traffic:traffic.length};}
  return {update,reset,blocked,traffic,npcs,audit,walkable,overlaps};
 }

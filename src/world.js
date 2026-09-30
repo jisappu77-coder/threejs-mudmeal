@@ -1,8 +1,19 @@
 import * as THREE from 'three';
 
+export function createExtensionRoad(){
+ const V=(x,z,y=0)=>new THREE.Vector3(x,y+.16,z);
+ const extension=new THREE.CatmullRomCurve3([
+  V(26,-18.3),V(28,-36),V(58,-54),V(97,-49),V(128,-15),V(137,19),V(130,58),V(103,91),V(55,115),V(5,98),V(-57,86),V(-110,30),V(-100,-20),V(-80,-62),V(-63,-96,8),V(-48,-124,16),V(-20,-132,20),V(10,-150,24),V(31,-120,18),V(0,-90,7),V(-18,-40),
+ ],false,'centripetal');
+ const roadPoints=extension.getPoints(1100);
+ // Cubic height interpolation can dip below flat ground before a climb.
+ for(const p of roadPoints)p.y=Math.max(.16,p.y);
+ return {curve:extension,points:roadPoints};
+}
+
 // Districts are authored separately so instanced scenery can be culled outside the view.
 export function createExtendedWorld(h) {
- const {scene,M,mat,box,cyl,ell,bar,put,mesh,flush,building:baseBuilding,roof,palm,banana,shrub,person,pot,crate,table,chair,addSign,fence,rand,riceGeometry,riceMaterials,waterMaterial,setHeight,spawnVehicle,reservePlot,plotBlocked,waterAt,getHeight,registerRoad,registerWater}=h;
+ const {scene,M,mat,box,cyl,ell,bar,put,mesh,flush,building:baseBuilding,roof,palm,banana,shrub,person,pot,crate,table,chair,addSign,fence,rand,riceGeometry,riceMaterials,waterMaterial,setHeight,spawnVehicle,reservePlot,plotBlocked,waterAt,getHeight,registerWater}=h;
  const footprints=[];
  function building(x,z,w,d,...args){footprints.push({x,z,w,d});return baseBuilding(x,z,w,d,...args)}
  const districts=[
@@ -18,13 +29,7 @@ export function createExtendedWorld(h) {
   {id:'viewpoint',name:'Backwater Viewpoint',x:10,z:-150,y:24},
  ];
  const V=(x,z,y=0)=>new THREE.Vector3(x,y+.16,z);
- const extension=new THREE.CatmullRomCurve3([
-  V(26,-18.3),V(28,-36),V(58,-54),V(97,-49),V(128,-15),V(137,19),V(130,58),V(103,91),V(55,115),V(5,98),V(-57,86),V(-110,30),V(-100,-20),V(-80,-62),V(-63,-96,8),V(-48,-124,16),V(-20,-132,20),V(10,-150,24),V(31,-120,18),V(0,-90,7),V(-18,-40),
- ],false,'centripetal');
- const roadPoints=extension.getPoints(1100);
- // Cubic height interpolation can dip below flat ground before a climb.
- for(const p of roadPoints)p.y=Math.max(.16,p.y);
- registerRoad(roadPoints);
+ const {curve:extension,points:roadPoints}=h.extensionLayout;
  for(const area of [{x:89,z:-92,w:78,d:64,ellipse:true},{x:-247,z:-15,w:200,d:390},{x:56,z:155,w:95,d:20},{x:2,z:114,w:28,d:24}])registerWater(area);
  function roadRibbon(width,lift,material){
   const vertices=[],uv=[],indices=[];
@@ -76,6 +81,7 @@ export function createExtendedWorld(h) {
     building(57,-67,8,6,3.6,'#d9c291',true);addSign('KETTUVALLAM\nTEA SHOP',57,3,-63.9,7,1.15,'#4c3824','#f7e2a0',46);
     box(M.wood,58,.1,-62,13,.2,3);setHeight(.2);for(let i=0;i<3;i++){table(53+i*3,-61.7);chair(53+i*3,-60.8);person(53+i*3,-60.8,['#c87538','#548c91','#efe4c6'][i],true)}setHeight(0);
     for(const [x,z,a]of[[77,-72,.5],[97,-90,-.35],[78,-97,.8]])houseboat(x,z,a);
+    reservePlot('pier',68.45,-66,6.3,1.8);
     for(let i=0;i<8;i++){box(M.wood,66+i*.7,.18,-66, .66,.2,1.8);cyl(M.wood,66+i*.7,-.4,-66,.08,1.3)}
     break;
    case 'paddy':

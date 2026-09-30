@@ -67,7 +67,7 @@ try {
     const result={audit:life.audit(),overlap,walked,waved,moved:life.traffic.some((v,i)=>v.g.position.distanceTo(starts[i])>1)};
     a.reset();return result;
   });
-  assert.equal(lifeChecks.audit.walkingRoutes,lifeChecks.audit.pedestrians);assert.equal(lifeChecks.audit.plantsInBuildings.length,0);assert.equal(lifeChecks.audit.plantsInWater.length,0);
+  assert.equal(lifeChecks.audit.walkingRoutes,lifeChecks.audit.pedestrians);assert.equal(lifeChecks.audit.plantsInRoad.length,0);assert.equal(lifeChecks.audit.plantsInBuildings.length,0);assert.equal(lifeChecks.audit.plantsInWater.length,0);
   assert.equal(lifeChecks.overlap,false);assert.equal(lifeChecks.walked,true);assert.equal(lifeChecks.waved,true);assert.equal(lifeChecks.moved,true);
   for(const activity of ['walking','greeting']){
     const png=await page.evaluate(activity=>{

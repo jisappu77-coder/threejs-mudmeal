@@ -2,7 +2,7 @@ import * as THREE from 'three';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { mergeVertices } from 'three/addons/utils/BufferGeometryUtils.js';
 import { setupGraphics } from './graphics.js';
-import { createExtendedWorld } from './world.js';
+import { createExtendedWorld, createExtensionRoad } from './world.js';
 import { createWorldLife } from './life.js';
 
 // All scenery is actual geometry. The supplied reference is only shown in its comparison overlay.
@@ -105,6 +105,7 @@ for(let z=-48;z<47;z+=1.1){const c=roadFrame(z);if(Math.round((z+48)/1.1)%2===0)
 // Junction bends away from the market and onto the canal bridge.
 const branchCurve=new THREE.CatmullRomCurve3([new THREE.Vector3(roadX(4),0,4),new THREE.Vector3(3.4,0,2.3),new THREE.Vector3(6.2,0,-7),new THREE.Vector3(10,0,-10),new THREE.Vector3(16.2,0,-9.7),new THREE.Vector3(18.2,0,-14),new THREE.Vector3(26,0,-18.3)]);
 const bp=branchCurve.getPoints(70).map(p=>[p.x,p.z]);ribbon(bp,4.2,.055,M.curb);ribbon(bp,3.55,.07,M.road);
+const extensionLayout=createExtensionRoad();extraRoads.push(extensionLayout.points);
 // Sandy footpath and terraced paddy fields.
 ribbon(canalPoints.map(([x,z])=>[x+7.3,z]),2,.045,M.soil);
 for(let z=-40;z<39;z+=10){box(mat('#789442'),canalX(z)+17,.05,z,14,.24,8.8);box(M.soil,canalX(z+4.5)+17,.21,z+4.5,16,.26,.55);}
@@ -310,12 +311,12 @@ function personPose(parent,shirt,seated,variant){
   const hip=[side*.094,hipY-.02,0],knee=[side*.102,seated?.58:.48,seated?.3:0],ankle=[side*.104,.12,seated?.32:.025];
   const leg=pivot(g,hip),shin=pivot(leg,local(knee,hip));legs.push(leg);knees.push(shin);
   organicLimb(leg,pants,[[0,0,0],local(knee,hip)],[.084,.083,.065]);
-  organicLimb(shin,pants,[[0,0,0],local(ankle,knee)],[.068,.06,.035]);
+  organicLimb(shin,pants,[[0,0,0],local(ankle,knee)],[.068,.06,.035]);ell(pants,0,0,0,.068,.066,.068,shin);
   const shoe=local(ankle,knee);ell(M.black,shoe[0],shoe[1]-.048,shoe[2]+.05,.066,.045,.124,shin);
   const shoulder=[side*.177,shoulderY-.025,0],elbow=[side*.24,shoulderY-.22,seated?.15:.025],palm=[side*.2,seated?.98:hipY+.05,seated?.38:.04];
   const arm=pivot(torso,shoulder),forearm=pivot(arm,local(elbow,shoulder));arms.push(arm);elbows.push(forearm);
   organicLimb(arm,skin,[[0,0,0],local(elbow,shoulder)],[.049,.049,.043]);
-  organicLimb(forearm,skin,[[0,0,0],local(palm,elbow)],[.043,.038,.029]);
+  organicLimb(forearm,skin,[[0,0,0],local(palm,elbow)],[.043,.038,.029]);ell(skin,0,0,0,.043,.042,.043,forearm);
   const sleeveEnd=new THREE.Vector3(...elbow).sub(new THREE.Vector3(...shoulder)).multiplyScalar(.6).toArray();
   organicLimb(arm,cloth,[[0,0,0],sleeveEnd],[.069,.066,.062]);hand(forearm,skin,local(palm,elbow),seated);
  }
@@ -331,6 +332,10 @@ function person(x,z,shirt='#318ca1',seated=false,parent=scene){
  return g;
 }
 person(-11.3,-4.1);person(-8.1,-2.9,'#d7ac43',true);person(-5.85,-2.9,'#6874ba',true);person(-.2,-.95,'#e5b22c',true);person(1,-.95,'#e6e6db',true);person(18.3,-17.8,'#e4e9dc');person(-19.4,14.2,'#8baa40');
+// Power lines and roadside lamps.
+function wire(a,b){const curve=new THREE.CatmullRomCurve3([new THREE.Vector3(...a),new THREE.Vector3((a[0]+b[0])/2,(a[1]+b[1])/2-.5,(a[2]+b[2])/2),new THREE.Vector3(...b)]);mesh(new THREE.TubeGeometry(curve,24,.022,6,false),mat('#484940'))}
+for(let station=-32;station<33;station+=11){const p=roadFrame(station,6.3),next=roadFrame(station+11,6.3),x=p.x,z=p.z;reservePlot('pole',x,z,.3,.3);cyl(mat('#656965'),x,3.5,z,.12,7);box(M.wood,x,6.3,z,1.3,.10,.15);for(const d of[-.5,.5]){cyl(M.black,x+d,6.45,z,.035,.4);for(const y of[6.36,6.44,6.52])cyl(M.white,x+d,y,z,.085,.045);if(z<22)wire([x+d,6.6,z],[next.x+d,6.6,next.z])}}
+for(let station=-30;station<32;station+=12){const p=roadFrame(station,-6.3),x=p.x,z=p.z;reservePlot('pole',x,z,.2,.2);cyl(M.black,x,2.5,z,.065,5);bar(M.black,[x,4.9,z],[x+.7,5.2,z],.04);box(M.black,x+.8,5.17,z,.4,.12,.22);box(mat('#ffffbc'),x+.8,5.1,z,.3,.02,.17)}
 // Smooth bent tropical leaves, with a central vein and fine leaflets for the palms.
 const leaves=[];
 function leafGeometry(length,width,droop=0,torn=false){const v=[],idx=[],uv=[];for(let i=0;i<=18;i++){const t=i/18,w=Math.sin(t*Math.PI)**.7*width;const y=Math.sin(t*Math.PI)*length*.21-t*t*droop;for(const s of[-1,0,1]){v.push(s*w*(torn&&s!==0&&i>3&&i%4===0?.64:1),y+(s===0?.055:0),t*length);uv.push((s+1)/2,t)}if(i<18){const k=i*3;idx.push(k,k+3,k+1,k+1,k+3,k+4,k+1,k+4,k+2,k+2,k+4,k+5)}}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(v,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();return g}
@@ -393,10 +398,6 @@ for(let i=0;i<780;i++){const x=rand(-29,19),z=rand(-43,35);if(clearForPlant(x,z)
 for(let z=-40;z<35;z+=1.4)for(const side of[-1,1]){const p=roadFrame(z,side*7.2);if(clearForPlant(p.x,p.z))shrub(p.x,p.z,.62)}
 for(const [x,z,h]of[[-13,19,8.5],[-25,0,7.5],[3,-13,8],[-4,-32,8.5],[5,18,7.5]])palm(x,z,h);
 for(const [x,z,k]of[[-17,18,1.1],[-22,4,1],[-8,-15,1.1],[5,-18,1.2],[13,18,1],[-22,-21,1.1]])banana(x,z,k);
-// Power lines and roadside lamps.
-function wire(a,b){const curve=new THREE.CatmullRomCurve3([new THREE.Vector3(...a),new THREE.Vector3((a[0]+b[0])/2,(a[1]+b[1])/2-.5,(a[2]+b[2])/2),new THREE.Vector3(...b)]);mesh(new THREE.TubeGeometry(curve,24,.022,6,false),mat('#484940'))}
-for(let station=-32;station<33;station+=11){const p=roadFrame(station,6.3),next=roadFrame(station+11,6.3),x=p.x,z=p.z;reservePlot('pole',x,z,.3,.3);cyl(mat('#656965'),x,3.5,z,.12,7);box(M.wood,x,6.3,z,1.3,.10,.15);for(const d of[-.5,.5]){cyl(M.black,x+d,6.45,z,.035,.4);for(const y of[6.36,6.44,6.52])cyl(M.white,x+d,y,z,.085,.045);if(z<22)wire([x+d,6.6,z],[next.x+d,6.6,next.z])}}
-for(let station=-30;station<32;station+=12){const p=roadFrame(station,-6.3),x=p.x,z=p.z;reservePlot('pole',x,z,.2,.2);cyl(M.black,x,2.5,z,.065,5);bar(M.black,[x,4.9,z],[x+.7,5.2,z],.04);box(M.black,x+.8,5.17,z,.4,.12,.22);box(mat('#ffffbc'),x+.8,5.1,z,.3,.02,.17)}
 // Rounded vehicle bodies use bevelled extrusions rather than coarse polygons.
 function roundBox(w,h,d,r=.1){const s=new THREE.Shape();s.moveTo(-w/2+r,-h/2);s.lineTo(w/2-r,-h/2);s.quadraticCurveTo(w/2,-h/2,w/2,-h/2+r);s.lineTo(w/2,h/2-r);s.quadraticCurveTo(w/2,h/2,w/2-r,h/2);s.lineTo(-w/2+r,h/2);s.quadraticCurveTo(-w/2,h/2,-w/2,h/2-r);s.lineTo(-w/2,-h/2+r);s.quadraticCurveTo(-w/2,-h/2,-w/2+r,-h/2);let g=new THREE.ExtrudeGeometry(s,{depth:d-2*r,steps:1,bevelEnabled:true,bevelSegments:8,steps:1,bevelSize:r,bevelThickness:r,curveSegments:16});g.translate(0,0,-d/2+r);g.computeBoundingBox();const size=new THREE.Vector3();g.boundingBox.getSize(size);g.scale(w/size.x,h/size.y,d/size.z);g.center();g.deleteAttribute('uv');g.deleteAttribute('normal');g=mergeVertices(g,1e-5);g.computeVertexNormals();return g}
 const vehicles=[];
@@ -594,7 +595,7 @@ for(const g of bikes)g.scale.setScalar(1.3);
 const playerStart=player.position.clone(),playerStartAngle=player.rotation.y;
 // Keep district instance batches independent of the original market.
 flush();scene.add(sun.target);
-const extendedWorld=createExtendedWorld({scene,M,mat,box,cyl,ell,bar,put,mesh,flush,building,roof,palm,banana,shrub,person,pot,crate,table,chair,addSign,fence,rand,riceGeometry,riceMaterials,waterMaterial,roadFrame,sun,renderer,setHeight:h=>authoringHeight=h,reservePlot,plotBlocked,waterAt,getHeight:()=>authoringHeight,registerRoad:points=>extraRoads.push(points),registerWater:area=>waterAreas.push(area),spawnVehicle:(...args)=>{const g=vehicle(...args);vehicles.pop();return g}});
+const extendedWorld=createExtendedWorld({extensionLayout,scene,M,mat,box,cyl,ell,bar,put,mesh,flush,building,roof,palm,banana,shrub,person,pot,crate,table,chair,addSign,fence,rand,riceGeometry,riceMaterials,waterMaterial,roadFrame,sun,renderer,setHeight:h=>authoringHeight=h,reservePlot,plotBlocked,waterAt,getHeight:()=>authoringHeight,registerWater:area=>waterAreas.push(area),spawnVehicle:(...args)=>{const g=vehicle(...args);vehicles.pop();return g}});
 const routeCurve=extendedWorld.route;
 const routeLength=routeCurve.getLength();let routeStart=0,routeStartDistance=Infinity;
 for(let i=0;i<=1000;i++){const t=i/1000,p=routeCurve.getPointAt(t),distance=(p.x-playerStart.x)**2+(p.z-playerStart.z)**2;if(distance<routeStartDistance){routeStartDistance=distance;routeStart=t}}

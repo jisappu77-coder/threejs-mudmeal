@@ -1,6 +1,6 @@
 // Construct the complete real Three.js scene without a browser, then verify geometry and controls.
 import fs from 'node:fs';
-const {createExtendedWorld}=await import('../src/world.js');
+const {createExtendedWorld,createExtensionRoad}=await import('../src/world.js');
 const {createWorldLife}=await import('../src/life.js');
 const {setupGraphics}=await import('../src/graphics.js');
 import assert from 'node:assert/strict';
@@ -17,7 +17,7 @@ let pixelRatio=1;
 const fakeRenderer={getPixelRatio:()=>pixelRatio,capabilities:{maxSamples:4},setPixelRatio:r=>pixelRatio=r,setSize:noop,shadowMap:{},setAnimationLoop:noop,render:noop,compileAsync:()=>Promise.resolve(),info:{render:{triangles:0,calls:0},memory:{geometries:0}}};
 const FakeControls=class {constructor(){this.target=new THREE.Vector3()}update(){}};
 let source=fs.readFileSync('./src/scene.js','utf8').replace(/^import .*;\n/gm,'').replace(/const renderer = new THREE.WebGLRenderer\([^\n]*\);/,'const renderer = fakeRenderer;').replace('new OrbitControls(camera,canvas)','new FakeControls(camera,canvas)');
-new Function('THREE','fakeRenderer','FakeControls','setupGraphics','createExtendedWorld','mergeVertices','createWorldLife',source)(THREE,fakeRenderer,FakeControls,setupGraphics,createExtendedWorld,mergeVertices,createWorldLife);
+new Function('THREE','fakeRenderer','FakeControls','setupGraphics','createExtendedWorld','mergeVertices','createWorldLife','createExtensionRoad',source)(THREE,fakeRenderer,FakeControls,setupGraphics,createExtendedWorld,mergeVertices,createWorldLife,createExtensionRoad);
 const app=window.__MUD_MEALS__;assert.ok(app.scene.children.length>100);assert.equal(app.camera.isPerspectiveCamera,true);assert.equal(app.graphics.ao.ssaoMaterial.defines.PERSPECTIVE_CAMERA,1);assert.equal(app.graphics.composer.passes.length,3);
 let meshes=0,triangles=0,instances=0;
 app.scene.traverse(o=>{if(!o.isMesh)return;meshes++;const p=o.geometry.attributes.position;assert.ok(p);for(const n of p.array)assert.ok(Number.isFinite(n));const mult=o.isInstancedMesh?o.count:1;instances+=mult;triangles+=(o.geometry.index?o.geometry.index.count:p.count)/3*mult;if(o.isInstancedMesh)for(const n of o.instanceMatrix.array)assert.ok(Number.isFinite(n))});
@@ -33,10 +33,11 @@ els.get('#reference').onclick();assert.equal(els.get('#reference-panel').hidden,
 els.get('#pause').onclick();assert.equal(els.get('#pause').textContent,'▶');els.get('#pause').onclick();assert.equal(els.get('#pause').textContent,'Ⅱ');
 // Kerbs must sit at the road edges and paint must follow the tangent.
 for(const d of app.roadDetails){const center=app.roadFrame(d.sourceZ);assert.ok(Math.abs(d.angle-center.angle)<1e-8);if(d.kind==='kerb')assert.ok(Math.abs(Math.hypot(d.x-center.x,d.z-center.z)-4.97)<1e-7)}
-const audit=app.life.audit();console.log('Life audit',JSON.stringify(audit));assert.equal(audit.plantsInBuildings.length,0);assert.equal(audit.plantsInWater.length,0);
+const audit=app.life.audit();console.log('Life audit',JSON.stringify(audit));assert.equal(audit.plantsInRoad.length,0);assert.equal(audit.plantsInBuildings.length,0);assert.equal(audit.plantsInWater.length,0);
 assert.equal(audit.walkingRoutes,audit.pedestrians);assert.ok(audit.traffic>30);
 for(const b of app.extendedWorld.footprints)for(const p of app.plantings){const gap=Math.hypot(Math.max(0,Math.abs(p.x-b.x)-b.w/2),Math.max(0,Math.abs(p.z-b.z)-b.d/2));assert.ok(gap>=p.radius,`Plant overlaps a district structure at ${b.x},${b.z}`);}
 for(const n of app.npcs)if(n.pathLength)for(let i=0;i<=16;i++)assert.ok(app.life.walkable(n.path[0].clone().lerp(n.path[1],i/16),n));
+for(const b of app.plots)for(const p of app.plantings){const gap=Math.hypot(Math.max(0,Math.abs(p.x-b.x)-b.w/2),Math.max(0,Math.abs(p.z-b.z)-b.d/2));assert.ok(gap>=p.radius,`Vegetation overlaps ${b.kind} at ${b.x},${b.z}`);}
 for(const p of app.extendedWorld.roadPoints){
  const lakeDistance=((p.x-89)/39)**2+((p.z+92)/32)**2;assert.ok(lakeDistance>1,'Road center must stay outside the lake');
 }
