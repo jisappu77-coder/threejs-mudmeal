@@ -1,14 +1,18 @@
 import * as THREE from 'three';
 
-export function createExtensionRoad(){
+export function createExtensionRoad(roadFrame){
  const V=(x,z,y=0)=>new THREE.Vector3(x,y+.16,z);
  const extension=new THREE.CatmullRomCurve3([
-  V(26,-18.3),V(28,-36),V(58,-54),V(97,-49),V(128,-15),V(137,19),V(130,58),V(103,91),V(55,115),V(5,98),V(-57,86),V(-110,30),V(-100,-20),V(-80,-62),V(-63,-96,8),V(-48,-124,16),V(-20,-132,20),V(10,-150,24),V(31,-120,18),V(0,-90,7),V(-18,-40),
+  V(roadFrame(46).x,46),V(6,62),V(30,70),V(49,49),V(49,8),V(48,-23),V(58,-54),V(97,-49),V(128,-15),V(137,19),V(130,58),V(103,91),V(55,115),V(5,98),V(-57,86),V(-110,30),V(-100,-20),V(-80,-62),V(-63,-96,8),V(-48,-124,16),V(-20,-132,20),V(10,-150,24),V(31,-120,18),V(0,-90,7),V(roadFrame(-52).x,-66),V(roadFrame(-52).x,-52),
  ],false,'centripetal');
  const roadPoints=extension.getPoints(1100);
  // Cubic height interpolation can dip below flat ground before a climb.
  for(const p of roadPoints)p.y=Math.max(.16,p.y);
- return {curve:extension,points:roadPoints};
+ // The rendered road, rider and traffic all share this same closed centerline.
+ const town=Array.from({length:197},(_,i)=>{const z=-52+i*.5,p=roadFrame(z);return V(p.x,p.z)});
+ const circuit=new THREE.CatmullRomCurve3([...roadPoints.slice(0,-1),...town.slice(0,-1)].reverse(),true,'centripetal');
+ circuit.arcLengthDivisions=5000;
+ return {curve:extension,points:roadPoints,circuit};
 }
 
 // Districts are authored separately so instanced scenery can be culled outside the view.
@@ -37,8 +41,8 @@ export function createExtendedWorld(h) {
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(indices);g.computeVertexNormals();mesh(g,material);
  }
  box(M.grass,55,-.65,-5,370,1.2,350);
- roadRibbon(9.2,.025,M.curb);roadRibbon(8.4,.055,M.road);
- for(let i=0;i<roadPoints.length-1;i+=5){const p=roadPoints[i],q=roadPoints[i+1],angle=Math.atan2(q.x-p.x,q.z-p.z);box(M.line,p.x,p.y-.09,p.z,.13,.012,1.15,null,angle);for(const s of[-1,1]){const x=p.x+s*Math.cos(angle)*4.45,z=p.z-s*Math.sin(angle)*4.45;box(M.white,x,p.y+.11,z,.24,.28,1.1,null,angle);if(i%15===0){reservePlot('pole',x,z,.2,.2);cyl(M.darkWood,x,p.y+.68,z,.055,1.35);if(i+15<roadPoints.length){const next=roadPoints[i+15],after=roadPoints[Math.min(i+16,roadPoints.length-1)],angle2=Math.atan2(after.x-next.x,after.z-next.z);bar(M.wood,[x,p.y+1,z],[next.x+s*Math.cos(angle2)*4.45,next.y+1,next.z-s*Math.sin(angle2)*4.45],.04)}}}}
+ roadRibbon(9.2,.025,M.curb);roadRibbon(8.4,.045,M.road);
+ for(let i=0;i<roadPoints.length-1;i+=5){const p=roadPoints[i],q=roadPoints[i+1],angle=Math.atan2(q.x-p.x,q.z-p.z);box(M.line,p.x,p.y-.09,p.z,.13,.012,1.15,null,angle);for(const s of[-1,1]){const x=p.x+s*Math.cos(angle)*4.45,z=p.z-s*Math.sin(angle)*4.45;if(h.branchDistance(x,z)<2.6)continue;box(M.white,x,p.y+.11,z,.24,.28,1.1,null,angle);if(i%15===0){reservePlot('pole',x,z,.2,.2);cyl(M.darkWood,x,p.y+.68,z,.055,1.35);if(i+15<roadPoints.length){const next=roadPoints[i+15],after=roadPoints[Math.min(i+16,roadPoints.length-1)],angle2=Math.atan2(after.x-next.x,after.z-next.z);bar(M.wood,[x,p.y+1,z],[next.x+s*Math.cos(angle2)*4.45,next.y+1,next.z-s*Math.sin(angle2)*4.45],.04)}}}}
  // A continuous raised terrain surface follows the northern hill road.
  const hillSamples=roadPoints.filter(p=>p.y>1),terrain=new THREE.PlaneGeometry(180,105,100,60);terrain.rotateX(-Math.PI/2);terrain.translate(-40,0,-132.5);
  function hillHeight(x,z){let d=Infinity,level=0;for(const p of hillSamples){const q=(p.x-x)**2+(p.z-z)**2;if(q<d){d=q;level=p.y-.30}}return Math.max(-.05,level*Math.exp(-d/350)-.07)}
@@ -137,9 +141,9 @@ export function createExtendedWorld(h) {
   if(i%90===6)flush();
  }
  flush();setHeight(0);
- const original=[...[28,20,12,6].map(z=>{const p=h.roadFrame(z,-2.2);return V(p.x,p.z,-.03)}),V(3.4,2.3),V(6,-9.7,1.13),V(16.4,-9.7,1.13),V(18.2,-14),V(26,-18.3)];
- const returnRoad=[-28,-18,-8,4,12,20].map(z=>{const p=h.roadFrame(z,2.2);return V(p.x,p.z,-.03)});
- const route=new THREE.CatmullRomCurve3([...original,...extension.points.slice(1),...returnRoad],true,'centripetal');
+ const centerline=h.extensionLayout.circuit;
+ const lanePoints=centerline.getSpacedPoints(2400).slice(0,-1).map((p,i)=>{const t=i/2400,a=centerline.getTangentAt(t),n=new THREE.Vector3(a.z,0,-a.x).normalize();return p.addScaledVector(n,2.1)});
+ const route=new THREE.CatmullRomCurve3(lanePoints,true,'centripetal');route.arcLengthDivisions=5000;
  // getPointAt makes speed independent of the differently spaced control points.
  for(const d of districts){let nearest=Infinity;for(let i=0;i<2400;i++){const t=i/2400,p=route.getPointAt(t),dist=(p.x-d.x)**2+(p.z-d.z)**2;if(dist<nearest){nearest=dist;d.routeT=t}}}
  const rainPositions=new Float32Array(900*6);for(let i=0;i<900;i++){const x=rand(-25,25),y=rand(0,30),z=rand(-25,25);rainPositions.set([x,y,z,x-.12,y-.9,z],i*6)}
@@ -158,6 +162,6 @@ export function createExtendedWorld(h) {
   for(let i=0;i<boats.length;i++){boats[i].position.y=.13+Math.sin(elapsed*.7+i)*.025;boats[i].rotation.z=Math.sin(elapsed*.45+i)*.003}
  }
  setWeather('day');
- return {districts,footprints,route,roadPoints,groundHeight:hillHeight,setWeather,update,get weather(){return weather},nearest(position){return districts.reduce((a,b)=>Math.hypot(a.x-position.x,a.z-position.z)<Math.hypot(b.x-position.x,b.z-position.z)?a:b)}};
+ return {districts,footprints,route,centerline,roadPoints,groundHeight:hillHeight,setWeather,update,get weather(){return weather},nearest(position){return districts.reduce((a,b)=>Math.hypot(a.x-position.x,a.z-position.z)<Math.hypot(b.x-position.x,b.z-position.z)?a:b)}};
 }
 

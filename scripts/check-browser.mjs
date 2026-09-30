@@ -31,6 +31,10 @@ try {
   const stable=await page.evaluate(()=>{const a=window.__MUD_MEALS__,canvas=a.renderer.domElement;a.graphics.render();const first=canvas.toDataURL();a.graphics.render();return first===canvas.toDataURL()});
   assert.equal(stable,true,'An unchanged scene must render identically on successive frames');
   await page.screenshot({path:'artifacts/reference-view.png'});
+  // Whole-map overhead review catches disconnected asphalt hidden by the driving camera.
+  await page.evaluate(()=>{const a=window.__MUD_MEALS__;a.scene.userData.savedFog=a.scene.fog;a.scene.fog=null;a.camera.near=1;a.camera.far=900;a.camera.fov=45;a.camera.zoom=1;a.camera.position.set(10,480,15);a.camera.lookAt(10,0,-20);a.camera.updateProjectionMatrix();a.graphics.render()});
+  await page.screenshot({path:'artifacts/road-circuit.png'});
+  await page.evaluate(()=>{const a=window.__MUD_MEALS__;a.scene.fog=a.scene.userData.savedFog;delete a.scene.userData.savedFog;a.reset();a.graphics.render()});
   await page.setViewportSize({width:960,height:540});
   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
   for(const seated of [false,true]){
@@ -41,7 +45,7 @@ try {
   // Close-up renders expose silhouettes and construction details hidden in the world view.
   for(const type of ['delivery-bike','auto','bus','car','van']){
     const assetPNG=await page.evaluate(type=>{
-      const a=window.__MUD_MEALS__;let model;
+      const a=window.__MUD_MEALS__;if(type==='auto')return a.renderAssetPreview(type);let model;
       a.scene.traverse(o=>{if(!model&&o.userData.assetType===type)model=o});
       if(!model)throw new Error('Missing model: '+type);
       a.camera.near=.5;a.camera.far=160;a.camera.fov=42;a.camera.zoom=1;

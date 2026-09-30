@@ -24,7 +24,7 @@ app.scene.traverse(o=>{if(!o.isMesh)return;meshes++;const p=o.geometry.attribute
 assert.ok(triangles>200000);assert.ok(instances>10000);assert.ok(app.player.children.length>30);
 const modelTypes=new Set();app.scene.traverse(o=>{if(o.userData.designVersion>=2)modelTypes.add(o.userData.assetType)});
 for(const type of ['delivery-bike','auto','bus','car','van','customer'])assert.ok(modelTypes.has(type),'Missing approved asset: '+type);
-const customers=app.scene.children.filter(o=>o.userData.assetType==='customer');assert.ok(customers.some(o=>o.userData.seated));assert.ok(customers.every(o=>o.userData.designVersion===3));
+const customers=app.scene.children.filter(o=>o.userData.assetType==='customer');assert.ok(customers.some(o=>o.userData.seated));assert.ok(customers.every(o=>o.userData.designVersion===4));
 const bus=app.vehicles.find(v=>v.type==='bus').g;const roof=bus.children.find(o=>o.isMesh&&Math.abs(o.position.y-3.19)<.001);const roofSize=new THREE.Vector3();roof.geometry.computeBoundingBox();roof.geometry.boundingBox.getSize(roofSize);assert.ok(Math.abs(roofSize.x-2.68)<1e-5&&Math.abs(roofSize.y-.27)<1e-5&&Math.abs(roofSize.z-7.15)<1e-5,'Bevels must preserve designed vehicle dimensions');
 const initial=app.player.position.clone();app.player.position.x+=5;app.reset();assert.equal(app.player.position.x,initial.x);
 for(const name of ['src/scene.js','src/graphics.js','src/main.js','src/style.css','public/food.png','public/reference.png'])assert.ok(fs.existsSync(name));
@@ -33,6 +33,19 @@ els.get('#reference').onclick();assert.equal(els.get('#reference-panel').hidden,
 els.get('#pause').onclick();assert.equal(els.get('#pause').textContent,'▶');els.get('#pause').onclick();assert.equal(els.get('#pause').textContent,'Ⅱ');
 // Kerbs must sit at the road edges and paint must follow the tangent.
 for(const d of app.roadDetails){const center=app.roadFrame(d.sourceZ);assert.ok(Math.abs(d.angle-center.angle)<1e-8);if(d.kind==='kerb')assert.ok(Math.abs(Math.hypot(d.x-center.x,d.z-center.z)-4.97)<1e-7)}
+// A closed navigation flag alone is insufficient: verify asphalt continuity and traffic wrapping.
+const circuit=app.extendedWorld.centerline;
+assert.ok(circuit.closed);assert.ok(circuit.getPointAt(0).distanceTo(circuit.getPointAt(1))<1e-8);
+assert.ok(circuit.getTangentAt(.00001).dot(circuit.getTangentAt(.99999))>.99,'Loop seam must have continuous direction');
+const circuitPoints=circuit.getSpacedPoints(1200);
+const cross=(a,b,c)=>(b.x-a.x)*(c.z-a.z)-(b.z-a.z)*(c.x-a.x);
+for(let i=0;i<circuitPoints.length-1;i++)for(let j=i+3;j<circuitPoints.length-1;j++){
+ if(i===0&&j===circuitPoints.length-2)continue;
+ const [a,b,c,d]=[circuitPoints[i],circuitPoints[i+1],circuitPoints[j],circuitPoints[j+1]];
+ assert.ok(!(cross(a,b,c)*cross(a,b,d)<0&&cross(c,d,a)*cross(c,d,b)<0),'Road circuit crosses itself');
+}
+const wrap=app.life.traffic[0],savedS=wrap.s,total=circuit.getLength();wrap.s=total-.01;app.life.pose(wrap);const end=wrap.g.position.clone();wrap.s=.01;app.life.pose(wrap);assert.ok(end.distanceTo(wrap.g.position)<.05,'Traffic must wrap without teleporting');wrap.s=savedS;app.life.pose(wrap);
+const auto=app.vehicles.find(v=>v.type==='auto').g;assert.equal(auto.userData.wheelCount,3);assert.equal(auto.userData.designVersion,4);
 const audit=app.life.audit();console.log('Life audit',JSON.stringify(audit));assert.equal(audit.plantsInRoad.length,0);assert.equal(audit.plantsInBuildings.length,0);assert.equal(audit.plantsInWater.length,0);
 assert.equal(audit.walkingRoutes,audit.pedestrians);assert.ok(audit.traffic>30);
 for(const b of app.extendedWorld.footprints)for(const p of app.plantings){const gap=Math.hypot(Math.max(0,Math.abs(p.x-b.x)-b.w/2),Math.max(0,Math.abs(p.z-b.z)-b.d/2));assert.ok(gap>=p.radius,`Plant overlaps a district structure at ${b.x},${b.z}`);}

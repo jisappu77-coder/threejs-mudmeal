@@ -47,3 +47,9 @@ All 27 customers have checked walking routes. Seated diners periodically stand, 
 35 traffic vehicles and rival bikes follow the two road lanes, turn with road curves, rotate their wheels, and brake for traffic and the player. The rider stops at occupied vehicle space. Vehicles wait at road boundaries while the rider is nearby. This is lane-based traffic, not a general vehicle physics engine.
 
 Buildings, furniture, water, and road widths govern procedural vegetation and pedestrian placement. Scene checks audit every walking route, original and extended building clearance, and vehicle intersections throughout a simulated minute. Chromium captures all districts plus walking and greeting close-ups, then repeats the checks on the deployed site.
+
+### Road and asset rebuild
+
+The town road and district connector now form one paved closed circuit. Rider navigation and traffic lanes derive from that circuit; vehicles cross its seam continuously. The canal bridge is a separate narrow shortcut. Junction kerbs are opened, and the original rice plots and fences are clipped outside the road corridor. Automated checks cover loop position/tangent continuity, centerline self-intersection and vehicle wrap distance; Chromium captures a whole-map overhead view.
+
+People use a sculpted face surface, fitted facial details, swept hair and articulated clothing/limbs. Autorickshaws have a formed yellow nose, a single raked windshield, open passenger entrances, stitched canvas canopy, bench seating, a seated driver and three wheels. Dimensions and proportions are informed by [Bajaj RE specifications](https://www.bajajauto.com/three-wheelers/re/specifications). The map remains a compressed fictional Kerala-inspired world, not a surveyed or imported real-world road map; [Kochi on OpenStreetMap](https://www.openstreetmap.org/#map=13/9.966/76.260) is a geographic reference.
