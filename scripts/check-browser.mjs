@@ -23,12 +23,12 @@ try {
   const touchUI=await page.locator('#accelerate').evaluate(button=>{const menu=new MouseEvent('contextmenu',{bubbles:true,cancelable:true});button.dispatchEvent(menu);return {menuBlocked:menu.defaultPrevented,selection:getComputedStyle(button).userSelect}});
   assert.equal(touchUI.menuBlocked,true);
   assert.equal(touchUI.selection,'none');
-  await page.locator('#pause').click();
-  await page.screenshot({ path: 'artifacts/landscape.png' });
   await page.setViewportSize({width:1536,height:864});
-  await page.evaluate(()=>{const a=window.__MUD_MEALS__;a.resize();a.graphics.render()});
+  await page.evaluate(()=>{const a=window.__MUD_MEALS__;a.reset();a.resize();a.graphics.render()});
   await page.screenshot({path:'artifacts/reference-view.png'});
   await page.setViewportSize({width:960,height:540});
+  await page.locator('#pause').click();
+  await page.screenshot({ path: 'artifacts/landscape.png' });
   await page.locator('#orders').click();
   await page.locator('#order-panel').waitFor({ state: 'visible' });
   await page.locator('#close-orders').click();

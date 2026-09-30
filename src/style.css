@@ -50,3 +50,5 @@ body{background:#06150f}#game-stage{position:absolute;left:50%;top:50%;transform
 .palm{display:inline-flex;vertical-align:middle;width:2.2cqw;height:3.1cqw;margin-left:7px}.palm svg{width:100%;height:100%}.brand div{font-family:"Arial Black",Arial,sans-serif;font-weight:900}.glass{border-color:rgba(166,196,153,.38)}#camera-mode{display:block;width:100%;padding:8px;background:#17392c;color:#f5edd9;border:1px solid #83917a;border-radius:8px;font:inherit;font-size:13px}
 
 #reference-panel{padding:0;background:transparent}#reference-panel img{object-fit:contain}#reference-controls{position:absolute;bottom:2%;left:50%;transform:translateX(-50%);display:flex;gap:10px;align-items:center;padding:10px;border-radius:12px;font-size:12px}#reference-controls button{padding:8px;background:#36553f;border-radius:8px}#reference-controls input{accent-color:#fb902e;width:130px}#close-reference{z-index:2}
+
+.brand div{font-size:2.45cqw}.palm{width:2cqw;height:2.8cqw}.delivery p{font-size:1.12cqw;margin-top:6px}.delivery strong{font-size:1.22cqw}

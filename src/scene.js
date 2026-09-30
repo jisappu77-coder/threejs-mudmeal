@@ -97,7 +97,7 @@ ribbon(canalPoints.map(([x,z])=>[x+6.4,z]),2,.045,M.soil);
 for(let z=-40;z<39;z+=10){box(mat('#789442'),canalX(z)+15,.05,z,14,.24,8.8);box(M.soil,canalX(z+4.5)+15,.21,z+4.5,16,.26,.55);}
 // Curved rice tufts contain several separate blades instead of scattered cones.
 const riceVertices=[],riceIndices=[];
-for(let blade=0;blade<3;blade++){const a=blade*Math.PI*2/3,start=riceVertices.length/3;for(let row=0;row<=5;row++){const t=row/5,bend=t*t*.16,w=Math.sin((t*.92+.04)*Math.PI)*.022;for(const side of[-1,1])riceVertices.push(Math.cos(a)*bend+Math.sin(a)*w*side,t,Math.sin(a)*bend-Math.cos(a)*w*side);if(row<5){const k=start+row*2;riceIndices.push(k,k+2,k+1,k+1,k+2,k+3)}}}
+for(let blade=0;blade<3;blade++){const a=blade*Math.PI*2/3,start=riceVertices.length/3;for(let row=0;row<=5;row++){const t=row/5,bend=t*t*.16,w=Math.sin((t*.92+.04)*Math.PI)*.035;for(const side of[-1,1])riceVertices.push(Math.cos(a)*bend+Math.sin(a)*w*side,t,Math.sin(a)*bend-Math.cos(a)*w*side);if(row<5){const k=start+row*2;riceIndices.push(k,k+2,k+1,k+1,k+2,k+3)}}}
 const riceGeometry=new THREE.BufferGeometry();riceGeometry.setAttribute('position',new THREE.Float32BufferAttribute(riceVertices,3));riceGeometry.setIndex(riceIndices);riceGeometry.computeVertexNormals();
 const riceMaterials=['#88b833','#abc839','#659f2c'].map(c=>{const m=mat(c);m.side=THREE.DoubleSide;return m});
 for(let i=0;i<19000;i++){const z=rand(-40,39),x=canalX(z)+rand(8,22);if(Math.abs((z+40)%10-4.5)<.65)continue;put(riceGeometry,riceMaterials[i%3],[x,.19,z],[rand(.8,1.2),rand(.55,.95),1],[0,random()*6.28,0])}
@@ -174,14 +174,15 @@ person(-11.3,-4.1);person(-8.1,-2.9,'#d7ac43',true);person(-5.85,-2.9,'#6874ba',
 const leaves=[];
 function leafGeometry(length,width,droop=0){const v=[],idx=[],uv=[];for(let i=0;i<=18;i++){const t=i/18,w=Math.sin(t*Math.PI)**.7*width;const y=Math.sin(t*Math.PI)*length*.21-t*t*droop;for(const s of[-1,0,1]){v.push(s*w,y+(s===0?.055:0),t*length);uv.push((s+1)/2,t)}if(i<18){const k=i*3;idx.push(k,k+3,k+1,k+1,k+3,k+4,k+1,k+4,k+2,k+2,k+4,k+5)}}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(v,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();return g}
 const leafMaterials=['#63951f','#79b425','#9abf2a','#4c8620'].map(c=>{const m=mat(c);m.side=THREE.DoubleSide;m.map=detailTexture('leaf');m.roughness=.68;m.needsUpdate=true;return m});
-const palmLeaf=leafGeometry(3.5,.07,1.55),palmLeaflet=leafGeometry(1,.13,.22),bananaLeaf=leafGeometry(2.8,.50,1.05);
-function palm(x,z,h=8){const sway=rand(-.6,.6);for(let i=0;i<16;i++){const t=i/16;cyl(mat(i%2?'#8d7750':'#9d8960'),x+sway*t*t,h*t+h/32,z,.17-.075*t,h/16+.015,null,[0,0,-sway/h*.8]);}
+const palmLeaf=leafGeometry(3.5,.38,1.55),palmLeaflet=leafGeometry(1,.13,.22),bananaLeaf=leafGeometry(2.8,.50,1.05);
+function treeClearance(x,z){return !roadPoints.some(p=>Math.hypot(p[0]-x,p[1]-z)<7.6)&&!bp.some(p=>Math.hypot(p[0]-x,p[1]-z)<5)}
+function palm(x,z,h=8){if(!treeClearance(x,z))return;const sway=rand(-.6,.6);for(let i=0;i<16;i++){const t=i/16;cyl(mat(i%2?'#8d7750':'#9d8960'),x+sway*t*t,h*t+h/32,z,.17-.075*t,h/16+.015,null,[0,0,-sway/h*.8]);}
  const cx=x+sway;for(let i=0;i<11;i++){const a=i*Math.PI*2/11+rand(-.16,.16);put(palmLeaf,leafMaterials[i%4],[cx,h,z],[rand(.88,1.18),1,rand(.8,1.18)],[rand(-.08,.35),a,0]);
  // Individually modelled leaflets run down each curved frond.
  for(let j=1;j<20;j++){const t=j/21,dist=t*3.5,py=h+Math.sin(t*Math.PI)*.735-t*t*1.55;const pos=[cx+Math.sin(a)*dist,py,z+Math.cos(a)*dist];for(const s of[-1,1]){const len=Math.sin(t*Math.PI)*.58;const end=[pos[0]+Math.cos(a)*s*len+Math.sin(a)*.12,py-.13,pos[2]-Math.sin(a)*s*len+Math.cos(a)*.12];const delta=new THREE.Vector3(...end).sub(new THREE.Vector3(...pos));const q=new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,1),delta.clone().normalize());const e=new THREE.Euler().setFromQuaternion(q);put(palmLeaflet,leafMaterials[(i+j)%4],pos,[delta.length(),delta.length(),delta.length()],[e.x,e.y,e.z])}}}
  for(let i=0;i<5;i++)ell(mat('#6d6530'),cx+rand(-.2,.2),h-.25,z+rand(-.2,.2),.14,.18,.14);
 }
-function banana(x,z,s=1){for(let i=0;i<3;i++)bar(mat('#739333'),[x+i*.07,0,z],[x+i*.04,2.7*s,z],.10*s);for(let i=0;i<7;i++)put(bananaLeaf,leafMaterials[i%4],[x,2.6*s+rand(-.25,.2),z],[s,s,s],[rand(-.15,.6),i*6.28/7,rand(-.1,.1)]);}
+function banana(x,z,s=1){if(!treeClearance(x,z))return;for(let i=0;i<3;i++)bar(mat('#739333'),[x+i*.07,0,z],[x+i*.04,2.7*s,z],.10*s);for(let i=0;i<7;i++)put(bananaLeaf,leafMaterials[i%4],[x,2.6*s+rand(-.25,.2),z],[s,s,s],[rand(-.15,.6),i*6.28/7,rand(-.1,.1)]);}
 for(const [x,z,h]of[[-15,-15,9],[-3,-16,8.5],[6,-22,8],[15,-29,9],[16,-2,8],[8,10,7.7],[16,26,9],[-15,4,8],[-22,19,8],[25,-29,9],[-1,25,8],[-23,-28,8],[9,-38,9],[-6,-34,8]])palm(x,z,h);
 for(const [x,z,s]of[[4,-8,1.2],[3,-15,1.3],[6,4,1.2],[15,12,1.25],[19,20,1.2],[-13,7,1.3],[-21,3,1.1],[-12,24,1.3],[21,-16,1],[23,-32,1.2],[5,23,1.4],[-2,-28,1],[17,-35,1.2]])banana(x,z,s);
 const shrubLeaf=leafGeometry(.52,.13,.12),shrubCore=new THREE.SphereGeometry(1,12,8);
@@ -296,7 +297,7 @@ document.querySelector('#camera-settings').onclick=()=>{document.querySelector('
 document.querySelector('#close-camera').onclick=()=>document.querySelector('#camera-panel').hidden=true;
 document.querySelector('#reset-camera').onclick=()=>{resetCameraSettings();notify('Camera reset')};
 applyCameraSettings();
-function reset(){cameraMode='reference';player.position.copy(playerStart);player.rotation.set(0,playerStartAngle,0);speed=0;travel=0;routeStart=initialRouteStart;delivered=false;document.querySelector('#cash').textContent='₹1,240';resetCameraSettings()}
+function reset(){elapsed=0;document.querySelector('#timer').textContent='02:45';cameraMode='reference';player.position.copy(playerStart);player.rotation.set(0,playerStartAngle,0);speed=0;travel=0;routeStart=initialRouteStart;delivered=false;document.querySelector('#cash').textContent='₹1,240';resetCameraSettings()}
 function hold(button,key){const el=document.querySelector(button);el.addEventListener('pointerdown',e=>{keys.add(key);el.setPointerCapture(e.pointerId)});for(const ev of['pointerup','pointercancel','lostpointercapture'])el.addEventListener(ev,()=>keys.delete(key))}
 hold('#accelerate','ArrowUp');hold('#brake','ArrowDown');
 for(const btn of document.querySelectorAll('[data-steer]')){const n=Number(btn.dataset.steer);btn.addEventListener('pointerdown',e=>{steer=n;btn.setPointerCapture(e.pointerId)});for(const ev of['pointerup','pointercancel','lostpointercapture'])btn.addEventListener(ev,()=>steer=0)}
