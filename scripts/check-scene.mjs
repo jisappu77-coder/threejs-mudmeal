@@ -43,6 +43,8 @@ assert.ok(app.camera.position.y>app.player.position.y+2);
 app.reset();assert.ok(app.player.position.distanceTo(initial)<1e-8);
 globalThis.devicePixelRatio=2.5;app.graphics.setQuality(true);app.resize();assert.equal(pixelRatio,2);assert.equal(app.graphics.ao.width,1536*2);app.graphics.setQuality(false);app.resize();assert.equal(pixelRatio,1);assert.equal(app.graphics.ao.width,1536);
 assert.equal(app.extendedWorld.districts.length,10);
+assert.ok(app.extendedWorld.route.closed);
+for(const b of app.extendedWorld.footprints)for(const p of app.extendedWorld.roadPoints){const dx=Math.max(0,Math.abs(p.x-b.x)-b.w/2),dz=Math.max(0,Math.abs(p.z-b.z)-b.d/2);assert.ok(Math.hypot(dx,dz)>4.2,`Building at ${b.x},${b.z} overlaps the road`)}
 for(const d of app.extendedWorld.districts){app.visitDistrict(d.id);assert.ok(app.player.position.distanceTo(new THREE.Vector3(d.x,d.y,d.z))<4);assert.ok(app.camera.position.y>app.player.position.y+2);}
 app.extendedWorld.setWeather('rain');assert.equal(app.extendedWorld.weather,'rain');app.extendedWorld.setWeather('day');
 app.visitDistrict('hills');const start=app.player.position.clone();app.update(1/60);assert.ok(app.player.position.distanceTo(start)<.001);app.reset();

@@ -68,7 +68,7 @@ for(const m of[M.stone,M.curb]){m.bumpMap=stoneBump;m.bumpScale=.05;m.needsUpdat
 for(const m of[M.wood,M.darkWood]){m.bumpMap=woodBump;m.bumpScale=.04;m.needsUpdate=true}
 M.road.color.set('#ffffff');M.road.map=textureNoise('#555b60');M.road.map.wrapS=M.road.map.wrapT=THREE.RepeatWrapping;M.road.map.repeat.set(5,25);M.road.bumpMap=plasterBump;M.road.bumpScale=.022;M.road.needsUpdate=true;
 M.soil.color.set('#ffffff');M.soil.map=textureNoise('#caa572');M.soil.bumpMap=stoneBump;M.soil.bumpScale=.035;M.soil.needsUpdate=true;
-M.grass.bumpMap=plasterBump;M.grass.bumpScale=.02;box(M.grass,0,-.5,0,110,1,110);
+M.grass.map=textureNoise('#72934a');M.grass.color.set('#ffffff');M.grass.map.wrapS=M.grass.map.wrapT=THREE.RepeatWrapping;M.grass.map.repeat.set(30,30);M.grass.bumpMap=plasterBump;M.grass.bumpScale=.02;box(M.grass,0,-.5,0,110,1,110);
 const roadX=z=>-18+24/(1+Math.exp(-(z-8)/2.5))+.5*Math.sin(z*.105);
 function roadFrame(z,offset=0){const dx=(roadX(z+.05)-roadX(z-.05))/.1,angle=Math.atan2(dx,1);return {x:roadX(z)+Math.cos(angle)*offset,z:z-Math.sin(angle)*offset,angle}};
 const canalX=z=>10+Math.sin(z*.10)*1.2+Math.max(z,0)*.4;
@@ -152,7 +152,7 @@ addSign('CHAYA',-.3,2.18,-2.77,3.3,.45,'#b75f1d','#ffedb0',65);
 building(-10,-24,5.5,5,4.4,'#e0d7bd');building(-.5,-22,6.5,5.6,4.6,'#eee1bf');
 building(21,-22,6.5,5.6,3.1,'#f6d17c');building(-21,-10,6,5,3.8,'#e8c871');
 building(-19,10,7,6,3.8,'#e9bb54',true);building(-17,26,6.5,5.5,3.8,'#e7c579');
-building(-17,-38,7,5.5,3.8,'#e8d9b2');building(1,-39,6,5,4,'#f4d998');building(24,30,6,5,3.3,'#efc978');
+building(-28,-38,7,5.5,3.8,'#e8d9b2');building(1,-39,6,5,4,'#f4d998');building(24,30,6,5,3.3,'#efc978');
 addSign('KERALA\nSPICES',-19,2.65,13.12,4.6,1.5,'#6e4e2d','#fff0c7',64);
 box(M.wood,-19,1,13.1,6.5,1.6,.15);
 for(let i=0;i<14;i++){box(i%2?M.cream:mat('#3d8292'),-22.2+i*.48,2.45,13.7,.48,.10,1.45)}
@@ -295,7 +295,7 @@ document.querySelector('#reference').onclick=()=>document.querySelector('#refere
 document.querySelector('#close-reference').onclick=()=>document.querySelector('#reference-panel').hidden=true;
 let hudVisible=true;function toggleHUD(){hudVisible=!hudVisible;document.querySelector('#hud').style.visibility=hudVisible?'visible':'hidden';notify(hudVisible?'HUD visible':'Press H to restore the HUD')}
 document.querySelector('#hide').onclick=toggleHUD;
-function visitDistrict(id){const d=extendedWorld.districts.find(d=>d.id===id);if(!d)return;routeStart=d.routeT;travel=0;speed=0;const p=routeCurve.getPointAt(routeStart),ahead=routeCurve.getPointAt((routeStart+.0007)%1);player.position.set(p.x,Math.max(0,p.y-.16),p.z);player.rotation.set(0,Math.atan2(-(ahead.x-p.x),-(ahead.z-p.z)),0);applyCameraSettings();extendedWorld.update(elapsed,player);sun.shadow.needsUpdate=true;document.querySelector('#location').textContent=d.name.toUpperCase();minimap()}
+function visitDistrict(id){const d=extendedWorld.districts.find(d=>d.id===id);if(!d)return;routeStart=d.routeT;travel=0;speed=0;document.querySelector('#speed').textContent='0';const p=routeCurve.getPointAt(routeStart),ahead=routeCurve.getPointAt((routeStart+.0007)%1);player.position.set(p.x,Math.max(0,p.y-.16),p.z);player.rotation.set(0,Math.atan2(-(ahead.x-p.x),-(ahead.z-p.z)),0);applyCameraSettings();extendedWorld.update(elapsed,player);sun.shadow.needsUpdate=true;document.querySelector('#location').textContent=d.name.toUpperCase();minimap()}
 document.querySelector('#world-explore').onclick=()=>{document.querySelector('#world-panel').hidden=false;document.querySelector('.tools').hidden=true};
 document.querySelector('#close-world').onclick=()=>document.querySelector('#world-panel').hidden=true;
 document.querySelector('#travel-district').onclick=()=>{visitDistrict(document.querySelector('#district-select').value);document.querySelector('#world-panel').hidden=true;notify('Exploring '+extendedWorld.nearest(player.position).name)};

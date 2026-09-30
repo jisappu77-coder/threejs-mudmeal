@@ -2,7 +2,9 @@ import * as THREE from 'three';
 
 // Districts are authored separately so instanced scenery can be culled outside the view.
 export function createExtendedWorld(h) {
- const {scene,M,mat,box,cyl,ell,bar,put,mesh,flush,building,roof,palm,banana,shrub,person,pot,crate,table,chair,addSign,fence,rand,riceGeometry,riceMaterials,waterMaterial,setHeight,spawnVehicle}=h;
+ const {scene,M,mat,box,cyl,ell,bar,put,mesh,flush,building:baseBuilding,roof,palm,banana,shrub,person,pot,crate,table,chair,addSign,fence,rand,riceGeometry,riceMaterials,waterMaterial,setHeight,spawnVehicle}=h;
+ const footprints=[];
+ function building(x,z,w,d,...args){footprints.push({x,z,w,d});return baseBuilding(x,z,w,d,...args)}
  const districts=[
   {id:'kochi',name:'Kochi Outskirts',x:3,z:20,y:0},
   {id:'backwaters',name:'Backwater Tea Shop',x:58,z:-54,y:0},
@@ -40,7 +42,7 @@ export function createExtendedWorld(h) {
  for(let i=0;i<15;i++){const x=rand(65,112),z=rand(-105,-69);ell(M.grass,x,.12,z,rand(1,2.5),.23,rand(.5,1.8));}
  flush();
  function nearRoad(x,z,min=7){return roadPoints.some(p=>Math.hypot(p.x-x,p.z-z)<min)}
- function greenery(d,count=20){for(let i=0;i<count;i++){const x=d.x+rand(-23,23),z=d.z+rand(-24,24);if(nearRoad(x,z,8))continue;setHeight(d.y?hillHeight(x,z):0);if(i%4===0)palm(x,z,rand(7,11));else if(i%3===0)banana(x,z,rand(.7,1.2));else shrub(x,z,rand(.8,2))}setHeight(d.y)}
+ function greenery(d,count=20){for(let i=0;i<count;i++){const x=d.x+rand(-23,23),z=d.z+rand(-24,24);if(nearRoad(x,z,8)||(d.id==='backwaters'&&((x-89)/39)**2+((z+86)/32)**2<1))continue;setHeight(d.y?hillHeight(x,z):0);if(i%4===0)palm(x,z,rand(7,11));else if(i%3===0)banana(x,z,rand(.7,1.2));else shrub(x,z,rand(.8,2))}setHeight(d.y)}
  function board(text,x,z){cyl(M.wood,x,1.1,z,.065,2.2);cyl(M.wood,x+2.8,1.1,z,.065,2.2);addSign(text,x+1.4,2,z,3.3,1.25,'#173e35','#f6e8c8',43)}
  const boats=[];
  function houseboat(x,z,angle=0){
@@ -64,7 +66,7 @@ export function createExtendedWorld(h) {
     for(let plot=0;plot<6;plot++){const x=146+(plot%2)*13,z=-36+Math.floor(plot/2)*14;box(mat('#648e32'),x,.03,z,12,.14,12);box(M.soil,x,.18,z+6,13,.3,.6);for(let i=0;i<1050;i++)put(riceGeometry,riceMaterials[i%3],[x+rand(-5.7,5.7),.12,z+rand(-5.7,5.7)],[1,rand(.55,1.05),1],[0,rand(0,6.28),0]);fence([[x-6,z-6],[x-6,z],[x-6,z+6]])}
     board('PADDY TRAILS',136,-12);person(149,-10,'#f5e2b1');person(160,-26,'#b79554');break;
    case 'village':
-    for(let i=0;i<6;i++){const x=143+(i%2)*12,z=43+Math.floor(i/2)*14;building(x,z,7,6,3.3,['#efd29a','#ded6b7','#d79f7a'][i%3]);pot(x-2,z+4);banana(x+5,z+2);person(x,z+4,'#a77552');crate(x+2,z+4)}
+    for(let i=0;i<6;i++){const x=153+(i%2)*12,z=43+Math.floor(i/2)*14;building(x,z,7,6,3.3,['#efd29a','#ded6b7','#d79f7a'][i%3]);pot(x-2,z+4);banana(x+5,z+2);person(x,z+4,'#a77552');crate(x+2,z+4)}
     board('KERALA VILLAGE',136,58);break;
    case 'port':{
     box(mat('#90968e'),58,.04,133,70,.16,26);box(waterMaterial,56,-.13,155,95,.22,20);
@@ -73,15 +75,16 @@ export function createExtendedWorld(h) {
     ell(M.darkWood,56,.5,157,17,1.5,5);box(M.white,44,3,157,6,4,5);box(M.red,58,2.6,157,15,2.5,5);board('KOCHI PORT',51,121);break;}
    case 'ferry':
     box(waterMaterial,2,-.1,114,28,.24,24);box(M.stone,5,.2,104,10,.5,11);for(const x of[1,9])for(let z=100;z<110;z+=2){cyl(M.chrome,x,.95,z,.06,1.4);bar(M.chrome,[x,1.6,z],[x,1.6,z+2],.035)}
-    box(M.darkWood,3,.3,115,9,.7,16);box(M.cream,3,1,115,8,.4,13);box(M.white,3,2.8,121,7,3,3);box(M.glass,3,3,122.55,5.7,1,.03);addSign('KOCHI FERRY',3,4.2,122.6,6,.65,'#234c53','#ffe8ab',47);board('FERRY LANDING',12,98);spawnVehicle('van',3,115,Math.PI,'#e4d7a9');break;
+    box(M.darkWood,3,.3,115,9,.7,16);box(M.cream,3,1,115,8,.4,13);box(M.white,3,2.8,121,7,3,3);box(M.glass,3,3,122.55,5.7,1,.03);addSign('KOCHI FERRY',3,4.2,122.6,6,.65,'#234c53','#ffe8ab',47);board('FERRY LANDING',12,98);spawnVehicle('van',3,115,Math.PI,'#e4d7a9').position.y=1.2;break;
    case 'coast':
     cyl(M.white,-133,5.5,39,2,11);for(const y of[2,6,10])cyl(M.red,-133,y,39,2.03,1.2);cyl(M.chrome,-133,11.7,39,2.3,.2);cyl(M.glass,-133,12.7,39,1.5,2);cyl(M.red,-133,13.8,39,2,.25);put(new THREE.ConeGeometry(2.3,1.2,40),M.red,[-133,14.5,39]);
     board('LIGHTHOUSE COAST',-117,42);for(let z=-10;z<76;z+=10)palm(-122,z,rand(8,11));
     for(let i=0;i<16;i++){const g=new THREE.PlaneGeometry(1,1);g.rotateX(-Math.PI/2);const wave=mesh(g,new THREE.MeshBasicMaterial({color:'#e5f4e9',transparent:true,opacity:.24,depthWrite:false}));wave.position.set(-143-i*.8,.05,-15+i*8);wave.scale.set(.45,1,14)}break;
    case 'fort-kochi':
-    for(let i=0;i<6;i++){const x=-102+i*8,z=-76;building(x,z,7,6,5,['#e0c07b','#d4d8cf','#d99e72'][i%3],true);addSign(['SPICE MARKET','BAKERY','FORT CHAYA'][i%3],x,3.5,z+3.07,6,.8,'#3f6458','#f3e6c0',40);crate(x-2,z+4);pot(x+2,z+4);person(x,z+4,['#bb7139','#467e89','#ecd7ae'][i%3]);}
-    box(M.white,-92,4.3,-48,9,8.6,7);roof(-92,-48,9.5,7.5,8.6,3);box(M.white,-92,8.5,-43.7,2.8,17,3);put(new THREE.ConeGeometry(2.2,3.7,32),mat('#737a70'),[-92,18.7,-43.7]);bar(M.darkWood,[-92,20,-43.7],[-92,22,-43.7],.09);bar(M.darkWood,[-92.7,21.4,-43.7],[-91.3,21.4,-43.7],.09);
-    box(M.wood,-92,1.8,-42.15,1.8,3.5,.12);for(const x of[-95,-89]){box(M.glass,x,4.8,-44.45,1,2.6,.08);bar(M.cream,[x,3.6,-44.3],[x,6,-44.3],.04)}board('FORT KOCHI',-85,-54);break;
+    footprints.push({x:-113,z:-47,w:9,d:10});
+    for(let i=0;i<6;i++){const x=-106,z=-85+i*9;building(x,z,7,6,5,['#e0c07b','#d4d8cf','#d99e72'][i%3],true);addSign(['SPICE MARKET','BAKERY','FORT CHAYA'][i%3],x,3.5,z+3.07,6,.8,'#3f6458','#f3e6c0',40);crate(x-2,z+4);pot(x+2,z+4);person(x,z+4,['#bb7139','#467e89','#ecd7ae'][i%3]);}
+    box(M.white,-113,4.3,-48,9,8.6,7);roof(-113,-48,9.5,7.5,8.6,3);box(M.white,-113,8.5,-43.7,2.8,17,3);put(new THREE.ConeGeometry(2.2,3.7,32),mat('#737a70'),[-113,18.7,-43.7]);bar(M.darkWood,[-113,20,-43.7],[-113,22,-43.7],.09);bar(M.darkWood,[-113.7,21.4,-43.7],[-112.3,21.4,-43.7],.09);
+    box(M.wood,-113,1.8,-42.15,1.8,3.5,.12);for(const x of[-116,-110]){box(M.glass,x,4.8,-44.45,1,2.6,.08);bar(M.cream,[x,3.6,-44.3],[x,6,-44.3],.04)}board('FORT KOCHI',-85,-54);break;
    case 'hills':
     box(M.stone,-59,-1.5,-126,8,3,6);building(-59,-126,7,5,3,'#e3c782',true);addSign('HILL ROAD\nCHAYA & SNACKS',-59,2.3,-123.4,6,1.1,'#733e26','#ffe3ad',42);table(-58,-122);chair(-58,-121);person(-58,-121,'#ddaa69',true);board('VIEWPOINT  →',-53,-120);break;
    case 'viewpoint':
@@ -90,6 +93,20 @@ export function createExtendedWorld(h) {
   }
   greenery(d,d.y?12:24);flush();setHeight(0);
  }
+ // Vegetation along the connecting roads keeps transitions populated.
+ for(let i=6;i<roadPoints.length-6;i+=9){
+  const p=roadPoints[i],q=roadPoints[i+1],angle=Math.atan2(q.x-p.x,q.z-p.z);
+  for(const side of[-1,1]){
+   const distance=rand(9,15),x=p.x+Math.cos(angle)*side*distance,z=p.z-Math.sin(angle)*side*distance;
+   if(x<-129||((x-89)/39)**2+((z+86)/32)**2<1||(z>123&&x>-10&&x<108)||districts.some(d=>Math.hypot(d.x-x,d.z-z)<23))continue;
+   setHeight(z<-80&&x<50?hillHeight(x,z):0);
+   if(i%27===6)palm(x,z,rand(7,10));else if(i%18===6)banana(x,z,.9);else shrub(x,z,rand(1,2));
+   for(let j=0;j<3;j++)shrub(x+rand(-3,3),z+rand(-3,3),rand(.7,1.4));
+  }
+  // Short groups keep distant foliage independently culled.
+  if(i%90===6)flush();
+ }
+ flush();setHeight(0);
  const original=[...[28,20,12,6].map(z=>{const p=h.roadFrame(z,2.2);return V(p.x,p.z,-.03)}),V(1.8,.5),V(6,-9.7,1.03),V(16.4,-9.7,1.04),V(18.2,-14),V(21,-18.3)];
  const returnRoad=[-28,-18,-8,4,12,20].map(z=>{const p=h.roadFrame(z,-2.2);return V(p.x,p.z,-.03)});
  const route=new THREE.CatmullRomCurve3([...original,...extension.points.slice(1),...returnRoad],true,'centripetal');
@@ -109,5 +126,5 @@ export function createExtendedWorld(h) {
   for(let i=0;i<boats.length;i++){boats[i].position.y=.13+Math.sin(elapsed*.7+i)*.025;boats[i].rotation.z=Math.sin(elapsed*.45+i)*.003}
  }
  setWeather('day');
- return {districts,route,roadPoints,setWeather,update,get weather(){return weather},nearest(position){return districts.reduce((a,b)=>Math.hypot(a.x-position.x,a.z-position.z)<Math.hypot(b.x-position.x,b.z-position.z)?a:b)}};
+ return {districts,footprints,route,roadPoints,setWeather,update,get weather(){return weather},nearest(position){return districts.reduce((a,b)=>Math.hypot(a.x-position.x,a.z-position.z)<Math.hypot(b.x-position.x,b.z-position.z)?a:b)}};
 }

@@ -67,14 +67,20 @@ try {
   assert.ok(Math.hypot(follow.position[0]-start[0],follow.position[2]-start[2])>4);
   assert.ok(follow.behind<0);assert.ok(follow.height>2);
   await page.locator('#pause').click();
-  for(const id of ['fort-kochi','backwaters','coast','port','viewpoint']){
+  for(const id of ['fort-kochi','backwaters','paddy','village','port','ferry','coast','hills','viewpoint']){
     await page.evaluate(id=>{const a=window.__MUD_MEALS__;a.visitDistrict(id);a.graphics.render()},id);
     await page.screenshot({path:'artifacts/'+id+'.png'});
   }
   await page.evaluate(()=>{const a=window.__MUD_MEALS__;a.visitDistrict('backwaters');a.camera.position.set(85,32,-30);a.camera.lookAt(73,1,-76);a.graphics.render()});
   await page.screenshot({path:'artifacts/backwater-overview.png'});
+  for(const [id,position,target] of [['fort-kochi',[-70,35,-28],[-106,4,-62]],['port',[76,35,96],[57,5,139]],['coast',[-90,32,67],[-133,4,39]]]){
+    await page.evaluate(({id,position,target})=>{const a=window.__MUD_MEALS__;a.visitDistrict(id);a.camera.position.set(...position);a.camera.lookAt(...target);a.graphics.render()},{id,position,target});
+    await page.screenshot({path:'artifacts/'+id+'-overview.png'});
+  }
   await page.locator('#tools-toggle').click();
   await page.locator('#world-explore').click();
+  await page.locator('#weather-select').selectOption('sunset');
+  assert.equal(await page.evaluate(()=>window.__MUD_MEALS__.extendedWorld.weather),'sunset');
   await page.locator('#weather-select').selectOption('rain');
   assert.equal(await page.evaluate(()=>window.__MUD_MEALS__.extendedWorld.weather),'rain');
   await page.locator('#close-world').click();
