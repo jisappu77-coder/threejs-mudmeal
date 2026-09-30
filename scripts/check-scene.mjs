@@ -1,6 +1,7 @@
 // Construct the complete real Three.js scene without a browser, then verify geometry and controls.
 import fs from 'node:fs';
 const {createExtendedWorld}=await import('../src/world.js');
+const {createWorldLife}=await import('../src/life.js');
 const {setupGraphics}=await import('../src/graphics.js');
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
@@ -16,7 +17,7 @@ let pixelRatio=1;
 const fakeRenderer={getPixelRatio:()=>pixelRatio,capabilities:{maxSamples:4},setPixelRatio:r=>pixelRatio=r,setSize:noop,shadowMap:{},setAnimationLoop:noop,render:noop,compileAsync:()=>Promise.resolve(),info:{render:{triangles:0,calls:0},memory:{geometries:0}}};
 const FakeControls=class {constructor(){this.target=new THREE.Vector3()}update(){}};
 let source=fs.readFileSync('./src/scene.js','utf8').replace(/^import .*;\n/gm,'').replace(/const renderer = new THREE.WebGLRenderer\([^\n]*\);/,'const renderer = fakeRenderer;').replace('new OrbitControls(camera,canvas)','new FakeControls(camera,canvas)');
-new Function('THREE','fakeRenderer','FakeControls','setupGraphics','createExtendedWorld','mergeVertices',source)(THREE,fakeRenderer,FakeControls,setupGraphics,createExtendedWorld,mergeVertices);
+new Function('THREE','fakeRenderer','FakeControls','setupGraphics','createExtendedWorld','mergeVertices','createWorldLife',source)(THREE,fakeRenderer,FakeControls,setupGraphics,createExtendedWorld,mergeVertices,createWorldLife);
 const app=window.__MUD_MEALS__;assert.ok(app.scene.children.length>100);assert.equal(app.camera.isPerspectiveCamera,true);assert.equal(app.graphics.ao.ssaoMaterial.defines.PERSPECTIVE_CAMERA,1);assert.equal(app.graphics.composer.passes.length,3);
 let meshes=0,triangles=0,instances=0;
 app.scene.traverse(o=>{if(!o.isMesh)return;meshes++;const p=o.geometry.attributes.position;assert.ok(p);for(const n of p.array)assert.ok(Number.isFinite(n));const mult=o.isInstancedMesh?o.count:1;instances+=mult;triangles+=(o.geometry.index?o.geometry.index.count:p.count)/3*mult;if(o.isInstancedMesh)for(const n of o.instanceMatrix.array)assert.ok(Number.isFinite(n))});
@@ -32,7 +33,20 @@ els.get('#reference').onclick();assert.equal(els.get('#reference-panel').hidden,
 els.get('#pause').onclick();assert.equal(els.get('#pause').textContent,'▶');els.get('#pause').onclick();assert.equal(els.get('#pause').textContent,'Ⅱ');
 // Kerbs must sit at the road edges and paint must follow the tangent.
 for(const d of app.roadDetails){const center=app.roadFrame(d.sourceZ);assert.ok(Math.abs(d.angle-center.angle)<1e-8);if(d.kind==='kerb')assert.ok(Math.abs(Math.hypot(d.x-center.x,d.z-center.z)-4.97)<1e-7)}
-for(const v of app.vehicles){const offset=v.x-app.roadFrame(v.z).x,p=app.roadFrame(v.z,offset);assert.ok(Math.abs(v.g.position.x-p.x)<1e-8);assert.ok(Math.abs(v.g.position.z-p.z)<1e-8)}
+const audit=app.life.audit();console.log('Life audit',JSON.stringify(audit));assert.equal(audit.plantsInBuildings.length,0);assert.equal(audit.plantsInWater.length,0);
+assert.equal(audit.walkingRoutes,audit.pedestrians);assert.ok(audit.traffic>30);
+for(const n of app.npcs)if(n.pathLength)for(let i=0;i<=16;i++)assert.ok(app.life.walkable(n.path[0].clone().lerp(n.path[1],i/16),n));
+const trafficStarts=app.life.traffic.map(v=>v.g.position.clone());
+for(let i=0;i<120;i++)app.life.update(1/60,i/60);
+assert.ok(app.life.traffic.some((v,i)=>v.g.position.distanceTo(trafficStarts[i])>1));
+assert.equal(app.life.audit().plantsInBuildings.length,0);
+// Check every vehicle footprint throughout a full minute, including tight bends.
+for(let frame=0;frame<1800;frame++){
+ app.life.update(1/30,frame/30);
+ if(frame%30===0)for(let i=0;i<app.life.traffic.length;i++)for(let j=i+1;j<app.life.traffic.length;j++)assert.equal(app.life.overlaps(app.life.traffic[i],app.life.traffic[j]),false,`Traffic overlap: ${i},${j} at ${frame/30}s`);
+}
+assert.ok(app.npcs.some(n=>n.distance>0));
+app.life.reset();
 // A wide display retains the original 16:9 scene without enlarging the HUD.
 globalThis.innerWidth=932;globalThis.innerHeight=430;app.resize();assert.equal(app.graphics.ao.width,764*pixelRatio);assert.equal(app.graphics.ao.height,430*pixelRatio);assert.ok(Math.abs(app.camera.aspect-16/9)<.01);
 globalThis.innerWidth=1536;globalThis.innerHeight=864;app.resize();
@@ -53,8 +67,9 @@ assert.equal(app.extendedWorld.districts.length,10);
 assert.ok(app.extendedWorld.route.closed);
 for(const p of app.extendedWorld.roadPoints)assert.ok(p.y>=.16);
 for(const b of app.extendedWorld.footprints)for(const p of app.extendedWorld.roadPoints){const dx=Math.max(0,Math.abs(p.x-b.x)-b.w/2),dz=Math.max(0,Math.abs(p.z-b.z)-b.d/2);assert.ok(Math.hypot(dx,dz)>4.2,`Building at ${b.x},${b.z} overlaps the road`)}
-for(const d of app.extendedWorld.districts){app.visitDistrict(d.id);assert.ok(app.player.position.distanceTo(new THREE.Vector3(d.x,d.y,d.z))<4);assert.ok(app.camera.position.y>app.player.position.y+2);}
+for(const b of app.plots.filter(p=>p.kind==='building'))for(const p of app.extendedWorld.roadPoints){const dx=Math.max(0,Math.abs(p.x-b.x)-(b.w-.85)/2),dz=Math.max(0,Math.abs(p.z-b.z)-(b.d-.85)/2);assert.ok(Math.hypot(dx,dz)>4.2,`Extended road intersects original building ${b.x},${b.z}`);}
+for(const d of app.extendedWorld.districts){app.visitDistrict(d.id);assert.ok(app.player.position.distanceTo(new THREE.Vector3(d.x,d.y,d.z))<4,`${d.id}: ${app.player.position.toArray()}`);assert.ok(app.camera.position.y>app.player.position.y+2);}
 app.extendedWorld.setWeather('rain');assert.equal(app.extendedWorld.weather,'rain');app.extendedWorld.setWeather('day');
 app.visitDistrict('hills');const start=app.player.position.clone();app.update(1/60);assert.ok(app.player.position.distanceTo(start)<.001);app.reset();
-console.log(JSON.stringify({ok:true,meshes,instances,triangles,sceneObjects:app.scene.children.length}));
+console.log(JSON.stringify({ok:true,meshes,instances,triangles,sceneObjects:app.scene.children.length,life:audit}));
 

@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 // Districts are authored separately so instanced scenery can be culled outside the view.
 export function createExtendedWorld(h) {
- const {scene,M,mat,box,cyl,ell,bar,put,mesh,flush,building:baseBuilding,roof,palm,banana,shrub,person,pot,crate,table,chair,addSign,fence,rand,riceGeometry,riceMaterials,waterMaterial,setHeight,spawnVehicle}=h;
+ const {scene,M,mat,box,cyl,ell,bar,put,mesh,flush,building:baseBuilding,roof,palm,banana,shrub,person,pot,crate,table,chair,addSign,fence,rand,riceGeometry,riceMaterials,waterMaterial,setHeight,spawnVehicle,reservePlot,registerRoad,registerWater}=h;
  const footprints=[];
  function building(x,z,w,d,...args){footprints.push({x,z,w,d});return baseBuilding(x,z,w,d,...args)}
  const districts=[
@@ -19,11 +19,13 @@ export function createExtendedWorld(h) {
  ];
  const V=(x,z,y=0)=>new THREE.Vector3(x,y+.16,z);
  const extension=new THREE.CatmullRomCurve3([
-  V(21,-18.3),V(28,-36),V(58,-54),V(97,-49),V(128,-15),V(137,19),V(130,58),V(103,91),V(55,115),V(5,98),V(-57,86),V(-110,30),V(-100,-20),V(-80,-62),V(-63,-96,8),V(-48,-124,16),V(-20,-132,20),V(10,-150,24),V(31,-120,18),V(0,-90,7),V(-18,-40),
+  V(26,-18.3),V(28,-36),V(58,-54),V(97,-49),V(128,-15),V(137,19),V(130,58),V(103,91),V(55,115),V(5,98),V(-57,86),V(-110,30),V(-100,-20),V(-80,-62),V(-63,-96,8),V(-48,-124,16),V(-20,-132,20),V(10,-150,24),V(31,-120,18),V(0,-90,7),V(-18,-40),
  ],false,'centripetal');
  const roadPoints=extension.getPoints(1100);
  // Cubic height interpolation can dip below flat ground before a climb.
  for(const p of roadPoints)p.y=Math.max(.16,p.y);
+ registerRoad(roadPoints);
+ for(const area of [{x:89,z:-86,w:78,d:64,ellipse:true},{x:-247,z:-15,w:200,d:390},{x:56,z:155,w:95,d:20},{x:2,z:114,w:28,d:24}])registerWater(area);
  function roadRibbon(width,lift,material){
   const vertices=[],uv=[],indices=[];
   roadPoints.forEach((p,i)=>{const a=roadPoints[Math.max(0,i-1)],b=roadPoints[Math.min(roadPoints.length-1,i+1)],dx=b.x-a.x,dz=b.z-a.z,l=Math.max(.0001,Math.hypot(dx,dz));for(const s of[-1,1]){vertices.push(p.x+s*dz/l*width/2,p.y-.16+lift,p.z-s*dx/l*width/2);uv.push(s===-1?0:1,i*.18)}if(i<roadPoints.length-1){const j=i*2;indices.push(j,j+2,j+1,j+1,j+2,j+3)}});
@@ -45,7 +47,7 @@ export function createExtendedWorld(h) {
  flush();
  function nearRoad(x,z,min=7){return roadPoints.some(p=>Math.hypot(p.x-x,p.z-z)<min)}
  function greenery(d,count=20){for(let i=0;i<count;i++){const x=d.x+rand(-23,23),z=d.z+rand(-24,24);if(nearRoad(x,z,8)||(d.id==='backwaters'&&((x-89)/39)**2+((z+86)/32)**2<1))continue;setHeight(d.y?hillHeight(x,z):0);if(i%4===0)palm(x,z,rand(7,11));else if(i%3===0)banana(x,z,rand(.7,1.2));else shrub(x,z,rand(.8,2))}setHeight(d.y)}
- function board(text,x,z){cyl(M.wood,x,1.1,z,.065,2.2);cyl(M.wood,x+2.8,1.1,z,.065,2.2);addSign(text,x+1.4,2,z,3.3,1.25,'#173e35','#f6e8c8',43)}
+ function board(text,x,z){reservePlot('sign',x+1.4,z,3.3,.4);cyl(M.wood,x,1.1,z,.065,2.2);cyl(M.wood,x+2.8,1.1,z,.065,2.2);addSign(text,x+1.4,2,z,3.3,1.25,'#173e35','#f6e8c8',43)}
  const boats=[];
  function houseboat(x,z,angle=0){
   const g=new THREE.Group();g.position.set(x,.13,z);g.rotation.y=angle;scene.add(g);boats.push(g);
@@ -60,25 +62,25 @@ export function createExtendedWorld(h) {
   switch(d.id){
    case 'backwaters':
     building(57,-67,8,6,3.6,'#d9c291',true);addSign('KETTUVALLAM\nTEA SHOP',57,3,-63.9,7,1.15,'#4c3824','#f7e2a0',46);
-    box(M.wood,58,.1,-62,13,.2,3);for(let i=0;i<3;i++){table(53+i*3,-61.7);chair(53+i*3,-60.8);person(53+i*3,-60.8,['#c87538','#548c91','#efe4c6'][i],true)}
+    box(M.wood,58,.1,-62,13,.2,3);setHeight(.2);for(let i=0;i<3;i++){table(53+i*3,-61.7);chair(53+i*3,-60.8);person(53+i*3,-60.8,['#c87538','#548c91','#efe4c6'][i],true)}setHeight(0);
     for(const [x,z,a]of[[77,-72,.5],[97,-90,-.35],[78,-97,.8]])houseboat(x,z,a);
     for(let i=0;i<8;i++){box(M.wood,66+i*.7,.18,-66, .66,.2,1.8);cyl(M.wood,66+i*.7,-.4,-66,.08,1.3)}
     break;
    case 'paddy':
     for(let plot=0;plot<6;plot++){const x=146+(plot%2)*13,z=-36+Math.floor(plot/2)*14;box(mat('#648e32'),x,.03,z,12,.14,12);box(M.soil,x,.18,z+6,13,.3,.6);for(let i=0;i<1050;i++)put(riceGeometry,riceMaterials[i%3],[x-5.55+(i%35)*.32+rand(-.035,.035),.12,z-5.6+Math.floor(i/35)*.38+rand(-.035,.035)],[1,rand(.55,1.05),1],[0,rand(0,6.28),0]);fence([[x-6,z-6],[x-6,z],[x-6,z+6]])}
-    board('PADDY TRAILS',136,-12);person(149,-10,'#f5e2b1');person(160,-26,'#b79554');break;
+    board('PADDY TRAILS',136,-12);person(139,-10,'#f5e2b1');person(152.5,-29,'#b79554');break;
    case 'village':
     for(let i=0;i<6;i++){const x=153+(i%2)*12,z=43+Math.floor(i/2)*14;building(x,z,7,6,3.3,['#efd29a','#ded6b7','#d79f7a'][i%3]);pot(x-2,z+4);banana(x+5,z+2);person(x,z+4,'#a77552');crate(x+2,z+4)}
     board('KERALA VILLAGE',136,58);break;
    case 'port':{
     box(mat('#90968e'),58,.04,133,70,.16,26);box(waterMaterial,56,-.13,155,95,.22,20);
-    for(let i=0;i<18;i++){const x=34+(i%6)*8,z=127+Math.floor(i/6)*6;const c=mat(['#b84a37','#3a7881','#d79c3e'][i%3]);box(c,x,1.5,z,7,2.8,3);for(let j=0;j<13;j++)box(M.darkWood,x-3+j*.5,1.5,z+1.51,.035,2.7,.03)}
+    for(let i=0;i<18;i++){const x=34+(i%6)*8,z=123+Math.floor(i/6)*6;const c=mat(['#b84a37','#3a7881','#d79c3e'][i%3]);reservePlot('cargo',x,z,7.2,3.2);box(c,x,1.5,z,7,2.8,3);for(let j=0;j<13;j++)box(M.darkWood,x-3+j*.5,1.5,z+1.51,.035,2.7,.03)}
     for(const x of[36,65,88]){for(const s of[-1,1])bar(M.yellow,[x+s*2,0,137],[x+s*.6,16,140],.27);bar(M.yellow,[x,15,140],[x+14,22,150],.26);bar(M.yellow,[x,15,140],[x-6,20,131],.26);bar(M.black,[x+14,22,150],[x+14,5,150],.04);box(M.yellow,x,14,140,2.2,2,2)}
     ell(M.darkWood,56,.5,157,17,1.5,5);box(M.white,44,3,157,6,4,5);box(M.red,58,2.6,157,15,2.5,5);board('KOCHI PORT',51,121);break;}
    case 'ferry':
     footprints.push({x:-9,z:108,w:8,d:11});
     box(waterMaterial,2,-.1,114,28,.24,24);box(M.stone,-9,.2,108,8,.5,11);for(const x of[-12,-6])for(let z=104;z<114;z+=2){cyl(M.chrome,x,.95,z,.06,1.4);bar(M.chrome,[x,1.6,z],[x,1.6,z+2],.035)}
-    box(M.wood,-3,.45,113,7,.2,2);box(M.darkWood,3,.3,115,9,.7,16);box(M.cream,3,1,115,8,.4,13);box(M.white,3,2.8,121,7,3,3);box(M.glass,3,3,122.55,5.7,1,.03);addSign('KOCHI FERRY',3,4.2,122.6,6,.65,'#234c53','#ffe8ab',47);board('FERRY LANDING',12,98);spawnVehicle('van',3,115,Math.PI,'#e4d7a9').position.y=1.2;break;
+    box(M.wood,-3,.45,113,7,.2,2);box(M.darkWood,3,.3,115,9,.7,16);box(M.cream,3,1,115,8,.4,13);box(M.white,3,2.8,121,7,3,3);box(M.glass,3,3,122.55,5.7,1,.03);addSign('KOCHI FERRY',3,4.2,122.6,6,.65,'#234c53','#ffe8ab',47);board('FERRY LANDING',12,98);spawnVehicle('van',3,115,Math.PI,'#e4d7a9').position.y=1.165;break;
    case 'coast':
     cyl(M.white,-133,5.5,39,2,11);for(const y of[2,6,10])cyl(M.red,-133,y,39,2.03,1.2);cyl(M.chrome,-133,11.7,39,2.3,.2);cyl(M.glass,-133,12.7,39,1.5,2);cyl(M.red,-133,13.8,39,2,.25);put(new THREE.ConeGeometry(2.3,1.2,40),M.red,[-133,14.5,39]);
     board('LIGHTHOUSE COAST',-117,42);for(let z=-10;z<76;z+=10)palm(-122,z,rand(8,11));
@@ -95,9 +97,9 @@ export function createExtendedWorld(h) {
     box(M.white,-119,4.3,-48,9,8.6,7);roof(-119,-48,9.5,7.5,8.6,3);box(M.white,-119,8.5,-43.7,2.8,17,3);put(new THREE.ConeGeometry(2.2,3.7,32),mat('#737a70'),[-119,18.7,-43.7]);bar(M.darkWood,[-119,20,-43.7],[-119,22,-43.7],.09);bar(M.darkWood,[-119.7,21.4,-43.7],[-118.3,21.4,-43.7],.09);
     box(M.wood,-119,1.8,-42.15,1.8,3.5,.12);for(const x of[-122,-116]){box(M.glass,x,4.8,-44.45,1,2.6,.08);bar(M.cream,[x,3.6,-44.3],[x,6,-44.3],.04)}board('FORT KOCHI',-85,-54);break;
    case 'hills':
-    box(M.stone,-59,-1.5,-126,8,3,6);building(-59,-126,7,5,3,'#e3c782',true);addSign('HILL ROAD\nCHAYA & SNACKS',-59,2.3,-123.4,6,1.1,'#733e26','#ffe3ad',42);table(-58,-122);chair(-58,-121);person(-58,-121,'#ddaa69',true);board('VIEWPOINT  →',-53,-120);break;
+    box(M.stone,-59,-1.5,-126,8,3,6);building(-59,-126,7,5,3,'#e3c782',true);addSign('HILL ROAD\nCHAYA & SNACKS',-59,2.3,-123.4,6,1.1,'#733e26','#ffe3ad',42);box(M.stone,-58,-1.5,-122,10,3,5);box(M.curb,-58,-.08,-122,10,.16,5);table(-58,-122);chair(-58,-121);person(-58,-121,'#ddaa69',true);board('VIEWPOINT  →',-53,-120);break;
    case 'viewpoint':
-    box(M.stone,10,-3.2,-164,23,6.4,9);box(M.curb,10,.05,-164,23,.25,9);fence([[-1,-168],[6,-168],[14,-168],[21,-168]]);for(const x of[3,12]){box(M.wood,x,.55,-165,3,.12,.6);for(const s of[-1,1])box(M.chrome,x+s,.25,-165,.09,.5,.4);person(x,-164,'#839daf')}
+    box(M.stone,10,-3.2,-164,23,6.4,9);box(M.curb,10,.05,-164,23,.25,9);fence([[-1,-168],[6,-168],[14,-168],[21,-168]]);for(const x of[3,12]){box(M.wood,x,.55,-165,3,.12,.6);for(const s of[-1,1])box(M.chrome,x+s,.25,-165,.09,.5,.4);setHeight(24.175);person(x,-164,'#839daf');setHeight(24)}
     board('BACKWATER VIEWPOINT',5,-158);break;
   }
   greenery(d,d.y?12:24);flush();setHeight(0);
@@ -116,8 +118,8 @@ export function createExtendedWorld(h) {
   if(i%90===6)flush();
  }
  flush();setHeight(0);
- const original=[...[28,20,12,6].map(z=>{const p=h.roadFrame(z,2.2);return V(p.x,p.z,-.03)}),V(1.8,.5),V(6,-9.7,1.03),V(16.4,-9.7,1.04),V(18.2,-14),V(21,-18.3)];
- const returnRoad=[-28,-18,-8,4,12,20].map(z=>{const p=h.roadFrame(z,-2.2);return V(p.x,p.z,-.03)});
+ const original=[...[28,20,12,6].map(z=>{const p=h.roadFrame(z,-2.2);return V(p.x,p.z,-.03)}),V(3.4,2.3),V(6,-9.7,1.13),V(16.4,-9.7,1.13),V(18.2,-14),V(26,-18.3)];
+ const returnRoad=[-28,-18,-8,4,12,20].map(z=>{const p=h.roadFrame(z,2.2);return V(p.x,p.z,-.03)});
  const route=new THREE.CatmullRomCurve3([...original,...extension.points.slice(1),...returnRoad],true,'centripetal');
  // getPointAt makes speed independent of the differently spaced control points.
  for(const d of districts){let nearest=Infinity;for(let i=0;i<2400;i++){const t=i/2400,p=route.getPointAt(t),dist=(p.x-d.x)**2+(p.z-d.z)**2;if(dist<nearest){nearest=dist;d.routeT=t}}}
@@ -137,5 +139,6 @@ export function createExtendedWorld(h) {
   for(let i=0;i<boats.length;i++){boats[i].position.y=.13+Math.sin(elapsed*.7+i)*.025;boats[i].rotation.z=Math.sin(elapsed*.45+i)*.003}
  }
  setWeather('day');
- return {districts,footprints,route,roadPoints,setWeather,update,get weather(){return weather},nearest(position){return districts.reduce((a,b)=>Math.hypot(a.x-position.x,a.z-position.z)<Math.hypot(b.x-position.x,b.z-position.z)?a:b)}};
+ return {districts,footprints,route,roadPoints,groundHeight:hillHeight,setWeather,update,get weather(){return weather},nearest(position){return districts.reduce((a,b)=>Math.hypot(a.x-position.x,a.z-position.z)<Math.hypot(b.x-position.x,b.z-position.z)?a:b)}};
 }
+

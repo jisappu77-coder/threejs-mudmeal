@@ -39,3 +39,11 @@ These are modeled environments inspired by the references, not photorealistic re
 ## Original image composition
 
 The default camera now uses a long lens and a fixed isometric orientation to frame the original Kochi scene. **Camera settings → Follow rider** restores the driving camera. The reference comparison overlay includes an opacity slider and **Restore matching view**, allowing direct comparison against the provided image. Hotel placement, storefront size, traffic, foliage/road/water colours, rider scale and HUD palm illustration are adjusted toward that original composition. This is a modeled interpretation, not a pixel-identical reproduction of the image.
+
+## Living world and placement checks
+
+All 27 customers have checked walking routes. Seated diners periodically stand, walk a short circuit, and return to their seats; standing customers patrol their shopfronts and greet a nearby rider. Limbs, heads, and breathing animate independently. Palms, banana leaves, shrubs, and rice sway with shared wind and matching shadow deformation; rainy weather strengthens the gusts.
+
+35 traffic vehicles and rival bikes follow the two road lanes, turn with road curves, rotate their wheels, and brake for traffic and the player. The rider stops at occupied vehicle space. Vehicles wait at road boundaries while the rider is nearby. This is lane-based traffic, not a general vehicle physics engine.
+
+Buildings, furniture, water, and road widths govern procedural vegetation and pedestrian placement. Scene checks audit every walking route, original and extended building clearance, and vehicle intersections throughout a simulated minute. Chromium captures all districts plus walking and greeting close-ups, then repeats the checks on the deployed site.
