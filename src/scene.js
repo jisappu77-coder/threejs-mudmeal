@@ -251,7 +251,7 @@ function hand(parent,skin,p,grip=false){
  for(let finger=0;finger<4;finger++){const xx=p[0]-.023+finger*.014,len=finger===0||finger===3?.036:.046;
  limb(parent,skin,[xx,p[1]-.029,p[2]],[xx,p[1]-.029-len,p[2]+(grip?.024:.008)],.009);
  }
- limb(parent,skin,[p[0]+.032,p[1]+.012,p[2]],[p[0]+.047,p[1]-.022,p[2]+.022],.012);
+ const thumbSide=p[0]<0?1:-1;limb(parent,skin,[p[0]+thumbSide*.032,p[1]+.012,p[2]],[p[0]+thumbSide*.047,p[1]-.022,p[2]+.022],.012);
 }
 function face(parent,skin,headY,variant){
  put(headGeometry,skin,[0,headY,.017],[1,1,1],[0,0,0],parent);
@@ -354,7 +354,7 @@ for(let station=-30;station<32;station+=12){const p=roadFrame(station,-6.3),x=p.
 function roundBox(w,h,d,r=.1){const s=new THREE.Shape();s.moveTo(-w/2+r,-h/2);s.lineTo(w/2-r,-h/2);s.quadraticCurveTo(w/2,-h/2,w/2,-h/2+r);s.lineTo(w/2,h/2-r);s.quadraticCurveTo(w/2,h/2,w/2-r,h/2);s.lineTo(-w/2+r,h/2);s.quadraticCurveTo(-w/2,h/2,-w/2,h/2-r);s.lineTo(-w/2,-h/2+r);s.quadraticCurveTo(-w/2,-h/2,-w/2+r,-h/2);const g=new THREE.ExtrudeGeometry(s,{depth:d-2*r,steps:1,bevelEnabled:true,bevelSegments:3,steps:1,bevelSize:r,bevelThickness:r,curveSegments:6});g.translate(0,0,-d/2+r);g.computeBoundingBox();const size=new THREE.Vector3();g.boundingBox.getSize(size);g.scale(w/size.x,h/size.y,d/size.z);g.center();return g}
 const vehicles=[];
 function wheel(g,x,z,r=.32){
- const y=r+.12,side=x<0?-1:1;
+ const y=r+.035,side=x<0?-1:1;
  put(new THREE.TorusGeometry(r*.78,r*.22,16,40),M.rubber,[x,y,z],[1,1,1],[0,Math.PI/2,0],g);
  cyl(M.black,x,y,z,r*.68,.14,g,[0,0,Math.PI/2]);
  cyl(M.chrome,x+side*.095,y,z,r*.53,.025,g,[0,0,Math.PI/2]);
