@@ -35,6 +35,7 @@ els.get('#pause').onclick();assert.equal(els.get('#pause').textContent,'▶');el
 for(const d of app.roadDetails){const center=app.roadFrame(d.sourceZ);assert.ok(Math.abs(d.angle-center.angle)<1e-8);if(d.kind==='kerb')assert.ok(Math.abs(Math.hypot(d.x-center.x,d.z-center.z)-4.97)<1e-7)}
 const audit=app.life.audit();console.log('Life audit',JSON.stringify(audit));assert.equal(audit.plantsInBuildings.length,0);assert.equal(audit.plantsInWater.length,0);
 assert.equal(audit.walkingRoutes,audit.pedestrians);assert.ok(audit.traffic>30);
+for(const b of app.extendedWorld.footprints)for(const p of app.plantings){const gap=Math.hypot(Math.max(0,Math.abs(p.x-b.x)-b.w/2),Math.max(0,Math.abs(p.z-b.z)-b.d/2));assert.ok(gap>=p.radius,`Plant overlaps a district structure at ${b.x},${b.z}`);}
 for(const n of app.npcs)if(n.pathLength)for(let i=0;i<=16;i++)assert.ok(app.life.walkable(n.path[0].clone().lerp(n.path[1],i/16),n));
 const trafficStarts=app.life.traffic.map(v=>v.g.position.clone());
 for(let i=0;i<120;i++)app.life.update(1/60,i/60);
