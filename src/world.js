@@ -129,6 +129,8 @@ export function createExtendedWorld(h) {
  const hemisphere=scene.children.find(o=>o.isHemisphereLight);
  function setWeather(value){weather=['day','sunset','rain'].includes(value)?value:'day';const night=weather==='rain',sunset=weather==='sunset';scene.background.set(night?'#111e30':sunset?'#d5b197':'#a8cbd6');scene.fog.color.copy(scene.background);h.sun.color.set(sunset?'#ffbc77':'#fff2db');h.sun.intensity=night?.35:sunset?2.1:3;hemisphere.intensity=night?.7:1.25;scene.environmentIntensity=night?.17:.35;M.road.roughness=night?.22:.83;M.glass.emissive.set(night?'#df9a40':'#000000');M.glass.emissiveIntensity=night?.45:0;rain.visible=night;headlight.intensity=night?45:0;h.renderer.toneMappingExposure=night?1.25:1.02;document.querySelector('#weather-label').textContent=night?'RAIN · NIGHT':sunset?'GOLDEN HOUR':'CLEAR · DAY'}
  function update(elapsed,player){
+  // A cached shadow map must use the same light pose as the visible frame.
+  if(h.sun.target.position.distanceToSquared(player.position)>1e-10)h.sun.shadow.needsUpdate=true;
   h.sun.target.position.copy(player.position);h.sun.position.copy(player.position).add(new THREE.Vector3(-30,55,28));
   rain.position.set(player.position.x,player.position.y-((elapsed*11)%15),player.position.z);
   headlight.position.copy(player.position);headlight.position.y+=1.2;headlight.target.position.copy(player.position).add(new THREE.Vector3(-Math.sin(player.rotation.y)*16,.1,-Math.cos(player.rotation.y)*16));

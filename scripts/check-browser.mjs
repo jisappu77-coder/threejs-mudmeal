@@ -25,6 +25,11 @@ try {
   assert.equal(touchUI.selection,'none');
   await page.setViewportSize({width:1536,height:864});
   await page.evaluate(()=>{const a=window.__MUD_MEALS__;a.reset();a.resize();a.graphics.render()});
+  // Catch depth-setting regressions and unstable rendering of an unchanged scene.
+  const depth=await page.evaluate(()=>{const a=window.__MUD_MEALS__;a.graphics.render();return {near:a.camera.near,far:a.camera.far,aoNear:a.graphics.ao.ssaoMaterial.uniforms.cameraNear.value,aoFar:a.graphics.ao.ssaoMaterial.uniforms.cameraFar.value}});
+  assert.equal(depth.near,10);assert.equal(depth.aoNear,depth.near);assert.equal(depth.aoFar,depth.far);
+  const stable=await page.evaluate(()=>{const a=window.__MUD_MEALS__,canvas=a.renderer.domElement;a.graphics.render();const first=canvas.toDataURL();a.graphics.render();return first===canvas.toDataURL()});
+  assert.equal(stable,true,'An unchanged scene must render identically on successive frames');
   await page.screenshot({path:'artifacts/reference-view.png'});
   await page.setViewportSize({width:960,height:540});
   await page.locator('#pause').click();
@@ -44,6 +49,8 @@ try {
   assert.equal(await page.evaluate(()=>window.__MUD_MEALS__.cameraMode),'reference');
   await page.locator('#camera-mode').selectOption('driving');
   assert.equal(await page.evaluate(()=>window.__MUD_MEALS__.cameraMode),'driving');
+  const followDepth=await page.evaluate(()=>{const a=window.__MUD_MEALS__;a.graphics.render();return [a.camera.near,a.graphics.ao.ssaoMaterial.uniforms.cameraNear.value,a.camera.far,a.graphics.ao.ssaoMaterial.uniforms.cameraFar.value]});
+  assert.deepEqual(followDepth,[.5,.5,160,160]);
   const initialZoom=await page.evaluate(()=>window.__MUD_MEALS__.camera.zoom);
   await page.locator('#camera-zoom').press('ArrowRight');
   assert.ok(await page.evaluate(()=>window.__MUD_MEALS__.camera.zoom)>initialZoom);
@@ -127,7 +134,7 @@ try {
   await page.screenshot({path:'artifacts/resized-landscape.png'});
 
   assert.deepEqual(errors, []);
-  console.log('Browser checks passed: WebGL, world travel, rider-follow driving, weather, orders, camera settings, and landscape layout.');
+  console.log('Browser checks passed: stable repeated frames, synchronized camera depth, WebGL, world travel, rider-follow driving, weather, orders, camera settings, and landscape layout.');
 } finally {
   console.log('Page errors:', errors);
   await page.screenshot({ path: 'artifacts/final-state.png', timeout: 5000 }).catch(error => console.log('Screenshot:', error.message));
