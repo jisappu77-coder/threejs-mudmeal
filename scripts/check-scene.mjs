@@ -20,8 +20,10 @@ const app=window.__MUD_MEALS__;assert.ok(app.scene.children.length>100);assert.e
 let meshes=0,triangles=0,instances=0;
 app.scene.traverse(o=>{if(!o.isMesh)return;meshes++;const p=o.geometry.attributes.position;assert.ok(p);for(const n of p.array)assert.ok(Number.isFinite(n));const mult=o.isInstancedMesh?o.count:1;instances+=mult;triangles+=(o.geometry.index?o.geometry.index.count:p.count)/3*mult;if(o.isInstancedMesh)for(const n of o.instanceMatrix.array)assert.ok(Number.isFinite(n))});
 assert.ok(triangles>200000);assert.ok(instances>10000);assert.ok(app.player.children.length>30);
-const modelTypes=new Set();app.scene.traverse(o=>{if(o.userData.designVersion===2)modelTypes.add(o.userData.assetType)});
+const modelTypes=new Set();app.scene.traverse(o=>{if(o.userData.designVersion>=2)modelTypes.add(o.userData.assetType)});
 for(const type of ['delivery-bike','auto','bus','car','van','customer'])assert.ok(modelTypes.has(type),'Missing approved asset: '+type);
+const customers=app.scene.children.filter(o=>o.userData.assetType==='customer');assert.ok(customers.some(o=>o.userData.seated));assert.ok(customers.every(o=>o.userData.designVersion===3));
+const bus=app.vehicles.find(v=>v.type==='bus').g;const roof=bus.children.find(o=>o.isMesh&&Math.abs(o.position.y-3.19)<.001);const roofSize=new THREE.Vector3();roof.geometry.computeBoundingBox();roof.geometry.boundingBox.getSize(roofSize);assert.ok(Math.abs(roofSize.x-2.68)<1e-5&&Math.abs(roofSize.y-.27)<1e-5&&Math.abs(roofSize.z-7.15)<1e-5,'Bevels must preserve designed vehicle dimensions');
 const initial=app.player.position.clone();app.player.position.x+=5;app.reset();assert.equal(app.player.position.x,initial.x);
 for(const name of ['src/scene.js','src/graphics.js','src/main.js','src/style.css','public/food.png','public/reference.png'])assert.ok(fs.existsSync(name));
 els.get('#orders').onclick();assert.equal(els.get('#order-panel').hidden,false);els.get('#close-orders').onclick();assert.equal(els.get('#order-panel').hidden,true);
@@ -54,3 +56,4 @@ for(const d of app.extendedWorld.districts){app.visitDistrict(d.id);assert.ok(ap
 app.extendedWorld.setWeather('rain');assert.equal(app.extendedWorld.weather,'rain');app.extendedWorld.setWeather('day');
 app.visitDistrict('hills');const start=app.player.position.clone();app.update(1/60);assert.ok(app.player.position.distanceTo(start)<.001);app.reset();
 console.log(JSON.stringify({ok:true,meshes,instances,triangles,sceneObjects:app.scene.children.length}));
+

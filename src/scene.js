@@ -216,24 +216,78 @@ function chair(x,z,rot=0){
 }
 function table(x,z){box(mat('#9c6128'),x,.92,z,1.4,.12,.8);for(const xx of[-.56,.56])for(const zz of[-.27,.27])box(M.darkWood,x+xx,.45,z+zz,.08,.9,.08);for(const xx of[-.38,.36]){cyl(M.white,x+xx,1.01,z,.16,.028);ell(M.yellow,x+xx,1.05,z,.10,.04,.08);cyl(mat('#e9d9a7'),x+xx+.21,1.12,z-.12,.05,.18)}}
 for(const [x,z]of[[-8.7,-3.45],[-6.4,-3.45],[.4,-1.55]]){table(x,z);chair(x-.6,z+.6);chair(x+.6,z+.6)}
-function person(x,z,shirt='#318ca1',seated=false,parent=scene){
- const g=new THREE.Group();g.position.set(x,parent===scene?authoringHeight:0,z);g.userData.assetType='customer';g.userData.designVersion=2;parent.add(g);
- const cloth=mat(shirt),trousers=mat('#343b40'),hipY=seated?.64:.91,shoulderY=hipY+.52,headY=shoulderY+.3;
- ell(cloth,0,hipY+.29,0,.205,.3,.14,g);ell(trousers,0,hipY,0,.19,.12,.13,g);
- cyl(M.skin,0,shoulderY+.09,0,.065,.14,g);
- ell(M.skin,0,headY,.025,.125,.175,.12,g);
- ell(mat('#252622'),0,headY+.12,-.016,.13,.082,.125,g);
- ell(M.skin,0,headY-.015,.145,.035,.048,.041,g);
- for(const side of[-1,1]){
-  ell(M.skin,side*.13,headY-.015,.01,.031,.05,.024,g);
-  ell(M.black,side*.049,headY+.035,.138,.012,.014,.007,g);
-  const hip=[side*.115,hipY,0],knee=[side*.12,seated?.6:.48,seated?.31:.015],ankle=[side*.12,.11,seated?.37:.035];
-  bar(trousers,hip,knee,.073,g);ell(trousers,...knee,.077,.081,.071,g);bar(trousers,knee,ankle,.06,g);
-  ell(M.black,side*.12,.075,seated?.44:.095,.078,.05,.14,g);
-  const elbow=[side*.28,shoulderY-.21,seated?.2:.04],hand=[side*.23,seated?.95:hipY+.17,seated?.36:.12];
-  bar(cloth,[side*.18,shoulderY,0],elbow,.07,g);bar(M.skin,elbow,hand,.043,g);ell(M.skin,...hand,.043,.057,.043,g);
+// Anatomical surfaces share smooth geometry; joints bend without cylindrical stick limbs.
+function bodySurface(rings){
+ const vertices=[],indices=[],segments=32;
+ for(const [y,rx,rz,shift=0] of rings)for(let i=0;i<=segments;i++){const a=i/segments*Math.PI*2;vertices.push(Math.sin(a)*rx,y,Math.cos(a)*rz+shift);}
+ for(let row=0;row<rings.length-1;row++)for(let i=0;i<segments;i++){const k=row*(segments+1)+i;indices.push(k,k+1,k+segments+1,k+1,k+segments+2,k+segments+1);}
+ const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));g.setIndex(indices);g.computeVertexNormals();return g;
+}
+const shirtGeometry=bodySurface([[0,.165,.115],[.07,.165,.12],[.19,.173,.13],[.33,.195,.135],[.44,.205,.115],[.49,.15,.1],[.53,.063,.07],[.54,.06,.065]]);
+const limbGeometry=bodySurface([[0,.58,.6],[.09,.75,.72],[.25,1, .86],[.48,.88,.82],[.7,.75,.73],[.9,.58,.6],[1,.54,.55]]);
+const headGeometry=new THREE.SphereGeometry(1,32,24);
+for(let i=0;i<headGeometry.attributes.position.count;i++){
+ const v=headGeometry.attributes.position,y=v.getY(i),jaw=y<-.15?1+(y+.15)*.28:1;
+ v.setXYZ(i,v.getX(i)*.086*jaw,y*.129,v.getZ(i)*.09+(v.getZ(i)>0&&y<.4&&y>-.45?.008:0));
+}
+headGeometry.computeVertexNormals();
+const hairGeometry=new THREE.SphereGeometry(1,32,18,0,Math.PI*2,0,Math.PI*.53);
+function limb(parent,material,a,b,radius){
+ const av=new THREE.Vector3(...a),bv=new THREE.Vector3(...b),delta=bv.clone().sub(av);
+ const e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),delta.clone().normalize()));
+ return put(limbGeometry,material,a,[radius,delta.length(),radius],[e.x,e.y,e.z],parent);
+}
+function hand(parent,skin,p,grip=false){
+ ell(skin,...p,.034,.053,.024,parent);
+ for(let finger=0;finger<4;finger++){const xx=p[0]-.023+finger*.014,len=finger===0||finger===3?.036:.046;
+ limb(parent,skin,[xx,p[1]-.029,p[2]],[xx,p[1]-.029-len,p[2]+(grip?.024:.008)],.009);
  }
- for(let y=hipY+.18;y<shoulderY;y+=.095)ell(M.cream,0,y,.143,.011,.011,.007,g);
+ limb(parent,skin,[p[0]+.032,p[1]+.012,p[2]],[p[0]+.047,p[1]-.022,p[2]+.022],.012);
+}
+function face(parent,skin,headY,variant){
+ put(headGeometry,skin,[0,headY,.017],[1,1,1],[0,0,0],parent);
+ ell(skin,0,headY-.005,.132,.019,.038,.021,parent);
+ ell(skin,0,headY-.03,.149,.021,.016,.024,parent);
+ const hair=mat(variant%3?'#252522':'#393128');
+ put(hairGeometry,hair,[0,headY+.012,.006],[.09,.133,.094],[0,0,0],parent);
+ for(let i=0;i<6;i++)ell(hair,Math.sin(i*2.4)*.062,headY+.127+(i%2)*.008,.014+Math.cos(i*2.4)*.043,.037,.028,.035,parent);
+ for(const side of[-1,1]){
+  ell(skin,side*.088,headY-.012,.009,.021,.038,.015,parent);
+  ell(mat('#ebdfce'),side*.043,headY+.025,.112,.018,.008,.008,parent);
+  ell(mat('#28251f'),side*.043,headY+.025,.12,.006,.006,.003,parent);
+  bar(hair,[side*.027,headY+.049,.113],[side*.061,headY+.047,.104],.007,parent);
+ }
+ bar(mat('#80513e'),[-.025,headY-.071,.115],[.025,headY-.071,.115],.004,parent);
+ if(variant%2===0){for(const side of[-1,1])bar(hair,[side*.003,headY-.046,.13],[side*.027,headY-.051,.124],.007,parent);}
+}
+let personVariant=0;
+function person(x,z,shirt='#318ca1',seated=false,parent=scene){
+ const variant=personVariant++,g=new THREE.Group();g.position.set(x,parent===scene?authoringHeight:0,z);
+ g.userData={assetType:'customer',designVersion:3,seated,pose:seated?'dining':variant%3===0?'tea':'standing'};parent.add(g);
+ if(seated)g.rotation.y=Math.PI;
+ const skin=mat(['#a57451','#946344','#b5825c'][variant%3],.85),cloth=mat(shirt),pants=mat('#34383c');
+ const hipY=seated?.62:.91,shoulderY=hipY+.47,headY=shoulderY+.25,mundu=!seated&&variant%4===1;
+ put(shirtGeometry,cloth,[0,hipY,0],[1,1,1],[0,0,0],g);
+ ell(pants,0,hipY-.02,0,.16,.1,.12,g);cyl(skin,0,shoulderY+.095,0,.052,.12,g);
+ face(g,skin,headY,variant);
+ // Collar, button placket, pocket and restrained cloth creases.
+ for(const side of[-1,1])bar(mat('#c9c3ae'),[side*.026,hipY+.525,.07],[side*.072,hipY+.475,.095],.012,g);
+ box(cloth,0,hipY+.25,.137,.033,.43,.012,g);
+ for(let y=hipY+.1;y<hipY+.46;y+=.085)ell(M.cream,0,y,.147,.007,.007,.004,g);
+ box(cloth,-.105,hipY+.355,.142,.08,.082,.009,g);bar(mat(shirt,.95),[-.143,hipY+.395,.149],[-.065,hipY+.395,.149],.005,g);
+ for(const side of[-1,1]){
+  const hip=[side*.094,hipY-.02,0],knee=[side*.102,seated?.58:.48,seated?.3:(side<0?.015:-.015)],ankle=[side*.104,.12,seated?.32:(side<0?.04:-.035)];
+  limb(g,pants,hip,knee,.087);ell(pants,...knee,.061,.065,.063,g);limb(g,pants,knee,ankle,.067);
+  ell(M.black,ankle[0],.072,ankle[2]+.05,.066,.045,.124,g);
+  if(mundu)ell(skin,ankle[0],.115,ankle[2],.047,.07,.047,g);
+  const shoulder=[side*.177,shoulderY-.025,0];
+  const tea=!seated&&variant%3===0&&side===1;
+  const elbow=[side*.24,shoulderY-.22,seated?.15:tea?.18:.025],palm=[side*.2,seated?.98:tea?headY-.13:hipY+.05,seated?.38:tea?.24:.04];
+  const sleeveEnd=new THREE.Vector3(...shoulder).lerp(new THREE.Vector3(...elbow),.6).toArray();
+  ell(cloth,...shoulder,.07,.083,.075,g);limb(g,cloth,shoulder,sleeveEnd,.086);limb(g,skin,sleeveEnd,elbow,.052);ell(skin,...elbow,.044,.044,.043,g);limb(g,skin,elbow,palm,.047);hand(g,skin,palm,tea||seated);
+  if(tea){cyl(M.chrome,palm[0],palm[1]+.042,palm[2]+.018,.033,.094,g);}
+ }
+ if(mundu){const dhoti=bodySurface([[.16,.135,.115],[.3,.151,.126],[.55,.158,.135],[.8,.163,.132],[.94,.166,.128]]);put(dhoti,mat('#e5ddc6'),[0,0,.004],[1,1,1],[0,0,0],g);box(mat('#bca36d'),.055,.55,.14,.015,.74,.012,g);bar(mat('#cdc3a8'),[-.04,.17,.118],[-.045,.87,.137],.01,g);}
  return g;
 }
 person(-11.3,-4.1);person(-8.1,-2.9,'#d7ac43',true);person(-5.85,-2.9,'#6874ba',true);person(.05,-.95,'#e5b22c',true);person(1.2,-.95,'#e6e6db',true);person(18.3,-18.6,'#e4e9dc');person(-19.4,14.2,'#8baa40');
@@ -288,7 +342,7 @@ function wire(a,b){const curve=new THREE.CatmullRomCurve3([new THREE.Vector3(...
 for(let station=-32;station<33;station+=11){const p=roadFrame(station,6.3),next=roadFrame(station+11,6.3),x=p.x,z=p.z;cyl(mat('#656965'),x,3.5,z,.12,7);box(M.wood,x,6.3,z,1.3,.10,.15);for(const d of[-.5,.5]){cyl(M.black,x+d,6.45,z,.035,.4);for(const y of[6.36,6.44,6.52])cyl(M.white,x+d,y,z,.085,.045);if(z<22)wire([x+d,6.6,z],[next.x+d,6.6,next.z])}}
 for(let station=-30;station<32;station+=12){const p=roadFrame(station,-6.3),x=p.x,z=p.z;cyl(M.black,x,2.5,z,.065,5);bar(M.black,[x,4.9,z],[x+.7,5.2,z],.04);box(M.black,x+.8,5.17,z,.4,.12,.22);box(mat('#ffffbc'),x+.8,5.1,z,.3,.02,.17)}
 // Rounded vehicle bodies use bevelled extrusions rather than coarse polygons.
-function roundBox(w,h,d,r=.1){const s=new THREE.Shape();s.moveTo(-w/2+r,-h/2);s.lineTo(w/2-r,-h/2);s.quadraticCurveTo(w/2,-h/2,w/2,-h/2+r);s.lineTo(w/2,h/2-r);s.quadraticCurveTo(w/2,h/2,w/2-r,h/2);s.lineTo(-w/2+r,h/2);s.quadraticCurveTo(-w/2,h/2,-w/2,h/2-r);s.lineTo(-w/2,-h/2+r);s.quadraticCurveTo(-w/2,-h/2,-w/2+r,-h/2);const g=new THREE.ExtrudeGeometry(s,{depth:d-2*r,steps:1,bevelEnabled:true,bevelSegments:3,steps:1,bevelSize:r,bevelThickness:r,curveSegments:6});g.translate(0,0,-d/2+r);return g}
+function roundBox(w,h,d,r=.1){const s=new THREE.Shape();s.moveTo(-w/2+r,-h/2);s.lineTo(w/2-r,-h/2);s.quadraticCurveTo(w/2,-h/2,w/2,-h/2+r);s.lineTo(w/2,h/2-r);s.quadraticCurveTo(w/2,h/2,w/2-r,h/2);s.lineTo(-w/2+r,h/2);s.quadraticCurveTo(-w/2,h/2,-w/2,h/2-r);s.lineTo(-w/2,-h/2+r);s.quadraticCurveTo(-w/2,-h/2,-w/2+r,-h/2);const g=new THREE.ExtrudeGeometry(s,{depth:d-2*r,steps:1,bevelEnabled:true,bevelSegments:3,steps:1,bevelSize:r,bevelThickness:r,curveSegments:6});g.translate(0,0,-d/2+r);g.computeBoundingBox();const size=new THREE.Vector3();g.boundingBox.getSize(size);g.scale(w/size.x,h/size.y,d/size.z);g.center();return g}
 const vehicles=[];
 function wheel(g,x,z,r=.32){
  const y=r+.12,side=x<0?-1:1;
@@ -445,13 +499,13 @@ function bike(x,z,color,label){
  addSign('KL 07',0,.62,.98,.27,.14,'#f4f2e6','#16221e',45,0,g);
  // Bent hips, knees, elbows and ankles keep the rider seated naturally.
  ell(pants,0,1.13,.23,.19,.13,.2,g);
- ell(cloth,0,1.49,.06,.22,.29,.16,g);
+ put(shirtGeometry,cloth,[0,1.18,.08],[1.04,1,1],[.1,0,0],g);
  for(const side of[-1,1]){
   const hip=[side*.14,1.16,.2],knee=[side*.27,.91,-.22],ankle=[side*.23,.56,.06];
-  bar(pants,hip,knee,.085,g);ell(pants,...knee,.09,.095,.085,g);bar(pants,knee,ankle,.066,g);
+  limb(g,pants,hip,knee,.105);ell(pants,...knee,.07,.075,.07,g);limb(g,pants,knee,ankle,.081);
   ell(M.black,side*.24,.54,-.035,.095,.07,.17,g);
   const shoulder=[side*.19,1.68,0],elbow=[side*.3,1.42,-.23],hand=[side*.28,1.18,-.48];
-  bar(cloth,shoulder,elbow,.075,g);bar(M.skin,elbow,hand,.049,g);ell(M.skin,...hand,.053,.052,.055,g);
+  limb(g,cloth,shoulder,elbow,.085);limb(g,M.skin,elbow,hand,.055);ell(M.skin,...hand,.037,.05,.03,g);
   box(M.black,side*.12,1.48,.225,.045,.44,.026,g);
  }
  cyl(M.skin,0,1.8,-.025,.07,.13,g);
@@ -606,5 +660,20 @@ window.addEventListener('resize',resize);
 new ResizeObserver(resize).observe(document.querySelector('#game-stage'));
 resize();minimap();
 renderer.setAnimationLoop(()=>{update(Math.min(clock.getDelta(),.05));graphics.render()});
-window.__MUD_MEALS__={setCameraMode,get cameraMode(){return cameraMode},extendedWorld,visitDistrict,update,scene,camera,renderer,player,reset,cameraSettings,resetCameraSettings,updateFollowCamera,graphics,resize,roadFrame,roadDetails,vehicles,stats:()=>({triangles:renderer.info.render.triangles,calls:renderer.info.render.calls,geometries:renderer.info.memory.geometries,objects:scene.children.length})};
+// Review the exact in-game character mesh under consistent studio lighting.
+function renderPersonPreview(seated=false){
+ const original=scene.children.find(o=>o.userData.assetType==='customer'&&o.userData.seated===seated);
+ const preview=new THREE.Scene();preview.background=new THREE.Color('#e5dfd1');preview.environment=scene.environment;
+ const character=original.clone(true);character.position.set(0,0,0);character.rotation.set(0,0,0);character.scale.setScalar(1);preview.add(character);
+ if(seated){const before=scene.children.length;chair(0,0);const seat=scene.children[before];seat.position.set(0,0,0);preview.add(seat);}
+ const ground=new THREE.Mesh(geom.box,mat('#c9c2b4'));ground.position.y=-.035;ground.scale.set(5,.05,5);ground.receiveShadow=true;preview.add(ground);
+ preview.add(new THREE.HemisphereLight('#fff7e5','#8a8174',2));
+ const light=new THREE.DirectionalLight('#fff2db',3);light.position.set(-3,6,4);light.castShadow=true;light.shadow.mapSize.set(1024,1024);Object.assign(light.shadow.camera,{left:-3,right:3,top:3,bottom:-3,near:.1,far:15});light.shadow.normalBias=.02;preview.add(light,light.target);
+ const portrait=camera.clone();portrait.near=.1;portrait.far=20;portrait.zoom=1;portrait.fov=34;portrait.position.set(1.8,1.5,3.3);portrait.lookAt(0,.84,0);portrait.updateProjectionMatrix();
+ renderer.render(preview,portrait);
+ const png=canvas.toDataURL('image/png');light.shadow.dispose();
+ return png;
+}
+window.__MUD_MEALS__={renderPersonPreview,setCameraMode,get cameraMode(){return cameraMode},extendedWorld,visitDistrict,update,scene,camera,renderer,player,reset,cameraSettings,resetCameraSettings,updateFollowCamera,graphics,resize,roadFrame,roadDetails,vehicles,stats:()=>({triangles:renderer.info.render.triangles,calls:renderer.info.render.calls,geometries:renderer.info.memory.geometries,objects:scene.children.length})};
 renderer.compileAsync(scene,camera).then(()=>{document.querySelector('#loading').style.opacity=0;setTimeout(()=>document.querySelector('#loading').remove(),450)}).catch(()=>document.querySelector('#loading').remove());
+

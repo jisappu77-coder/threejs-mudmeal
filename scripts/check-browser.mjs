@@ -1,5 +1,5 @@
 import { chromium } from 'playwright';
-import { mkdir } from 'node:fs/promises';
+import { mkdir, writeFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 await mkdir('artifacts', { recursive: true });
 const browser = await chromium.launch();
@@ -32,9 +32,15 @@ try {
   assert.equal(stable,true,'An unchanged scene must render identically on successive frames');
   await page.screenshot({path:'artifacts/reference-view.png'});
   await page.setViewportSize({width:960,height:540});
+  await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
+  for(const seated of [false,true]){
+    const png=await page.evaluate(seated=>window.__MUD_MEALS__.renderPersonPreview(seated),seated);
+    const bytes=Buffer.from(png.split(',')[1],'base64');assert.ok(bytes.length>15000,'Character preview must contain rendered geometry');
+    await writeFile('artifacts/person-'+(seated?'seated':'standing')+'.png',bytes);
+  }
   // Close-up renders expose silhouettes and construction details hidden in the world view.
   for(const type of ['delivery-bike','auto','bus','car','van']){
-    await page.evaluate(type=>{
+    const assetPNG=await page.evaluate(type=>{
       const a=window.__MUD_MEALS__;let model;
       a.scene.traverse(o=>{if(!model&&o.userData.assetType===type)model=o});
       if(!model)throw new Error('Missing model: '+type);
@@ -42,9 +48,10 @@ try {
       const distance=type==='bus'?16:type==='delivery-bike'?5:6;
       a.camera.position.set(model.position.x+distance*.65,model.position.y+distance*.55,model.position.z+distance*.9);
       a.camera.lookAt(model.position.x,model.position.y+(type==='bus'?2:1.2),model.position.z);
-      a.camera.updateProjectionMatrix();a.graphics.render();
+      a.camera.updateProjectionMatrix();a.graphics.render();return a.renderer.domElement.toDataURL('image/png');
     },type);
-    await page.screenshot({path:'artifacts/asset-'+type+'.png'});
+    const assetBytes=Buffer.from(assetPNG.split(',')[1],'base64');assert.ok(assetBytes.length>15000,'Asset preview must contain rendered geometry');
+    await writeFile('artifacts/asset-'+type+'.png',assetBytes);
   }
   await page.evaluate(()=>{const a=window.__MUD_MEALS__;a.reset();a.graphics.render()});
 
@@ -156,3 +163,4 @@ try {
   await page.screenshot({ path: 'artifacts/final-state.png', timeout: 5000 }).catch(error => console.log('Screenshot:', error.message));
   await browser.close();
 }
+
