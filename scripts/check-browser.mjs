@@ -52,6 +52,35 @@ try {
   await page.locator('#reference-panel img').waitFor({ state: 'visible' });
   assert.equal(await page.locator('#reference-panel img').evaluate(img => img.complete && img.naturalWidth > 0), true);
   await page.locator('#close-reference').click();
+  await page.locator('#world-explore').click();
+  await page.locator('#world-panel').waitFor({state:'visible'});
+  await page.locator('#district-select').selectOption('fort-kochi');
+  await page.locator('#travel-district').click();
+  assert.equal(await page.locator('#location').textContent(),'FORT KOCHI MARKET');
+  // Exercise real movement through a turn with the normal follow camera.
+  await page.locator('#pause').click();
+  const start=await page.evaluate(()=>window.__MUD_MEALS__.player.position.toArray());
+  await page.keyboard.down('ArrowUp');
+  await page.evaluate(()=>{for(let i=0;i<180;i++)window.__MUD_MEALS__.update(1/60)});
+  await page.keyboard.up('ArrowUp');
+  const follow=await page.evaluate(()=>{const a=window.__MUD_MEALS__,p=a.player.position,c=a.camera.position;return {position:p.toArray(),behind:(c.x-p.x)*-Math.sin(a.player.rotation.y)+(c.z-p.z)*-Math.cos(a.player.rotation.y),height:c.y-p.y}});
+  assert.ok(Math.hypot(follow.position[0]-start[0],follow.position[2]-start[2])>4);
+  assert.ok(follow.behind<0);assert.ok(follow.height>2);
+  await page.locator('#pause').click();
+  for(const id of ['fort-kochi','backwaters','coast','port','viewpoint']){
+    await page.evaluate(id=>{const a=window.__MUD_MEALS__;a.visitDistrict(id);a.graphics.render()},id);
+    await page.screenshot({path:'artifacts/'+id+'.png'});
+  }
+  await page.evaluate(()=>{const a=window.__MUD_MEALS__;a.visitDistrict('backwaters');a.camera.position.set(85,32,-30);a.camera.lookAt(73,1,-76);a.graphics.render()});
+  await page.screenshot({path:'artifacts/backwater-overview.png'});
+  await page.locator('#tools-toggle').click();
+  await page.locator('#world-explore').click();
+  await page.locator('#weather-select').selectOption('rain');
+  assert.equal(await page.evaluate(()=>window.__MUD_MEALS__.extendedWorld.weather),'rain');
+  await page.locator('#close-world').click();
+  await page.evaluate(()=>{const a=window.__MUD_MEALS__;a.visitDistrict('fort-kochi');a.graphics.render()});
+  await page.screenshot({path:'artifacts/rainy-night.png'});
+  await page.evaluate(()=>{const a=window.__MUD_MEALS__;a.extendedWorld.setWeather('day');a.reset();a.update(0)});
   await page.setViewportSize({ width: 390, height: 844 });
   await page.locator('#landscape-prompt').waitFor({ state: 'visible' });
   await page.screenshot({ path: 'artifacts/portrait.png' });
@@ -78,7 +107,7 @@ try {
   await page.screenshot({path:'artifacts/resized-landscape.png'});
 
   assert.deepEqual(errors, []);
-  console.log('Browser checks passed: WebGL, orders, reference assets, and landscape layout.');
+  console.log('Browser checks passed: WebGL, world travel, rider-follow driving, weather, orders, camera settings, and landscape layout.');
 } finally {
   console.log('Page errors:', errors);
   await page.screenshot({ path: 'artifacts/final-state.png', timeout: 5000 }).catch(error => console.log('Screenshot:', error.message));

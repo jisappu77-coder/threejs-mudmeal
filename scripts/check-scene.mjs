@@ -1,5 +1,6 @@
 // Construct the complete real Three.js scene without a browser, then verify geometry and controls.
 import fs from 'node:fs';
+const {createExtendedWorld}=await import('../src/world.js');
 const {setupGraphics}=await import('../src/graphics.js');
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
@@ -14,7 +15,7 @@ let pixelRatio=1;
 const fakeRenderer={getPixelRatio:()=>pixelRatio,capabilities:{maxSamples:4},setPixelRatio:r=>pixelRatio=r,setSize:noop,shadowMap:{},setAnimationLoop:noop,render:noop,compileAsync:()=>Promise.resolve(),info:{render:{triangles:0,calls:0},memory:{geometries:0}}};
 const FakeControls=class {constructor(){this.target=new THREE.Vector3()}update(){}};
 let source=fs.readFileSync('./src/scene.js','utf8').replace(/^import .*;\n/gm,'').replace(/const renderer = new THREE.WebGLRenderer\([^\n]*\);/,'const renderer = fakeRenderer;').replace('new OrbitControls(camera,canvas)','new FakeControls(camera,canvas)');
-new Function('THREE','fakeRenderer','FakeControls','setupGraphics',source)(THREE,fakeRenderer,FakeControls,setupGraphics);
+new Function('THREE','fakeRenderer','FakeControls','setupGraphics','createExtendedWorld',source)(THREE,fakeRenderer,FakeControls,setupGraphics,createExtendedWorld);
 const app=window.__MUD_MEALS__;assert.ok(app.scene.children.length>100);assert.equal(app.camera.isPerspectiveCamera,true);assert.equal(app.graphics.ao.ssaoMaterial.defines.PERSPECTIVE_CAMERA,1);assert.equal(app.graphics.composer.passes.length,3);
 let meshes=0,triangles=0,instances=0;
 app.scene.traverse(o=>{if(!o.isMesh)return;meshes++;const p=o.geometry.attributes.position;assert.ok(p);for(const n of p.array)assert.ok(Number.isFinite(n));const mult=o.isInstancedMesh?o.count:1;instances+=mult;triangles+=(o.geometry.index?o.geometry.index.count:p.count)/3*mult;if(o.isInstancedMesh)for(const n of o.instanceMatrix.array)assert.ok(Number.isFinite(n))});
@@ -41,4 +42,8 @@ assert.ok(app.camera.position.clone().sub(app.player.position).dot(forward)<0);
 assert.ok(app.camera.position.y>app.player.position.y+2);
 app.reset();assert.ok(app.player.position.distanceTo(initial)<1e-8);
 globalThis.devicePixelRatio=2.5;app.graphics.setQuality(true);app.resize();assert.equal(pixelRatio,2);assert.equal(app.graphics.ao.width,1536*2);app.graphics.setQuality(false);app.resize();assert.equal(pixelRatio,1);assert.equal(app.graphics.ao.width,1536);
+assert.equal(app.extendedWorld.districts.length,10);
+for(const d of app.extendedWorld.districts){app.visitDistrict(d.id);assert.ok(app.player.position.distanceTo(new THREE.Vector3(d.x,d.y,d.z))<4);assert.ok(app.camera.position.y>app.player.position.y+2);}
+app.extendedWorld.setWeather('rain');assert.equal(app.extendedWorld.weather,'rain');app.extendedWorld.setWeather('day');
+app.visitDistrict('hills');const start=app.player.position.clone();app.update(1/60);assert.ok(app.player.position.distanceTo(start)<.001);app.reset();
 console.log(JSON.stringify({ok:true,meshes,instances,triangles,sceneObjects:app.scene.children.length}));

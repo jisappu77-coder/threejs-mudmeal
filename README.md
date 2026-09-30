@@ -29,3 +29,9 @@ npm run check:browser
 The single GitHub Actions workflow checks scene construction, builds the website, and tests the production build in Chromium. Browser screenshots are attached to the workflow run. Successful pushes to main deploy dist/ to GitHub Pages; pull requests run checks without deploying. Pages uses the repository's existing GitHub Actions configuration.
 
 src/scene.js contains the scene and interaction; src/graphics.js configures ambient occlusion and rendering; src/style.css provides the responsive HUD. public/ contains the supplied reference and food image. Design notes remain in docs/. Earlier placeholder models and duplicated workflows were removed; their history remains in Git.
+
+## Extended Kerala world
+
+The scene now connects the original market to nine additional procedural districts: backwater tea shop, paddy trails, village, port, ferry landing, lighthouse coast, Fort Kochi market, hill road and viewpoint. Open **Settings → Explore Kerala** to travel to a district or choose clear day, golden hour or rainy night. Accelerate tours the continuous road; steering adjusts the rider’s lane. The perspective follow camera, camera sliders and landscape layout remain available.
+
+These are modeled environments inspired by the references, not photorealistic reproductions. The ferry, port and houseboats are scenery; boarding, jobs in each district and free off-road driving are not implemented. Geometry is instanced in district batches to permit view culling. GitHub Actions tests world travel, driving, weather and responsive layout in Chromium, then repeats the checks against GitHub Pages and uploads screenshots.
