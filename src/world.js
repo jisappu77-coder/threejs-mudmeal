@@ -22,6 +22,8 @@ export function createExtendedWorld(h) {
   V(21,-18.3),V(28,-36),V(58,-54),V(97,-49),V(128,-15),V(137,19),V(130,58),V(103,91),V(55,115),V(5,98),V(-57,86),V(-110,30),V(-100,-20),V(-80,-62),V(-63,-96,8),V(-48,-124,16),V(-20,-132,20),V(10,-150,24),V(31,-120,18),V(0,-90,7),V(-18,-40),
  ],false,'centripetal');
  const roadPoints=extension.getPoints(1100);
+ // Cubic height interpolation can dip below flat ground before a climb.
+ for(const p of roadPoints)p.y=Math.max(.16,p.y);
  function roadRibbon(width,lift,material){
   const vertices=[],uv=[],indices=[];
   roadPoints.forEach((p,i)=>{const a=roadPoints[Math.max(0,i-1)],b=roadPoints[Math.min(roadPoints.length-1,i+1)],dx=b.x-a.x,dz=b.z-a.z,l=Math.max(.0001,Math.hypot(dx,dz));for(const s of[-1,1]){vertices.push(p.x+s*dz/l*width/2,p.y-.16+lift,p.z-s*dx/l*width/2);uv.push(s===-1?0:1,i*.18)}if(i<roadPoints.length-1){const j=i*2;indices.push(j,j+2,j+1,j+1,j+2,j+3)}});
@@ -74,8 +76,9 @@ export function createExtendedWorld(h) {
     for(const x of[36,65,88]){for(const s of[-1,1])bar(M.yellow,[x+s*2,0,137],[x+s*.6,16,140],.27);bar(M.yellow,[x,15,140],[x+14,22,150],.26);bar(M.yellow,[x,15,140],[x-6,20,131],.26);bar(M.black,[x+14,22,150],[x+14,5,150],.04);box(M.yellow,x,14,140,2.2,2,2)}
     ell(M.darkWood,56,.5,157,17,1.5,5);box(M.white,44,3,157,6,4,5);box(M.red,58,2.6,157,15,2.5,5);board('KOCHI PORT',51,121);break;}
    case 'ferry':
-    box(waterMaterial,2,-.1,114,28,.24,24);box(M.stone,5,.2,104,10,.5,11);for(const x of[1,9])for(let z=100;z<110;z+=2){cyl(M.chrome,x,.95,z,.06,1.4);bar(M.chrome,[x,1.6,z],[x,1.6,z+2],.035)}
-    box(M.darkWood,3,.3,115,9,.7,16);box(M.cream,3,1,115,8,.4,13);box(M.white,3,2.8,121,7,3,3);box(M.glass,3,3,122.55,5.7,1,.03);addSign('KOCHI FERRY',3,4.2,122.6,6,.65,'#234c53','#ffe8ab',47);board('FERRY LANDING',12,98);spawnVehicle('van',3,115,Math.PI,'#e4d7a9').position.y=1.2;break;
+    footprints.push({x:-9,z:108,w:8,d:11});
+    box(waterMaterial,2,-.1,114,28,.24,24);box(M.stone,-9,.2,108,8,.5,11);for(const x of[-12,-6])for(let z=104;z<114;z+=2){cyl(M.chrome,x,.95,z,.06,1.4);bar(M.chrome,[x,1.6,z],[x,1.6,z+2],.035)}
+    box(M.wood,-3,.45,113,7,.2,2);box(M.darkWood,3,.3,115,9,.7,16);box(M.cream,3,1,115,8,.4,13);box(M.white,3,2.8,121,7,3,3);box(M.glass,3,3,122.55,5.7,1,.03);addSign('KOCHI FERRY',3,4.2,122.6,6,.65,'#234c53','#ffe8ab',47);board('FERRY LANDING',12,98);spawnVehicle('van',3,115,Math.PI,'#e4d7a9').position.y=1.2;break;
    case 'coast':
     cyl(M.white,-133,5.5,39,2,11);for(const y of[2,6,10])cyl(M.red,-133,y,39,2.03,1.2);cyl(M.chrome,-133,11.7,39,2.3,.2);cyl(M.glass,-133,12.7,39,1.5,2);cyl(M.red,-133,13.8,39,2,.25);put(new THREE.ConeGeometry(2.3,1.2,40),M.red,[-133,14.5,39]);
     board('LIGHTHOUSE COAST',-117,42);for(let z=-10;z<76;z+=10)palm(-122,z,rand(8,11));
