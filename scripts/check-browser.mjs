@@ -6,6 +6,7 @@ const browser = await chromium.launch();
 const page = await browser.newPage({ viewport: { width: 1536, height: 864 } });
 const errors = [];
 page.on('pageerror', error => errors.push(error.message));
+page.on('console', message => { if (message.type() === 'error') console.error('Browser:', message.text()); });
 try {
   const url = process.env.PREVIEW_URL || 'http://localhost:4173';
   for (let attempt = 0; attempt < 30; attempt++) {
@@ -13,7 +14,7 @@ try {
     catch { await new Promise(resolve => setTimeout(resolve, 1000)); }
   }
   await page.goto(url, { waitUntil: 'networkidle' });
-  await page.waitForFunction(() => window.__MUD_MEALS__ && !document.querySelector('#loading'), { timeout: 120000 });
+  await page.waitForFunction(() => window.__MUD_MEALS__ && !document.querySelector('#loading'), null, { timeout: 120000 });
   assert.equal(await page.evaluate(() => window.__MUD_MEALS__.renderer.getContext().isContextLost()), false);
   await page.locator('#pause').click();
   await page.screenshot({ path: 'artifacts/landscape.png' });
@@ -35,6 +36,7 @@ try {
   assert.deepEqual(errors, []);
   console.log('Browser checks passed: WebGL, orders, reference assets, and landscape layout.');
 } finally {
-  await page.screenshot({ path: 'artifacts/final-state.png' }).catch(() => {});
+  console.log('Page errors:', errors);
+  await page.screenshot({ path: 'artifacts/final-state.png', timeout: 5000 }).catch(error => console.log('Screenshot:', error.message));
   await browser.close();
 }
