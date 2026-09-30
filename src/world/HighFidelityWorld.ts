@@ -69,6 +69,7 @@ function targetSizeFor(relativePath: string): number {
   if (relativePath.includes('auto-rickshaw')) return 2.6;
   if (relativePath.includes('coconut-palm')) return 8.2;
   if (relativePath.includes('utility-pole')) return 7.4;
+  if (relativePath.includes('bridge')) return 20;
   if (relativePath.includes('kerala-shop')) return 8.2;
   if (relativePath.includes('kerala-house')) return 8.4;
   return 5;
@@ -357,29 +358,14 @@ function addCanal(root: THREE.Group, m: Materials, obstacles: THREE.Box2[]): voi
   );
 }
 
-function addBridge(root: THREE.Group, m: Materials): void {
-  const deck = new THREE.Mesh(new THREE.BoxGeometry(20, 0.75, 11.7), m.concrete);
-  deck.position.set(38, 0.3, 17);
-  deck.castShadow = true;
-  root.add(deck);
-
-  const road = new THREE.Mesh(new THREE.BoxGeometry(20, 0.14, 9.4), m.asphalt);
-  road.position.set(38, 0.71, 17);
-  root.add(road);
-
-  for (const z of [11.55, 22.45]) {
-    for (let x = 29.5; x <= 46.5; x += 2.1) {
-      const post = new THREE.Mesh(new THREE.BoxGeometry(0.26, 1.35, 0.34), m.concrete);
-      post.position.set(x, 1.38, z);
-      post.castShadow = true;
-      root.add(post);
-    }
-    for (const y of [1.25, 1.78]) {
-      const rail = new THREE.Mesh(new THREE.BoxGeometry(18.2, 0.16, 0.18), m.concrete);
-      rail.position.set(38, y, z);
-      root.add(rail);
-    }
-  }
+function addBridge(root: THREE.Group, _m: Materials): void {
+  spawnModel(
+    root,
+    'world/bridge.glb',
+    new THREE.Vector3(38, 0, 17),
+    1,
+    0,
+  );
 }
 
 function addRiceFields(root: THREE.Group, m: Materials): void {
