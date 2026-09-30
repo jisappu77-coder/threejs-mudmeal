@@ -3,7 +3,8 @@ import { mkdir } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 await mkdir('artifacts', { recursive: true });
 const browser = await chromium.launch();
-const page = await browser.newPage({ viewport: { width: 1536, height: 864 } });
+const page = await browser.newPage({ viewport: { width: 960, height: 540 } });
+page.setDefaultTimeout(120000);
 const errors = [];
 page.on('pageerror', error => errors.push(error.message));
 page.on('console', message => { if (message.type() === 'error') console.error('Browser:', message.text()); });
@@ -16,6 +17,8 @@ try {
   await page.goto(url, { waitUntil: 'networkidle' });
   await page.waitForFunction(() => window.__MUD_MEALS__ && !document.querySelector('#loading'), null, { timeout: 120000 });
   assert.equal(await page.evaluate(() => window.__MUD_MEALS__.renderer.getContext().isContextLost()), false);
+  // Capture an existing rendered frame without flooding the CI software GPU.
+  await page.evaluate(() => window.__MUD_MEALS__.renderer.setAnimationLoop(null));
   await page.locator('#pause').click();
   await page.screenshot({ path: 'artifacts/landscape.png' });
   await page.locator('#orders').click();
