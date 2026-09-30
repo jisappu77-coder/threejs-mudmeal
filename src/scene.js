@@ -18,6 +18,7 @@ scene.background=new THREE.Color('#b5cc8b');
 scene.fog=new THREE.Fog('#b5cc8b',95,180);
 const aspect=innerWidth/innerHeight;
 const camera=new THREE.OrthographicCamera(-29,29,29/aspect,-29/aspect,.1,160);
+const defaultZoom=1.12;camera.zoom=defaultZoom;
 const originalPosition=new THREE.Vector3(23,49,48), originalTarget=new THREE.Vector3(0,0,0);
 camera.position.copy(originalPosition);camera.lookAt(originalTarget);
 const controls=new OrbitControls(camera,canvas);controls.target.copy(originalTarget);controls.enabled=false;controls.update();
@@ -247,12 +248,12 @@ flush();
 let paused=false,freeCamera=false,speed=0,steer=0,travel=0,delivered=false;const keys=new Set();
 const toast=document.querySelector('#toast');let toastTimer;
 function notify(message){toast.textContent=message;toast.style.opacity=1;clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.style.opacity=0,2600)}
-function reset(){player.position.copy(playerStart);player.rotation.set(0,playerStartAngle,0);speed=0;travel=0;delivered=false;document.querySelector('#cash').textContent='₹1,240';camera.position.copy(originalPosition);camera.zoom=1;camera.updateProjectionMatrix();controls.target.copy(originalTarget);controls.update()}
+function reset(){player.position.copy(playerStart);player.rotation.set(0,playerStartAngle,0);speed=0;travel=0;delivered=false;document.querySelector('#cash').textContent='₹1,240';camera.position.copy(originalPosition);camera.zoom=defaultZoom;camera.updateProjectionMatrix();controls.target.copy(originalTarget);controls.update()}
 function hold(button,key){const el=document.querySelector(button);el.addEventListener('pointerdown',e=>{keys.add(key);el.setPointerCapture(e.pointerId)});for(const ev of['pointerup','pointercancel','lostpointercapture'])el.addEventListener(ev,()=>keys.delete(key))}
 hold('#accelerate','ArrowUp');hold('#brake','ArrowDown');
 for(const btn of document.querySelectorAll('[data-steer]')){const n=Number(btn.dataset.steer);btn.addEventListener('pointerdown',e=>{steer=n;btn.setPointerCapture(e.pointerId)});for(const ev of['pointerup','pointercancel','lostpointercapture'])btn.addEventListener(ev,()=>steer=0)}
 document.querySelector('#pause').onclick=()=>{paused=!paused;document.querySelector('#pause').textContent=paused?'▶':'Ⅱ';document.querySelector('#pause').setAttribute('aria-label',paused?'Resume animation':'Pause animation')};
-document.querySelector('#view').onclick=()=>{freeCamera=!freeCamera;controls.enabled=freeCamera;document.querySelector('#view').textContent=freeCamera?'Locked camera':'Free camera';notify(freeCamera?'Drag to orbit · Scroll to zoom':'Reference camera restored');if(!freeCamera){camera.position.copy(originalPosition);controls.target.copy(originalTarget);camera.zoom=1;camera.updateProjectionMatrix();camera.lookAt(originalTarget)}};
+document.querySelector('#view').onclick=()=>{freeCamera=!freeCamera;controls.enabled=freeCamera;document.querySelector('#view').textContent=freeCamera?'Locked camera':'Free camera';notify(freeCamera?'Drag to orbit · Scroll to zoom':'Reference camera restored');if(!freeCamera){camera.position.copy(originalPosition);controls.target.copy(originalTarget);camera.zoom=defaultZoom;camera.updateProjectionMatrix();camera.lookAt(originalTarget)}};
 document.querySelector('#reset').onclick=()=>{reset();notify('Scene reset')};
 document.querySelector('#orders').onclick=()=>document.querySelector('#order-panel').hidden=false;
 document.querySelector('#close-orders').onclick=()=>document.querySelector('#order-panel').hidden=true;
