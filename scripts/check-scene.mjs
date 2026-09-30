@@ -20,6 +20,8 @@ const app=window.__MUD_MEALS__;assert.ok(app.scene.children.length>100);assert.e
 let meshes=0,triangles=0,instances=0;
 app.scene.traverse(o=>{if(!o.isMesh)return;meshes++;const p=o.geometry.attributes.position;assert.ok(p);for(const n of p.array)assert.ok(Number.isFinite(n));const mult=o.isInstancedMesh?o.count:1;instances+=mult;triangles+=(o.geometry.index?o.geometry.index.count:p.count)/3*mult;if(o.isInstancedMesh)for(const n of o.instanceMatrix.array)assert.ok(Number.isFinite(n))});
 assert.ok(triangles>200000);assert.ok(instances>10000);assert.ok(app.player.children.length>30);
+const modelTypes=new Set();app.scene.traverse(o=>{if(o.userData.designVersion===2)modelTypes.add(o.userData.assetType)});
+for(const type of ['delivery-bike','auto','bus','car','van','customer'])assert.ok(modelTypes.has(type),'Missing approved asset: '+type);
 const initial=app.player.position.clone();app.player.position.x+=5;app.reset();assert.equal(app.player.position.x,initial.x);
 for(const name of ['src/scene.js','src/graphics.js','src/main.js','src/style.css','public/food.png','public/reference.png'])assert.ok(fs.existsSync(name));
 els.get('#orders').onclick();assert.equal(els.get('#order-panel').hidden,false);els.get('#close-orders').onclick();assert.equal(els.get('#order-panel').hidden,true);

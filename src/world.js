@@ -65,7 +65,7 @@ export function createExtendedWorld(h) {
     for(let i=0;i<8;i++){box(M.wood,66+i*.7,.18,-66, .66,.2,1.8);cyl(M.wood,66+i*.7,-.4,-66,.08,1.3)}
     break;
    case 'paddy':
-    for(let plot=0;plot<6;plot++){const x=146+(plot%2)*13,z=-36+Math.floor(plot/2)*14;box(mat('#648e32'),x,.03,z,12,.14,12);box(M.soil,x,.18,z+6,13,.3,.6);for(let i=0;i<1050;i++)put(riceGeometry,riceMaterials[i%3],[x+rand(-5.7,5.7),.12,z+rand(-5.7,5.7)],[1,rand(.55,1.05),1],[0,rand(0,6.28),0]);fence([[x-6,z-6],[x-6,z],[x-6,z+6]])}
+    for(let plot=0;plot<6;plot++){const x=146+(plot%2)*13,z=-36+Math.floor(plot/2)*14;box(mat('#648e32'),x,.03,z,12,.14,12);box(M.soil,x,.18,z+6,13,.3,.6);for(let i=0;i<1050;i++)put(riceGeometry,riceMaterials[i%3],[x-5.55+(i%35)*.32+rand(-.035,.035),.12,z-5.6+Math.floor(i/35)*.38+rand(-.035,.035)],[1,rand(.55,1.05),1],[0,rand(0,6.28),0]);fence([[x-6,z-6],[x-6,z],[x-6,z+6]])}
     board('PADDY TRAILS',136,-12);person(149,-10,'#f5e2b1');person(160,-26,'#b79554');break;
    case 'village':
     for(let i=0;i<6;i++){const x=153+(i%2)*12,z=43+Math.floor(i/2)*14;building(x,z,7,6,3.3,['#efd29a','#ded6b7','#d79f7a'][i%3]);pot(x-2,z+4);banana(x+5,z+2);person(x,z+4,'#a77552');crate(x+2,z+4)}

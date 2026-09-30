@@ -32,6 +32,22 @@ try {
   assert.equal(stable,true,'An unchanged scene must render identically on successive frames');
   await page.screenshot({path:'artifacts/reference-view.png'});
   await page.setViewportSize({width:960,height:540});
+  // Close-up renders expose silhouettes and construction details hidden in the world view.
+  for(const type of ['delivery-bike','auto','bus','car','van']){
+    await page.evaluate(type=>{
+      const a=window.__MUD_MEALS__;let model;
+      a.scene.traverse(o=>{if(!model&&o.userData.assetType===type)model=o});
+      if(!model)throw new Error('Missing model: '+type);
+      a.camera.near=.5;a.camera.far=160;a.camera.fov=42;a.camera.zoom=1;
+      const distance=type==='bus'?16:type==='delivery-bike'?5:6;
+      a.camera.position.set(model.position.x+distance*.65,model.position.y+distance*.55,model.position.z+distance*.9);
+      a.camera.lookAt(model.position.x,model.position.y+(type==='bus'?2:1.2),model.position.z);
+      a.camera.updateProjectionMatrix();a.graphics.render();
+    },type);
+    await page.screenshot({path:'artifacts/asset-'+type+'.png'});
+  }
+  await page.evaluate(()=>{const a=window.__MUD_MEALS__;a.reset();a.graphics.render()});
+
   await page.locator('#pause').click();
   await page.screenshot({ path: 'artifacts/landscape.png' });
   await page.locator('#orders').click();
