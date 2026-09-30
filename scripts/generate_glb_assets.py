@@ -349,6 +349,31 @@ def palm(path):
     g.write(path)
 
 
+def bridge(path):
+    g=GLB()
+    concrete=g.material("bridge_concrete",(0.62,0.58,0.50),0.0,0.82)
+    asphalt=g.material("bridge_asphalt",(0.14,0.15,0.16),0.0,0.92)
+    metal=g.material("bridge_metal",(0.34,0.36,0.36),0.72,0.28)
+    flower=g.material("flowers",(0.82,0.08,0.22),0.0,0.62)
+    pot=g.material("pots",(0.48,0.23,0.10),0.0,0.82)
+
+    add_box(g,"deck",(20.0,0.72,11.6),(0,0.36,0),concrete)
+    add_box(g,"road",(20.0,0.14,9.35),(0,0.79,0),asphalt)
+    add_box(g,"left_edge",(20.2,0.4,0.55),(0,0.96,-5.52),concrete)
+    add_box(g,"right_edge",(20.2,0.4,0.55),(0,0.96,5.52),concrete)
+
+    for z in (-5.55,5.55):
+        for x in [i*2.1-8.4 for i in range(9)]:
+            add_box(g,"rail_post",(0.22,1.35,0.26),(x,1.55,z),concrete)
+        add_box(g,"rail_top",(18.4,0.16,0.18),(0,2.16,z),metal)
+        add_box(g,"rail_mid",(18.4,0.14,0.16),(0,1.62,z),metal)
+        for x in (-7.2,-4.0,-0.8,2.4,5.6):
+            add_cylinder(g,"flower_pot",0.18,0.36,(x,1.4,z),pot,12)
+            add_uv_sphere(g,"flower",0.26,(x,1.75,z),flower,14,8,(1.0,0.7,1.0))
+
+    g.write(path)
+
+
 def utility_pole(path):
     g=GLB()
     concrete=g.material("concrete",(0.46,0.45,0.41),0,0.9)
@@ -372,6 +397,7 @@ def main():
     auto_rickshaw(WORLD_DIR / "auto-rickshaw.glb")
     bus(WORLD_DIR / "ksrtc-bus.glb")
     palm(WORLD_DIR / "coconut-palm.glb")
+    bridge(WORLD_DIR / "bridge.glb")
     utility_pole(WORLD_DIR / "utility-pole.glb")
 
     for path in [
@@ -381,6 +407,7 @@ def main():
         WORLD_DIR / "auto-rickshaw.glb",
         WORLD_DIR / "ksrtc-bus.glb",
         WORLD_DIR / "coconut-palm.glb",
+        WORLD_DIR / "bridge.glb",
         WORLD_DIR / "utility-pole.glb",
     ]:
         print(f"generated {path.relative_to(ROOT)} ({path.stat().st_size:,} bytes)")
