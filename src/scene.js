@@ -18,7 +18,7 @@ scene.background=new THREE.Color('#b5cc8b');
 scene.fog=new THREE.Fog('#b5cc8b',95,180);
 const aspect=innerWidth/innerHeight;
 const camera=new THREE.OrthographicCamera(-29,29,29/aspect,-29/aspect,.1,160);
-const originalPosition=new THREE.Vector3(23,49,48), originalTarget=new THREE.Vector3(0,1,-7);
+const originalPosition=new THREE.Vector3(23,49,48), originalTarget=new THREE.Vector3(0,0,0);
 camera.position.copy(originalPosition);camera.lookAt(originalTarget);
 const controls=new OrbitControls(camera,canvas);controls.target.copy(originalTarget);controls.enabled=false;controls.update();
 controls.enableDamping=true;controls.minZoom=.55;controls.maxZoom=2.5;controls.maxPolarAngle=Math.PI*.46;
@@ -170,7 +170,7 @@ person(-12.1,-.1);person(-8.9,1.1,'#d7ac43',true);person(-6.65,1.1,'#6874ba',tru
 const leaves=[];
 function leafGeometry(length,width,droop=0){const v=[],idx=[],uv=[];for(let i=0;i<=18;i++){const t=i/18,w=Math.sin(t*Math.PI)**.7*width;const y=Math.sin(t*Math.PI)*length*.21-t*t*droop;for(const s of[-1,0,1]){v.push(s*w,y+(s===0?.055:0),t*length);uv.push((s+1)/2,t)}if(i<18){const k=i*3;idx.push(k,k+3,k+1,k+1,k+3,k+4,k+1,k+4,k+2,k+2,k+4,k+5)}}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(v,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();return g}
 const leafMaterials=['#63951f','#79b425','#9abf2a','#4c8620'].map(c=>{const m=mat(c);m.side=THREE.DoubleSide;m.map=detailTexture('leaf');m.roughness=.68;m.needsUpdate=true;return m});
-const palmLeaf=leafGeometry(3.5,.035,1.55),palmLeaflet=leafGeometry(1,.065,.22),bananaLeaf=leafGeometry(2.8,.50,1.05);
+const palmLeaf=leafGeometry(3.5,.07,1.55),palmLeaflet=leafGeometry(1,.13,.22),bananaLeaf=leafGeometry(2.8,.50,1.05);
 function palm(x,z,h=8){const sway=rand(-.6,.6);for(let i=0;i<16;i++){const t=i/16;cyl(mat(i%2?'#8d7750':'#9d8960'),x+sway*t*t,h*t+h/32,z,.17-.075*t,h/16+.015,null,[0,0,-sway/h*.8]);}
  const cx=x+sway;for(let i=0;i<11;i++){const a=i*Math.PI*2/11+rand(-.16,.16);put(palmLeaf,leafMaterials[i%4],[cx,h,z],[rand(.88,1.18),1,rand(.8,1.18)],[rand(-.08,.35),a,0]);
  // Individually modelled leaflets run down each curved frond.
