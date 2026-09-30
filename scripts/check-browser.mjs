@@ -58,6 +58,9 @@ try {
   await page.locator('#reference').click();
   await page.locator('#reference-panel img').waitFor({ state: 'visible' });
   assert.equal(await page.locator('#reference-panel img').evaluate(img => img.complete && img.naturalWidth > 0), true);
+  await page.locator('#reference-frame').click();
+  assert.equal(await page.evaluate(()=>window.__MUD_MEALS__.cameraMode),'reference');
+  assert.ok(await page.evaluate(()=>window.__MUD_MEALS__.camera.fov)<20);
   await page.locator('#reference-opacity').evaluate(input=>{input.value='0.5';input.dispatchEvent(new Event('input',{bubbles:true}))});
   assert.equal(await page.locator('#reference-panel img').evaluate(img=>img.style.opacity),'0.5');
   await page.locator('#reference-opacity').evaluate(input=>{input.value='1';input.dispatchEvent(new Event('input',{bubbles:true}))});

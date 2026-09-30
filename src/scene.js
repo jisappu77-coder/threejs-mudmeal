@@ -259,8 +259,10 @@ function notify(message){toast.textContent=message;toast.style.opacity=1;clearTi
 const cameraDefaults={zoom:defaultZoom,tilt:24,rotation:0,panX:0,panZ:12};
 const cameraLimits={zoom:[.7,2.2],tilt:[10,65],rotation:[-75,75],panX:[-4,4],panZ:[6,24]};
 const cameraSettings={...cameraDefaults};
-try{const saved=JSON.parse(localStorage.getItem('mud-meals-follow-camera')||'null');if(saved&&typeof saved==='object')for(const key of Object.keys(cameraLimits)){const value=saved[key];if(typeof value==='number'&&Number.isFinite(value))cameraSettings[key]=THREE.MathUtils.clamp(value,...cameraLimits[key])}}catch{}
-function saveCamera(){try{localStorage.setItem('mud-meals-follow-camera',JSON.stringify(cameraSettings))}catch{}}
+const cameraStorageKey=()=>cameraMode==='reference'?'mud-meals-reference-camera':'mud-meals-follow-camera';
+function loadCamera(){Object.assign(cameraSettings,cameraDefaults);try{const saved=JSON.parse(localStorage.getItem(cameraStorageKey())||'null');if(saved&&typeof saved==='object')for(const key of Object.keys(cameraLimits)){const value=saved[key];if(typeof value==='number'&&Number.isFinite(value))cameraSettings[key]=THREE.MathUtils.clamp(value,...cameraLimits[key])}}catch{}}
+loadCamera();
+function saveCamera(){try{localStorage.setItem(cameraStorageKey(),JSON.stringify(cameraSettings))}catch{}}
 const followPosition=new THREE.Vector3(),followLookAt=new THREE.Vector3(),followForward=new THREE.Vector3(),followRight=new THREE.Vector3();
 function updateFollowCamera(dt,snap=false){
  if(freeCamera)return;
@@ -287,7 +289,7 @@ function applyCameraSettings(){
  for(const key of Object.keys(cameraLimits)){const input=document.querySelector('#camera-'+key);input.value=cameraSettings[key];document.querySelector('#camera-'+key+'-value').textContent=key==='zoom'?cameraSettings[key].toFixed(2)+'×':key==='tilt'||key==='rotation'?Math.round(cameraSettings[key])+'°':cameraSettings[key].toFixed(1)+' m'}
 }
 function resetCameraSettings(){Object.assign(cameraSettings,cameraDefaults);applyCameraSettings();saveCamera()}
-function setCameraMode(mode){cameraMode=mode==='driving'?'driving':'reference';applyCameraSettings()}
+function setCameraMode(mode){cameraMode=mode==='driving'?'driving':'reference';loadCamera();applyCameraSettings()}
 document.querySelector('#camera-mode').addEventListener('change',event=>setCameraMode(event.target.value));
 for(const key of Object.keys(cameraLimits))document.querySelector('#camera-'+key).addEventListener('input',event=>{cameraSettings[key]=THREE.MathUtils.clamp(Number(event.target.value),...cameraLimits[key]);applyCameraSettings();saveCamera()});
 document.querySelector('#camera-settings').onclick=()=>{document.querySelector('#camera-panel').hidden=false;document.querySelector('.tools').hidden=true;document.querySelector('#tools-toggle').setAttribute('aria-expanded','false')};
