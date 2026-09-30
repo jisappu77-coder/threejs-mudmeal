@@ -150,7 +150,7 @@ addSign('CHAYA\nCHAYA\nSNACKS\nMEALS\n☕',-3.1,1.9,-1.99,2.25,4.2,'#354248','#f
 addSign('CHAYA',-.3,2.18,-2.77,3.3,.45,'#b75f1d','#ffedb0',65);
 // Background canal-side homes and foreground spice merchant.
 building(-10,-24,5.5,5,4.4,'#e0d7bd');building(-.5,-22,6.5,5.6,4.6,'#eee1bf');
-building(17.5,-22,6.5,5.6,3.1,'#f6d17c');building(-21,-10,6,5,3.8,'#e8c871');
+building(17.5,-22,6.5,5.6,3.1,'#f6d17c');building(-26,-10,6,5,3.8,'#e8c871');
 building(-19,10,7,6,3.8,'#e9bb54',true);building(-17,26,6.5,5.5,3.8,'#e7c579');
 building(-28,-38,7,5.5,3.8,'#e8d9b2');building(1,-39,6,5,4,'#f4d998');building(24,30,6,5,3.3,'#efc978');
 addSign('KERALA\nSPICES',-19,2.65,13.12,4.6,1.5,'#6e4e2d','#fff0c7',64);
@@ -186,11 +186,11 @@ function banana(x,z,s=1){if(!treeClearance(x,z))return;for(let i=0;i<3;i++)bar(m
 for(const [x,z,h]of[[-15,-15,9],[-3,-16,8.5],[6,-22,8],[15,-29,9],[16,-2,8],[8,10,7.7],[16,26,9],[-15,4,8],[-22,19,8],[25,-29,9],[-1,25,8],[-23,-28,8],[9,-38,9],[-6,-34,8]])palm(x,z,h);
 for(const [x,z,s]of[[4,-8,1.2],[3,-15,1.3],[6,4,1.2],[15,12,1.25],[19,20,1.2],[-13,7,1.3],[-21,3,1.1],[-12,24,1.3],[21,-16,1],[23,-32,1.2],[5,23,1.4],[-2,-28,1],[17,-35,1.2]])banana(x,z,s);
 const shrubLeaf=leafGeometry(.52,.13,.12),shrubCore=new THREE.SphereGeometry(1,12,8);
-function shrub(x,z,s=.7){for(let i=0;i<22;i++){const a=i*2.4;put(shrubLeaf,leafMaterials[i%4],[x+Math.sin(a)*s*.38,.5+Math.cos(a*3)*s*.2,z+Math.cos(a)*s*.35],[s,s,s],[rand(-.6,.7),a,rand(-.4,.4)])}for(let i=0;i<3;i++)put(shrubCore,[mat('#77a829'),mat('#90b72d'),mat('#4e8a27')][i%3],[x+rand(-.2,.2)*s,.35+rand(0,.18)*s,z+rand(-.2,.2)*s],[s*.30,s*.30,s*.27])}
+function shrub(x,z,s=.7){if(roadPoints.some(p=>Math.hypot(p[0]-x,p[1]-z)<5.5)||bp.some(p=>Math.hypot(p[0]-x,p[1]-z)<2.3))return;for(let i=0;i<22;i++){const a=i*2.4;put(shrubLeaf,leafMaterials[i%4],[x+Math.sin(a)*s*.38,.5+Math.cos(a*3)*s*.2,z+Math.cos(a)*s*.35],[s,s,s],[rand(-.6,.7),a,rand(-.4,.4)])}for(let i=0;i<3;i++)put(shrubCore,[mat('#77a829'),mat('#90b72d'),mat('#4e8a27')][i%3],[x+rand(-.2,.2)*s,.35+rand(0,.18)*s,z+rand(-.2,.2)*s],[s*.30,s*.30,s*.27])}
 for(let i=0;i<250;i++){const z=rand(-45,44),x=canalX(z)+(random()>.5?1:-1)*rand(5.4,6.0);if(z>-13&&z<-7)continue;shrub(x,z,rand(.5,.9))}
 for(let i=0;i<150;i++){const x=rand(-30,33),z=rand(-45,43);if(Math.abs(x-roadX(z))<6||Math.abs(x-canalX(z))<7||x>18)continue;if((x>-15&&x<3&&z>-14&&z<0)||(x>-24&&x<-14&&z>6&&z<15))continue;shrub(x,z,rand(.6,1.3))}
 // Continuous planting beds along the pavements and the market lane.
-const occupiedPlots=[[-8.5,-9,10.1,7.7],[-.3,-5.1,6.6,5.6],[-10,-24,6.4,6],[-.5,-22,7.4,6.6],[-21,-10,7,6],[-19,10,8,7],[-17,26,8,7]];
+const occupiedPlots=[[-8.5,-9,10.1,7.7],[-.3,-5.1,6.6,5.6],[-10,-24,6.4,6],[-.5,-22,7.4,6.6],[-26,-10,7,6],[-19,10,8,7],[-17,26,8,7]];
 function clearForPlant(x,z){const dx=(roadX(z+.05)-roadX(z-.05))/.1;const distance=Math.abs(x-roadX(z))/Math.hypot(1,dx);if(distance<7||Math.abs(x-canalX(z))<5.2||x>canalX(z)+7)return false;if(occupiedPlots.some(([px,pz,w,d])=>Math.abs(x-px)<w/2+.8&&Math.abs(z-pz)<d/2+.8))return false;if(x>-16&&x<7&&z>-2&&z<6)return false;return true}
 for(let i=0;i<780;i++){const x=rand(-29,19),z=rand(-43,35);if(clearForPlant(x,z))shrub(x,z,rand(.55,.95))}
 for(let z=-40;z<35;z+=1.4)for(const side of[-1,1]){const p=roadFrame(z,side*7.2);if(clearForPlant(p.x,p.z))shrub(p.x,p.z,.62)}
@@ -222,7 +222,7 @@ function vehicle(type,x,z,rot=0,color='#d5e2df'){
 }
 vehicle('bus',roadX(4)-2.1,4,.08);vehicle('auto',roadX(19)-2,19);vehicle('auto',roadX(5)+2.1,5);vehicle('car',roadX(-3)+2,-3,Math.PI,'#c6d8e3');vehicle('auto',roadX(-9)+2,-9);vehicle('auto',roadX(-15)+1.8,-15);vehicle('van',roadX(-18)-1.8,-18,Math.PI,'#e5e8de');vehicle('car',roadX(-12)-2,-12,Math.PI,'#a74535');vehicle('car',roadX(-29)-1.8,-29,Math.PI,'#ecebdd');vehicle('auto',roadX(-27)+2,-27);vehicle('auto',roadX(-36)+2,-36);
 vehicle('auto',roadX(13)-2.1,13);vehicle('car',roadX(3)+2.1,3,Math.PI,'#dde4e4');vehicle('auto',roadX(-1)-2.1,-1);vehicle('auto',roadX(24)-2.1,24);
-for(const v of vehicles){const p=roadFrame(v.z,v.x-roadX(v.z));v.g.position.set(p.x,0,p.z);v.g.rotation.y=p.angle+(v.rot>2?Math.PI:0)}
+for(const v of vehicles){if(v.type==='bus')v.g.scale.setScalar(1.4);const p=roadFrame(v.z,v.x-roadX(v.z));v.g.position.set(p.x,0,p.z);v.g.rotation.y=p.angle+(v.rot>2?Math.PI:0)}
 // Delivery motorbikes: wheels, fork, engine, lamps, mirrors, rider and cargo box.
 const bikes=[];
 function bike(x,z,color,label){const g=new THREE.Group();g.position.set(x,0,z);scene.add(g);
@@ -241,9 +241,9 @@ const extendedWorld=createExtendedWorld({scene,M,mat,box,cyl,ell,bar,put,mesh,fl
 const routeCurve=extendedWorld.route;
 const routeLength=routeCurve.getLength();let routeStart=0,routeStartDistance=Infinity;
 for(let i=0;i<=1000;i++){const t=i/1000,p=routeCurve.getPointAt(t),distance=(p.x-playerStart.x)**2+(p.z-playerStart.z)**2;if(distance<routeStartDistance){routeStartDistance=distance;routeStart=t}}
-const routeMaterial=new THREE.MeshBasicMaterial({color:'#0bd6d6',toneMapped:false});
+const routeMaterial=new THREE.MeshBasicMaterial({color:'#0bd6d6',toneMapped:false});const tourRouteMaterial=routeMaterial.clone();
 const initialRouteStart=routeStart;
-for(let t=0;t<1;t+=2.1/routeLength){const a=routeCurve.getPointAt(t),b=routeCurve.getPointAt(Math.min(1,t+1.3/routeLength));a.y=Math.max(.16,a.y);b.y=Math.max(.16,b.y);const dir=b.clone().sub(a),length=dir.length();if(length<.0001)continue;const rotation=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,1),dir.normalize()));put(geom.box,routeMaterial,a.clone().add(b).multiplyScalar(.5).toArray(),[.20,.025,length],[rotation.x,rotation.y,rotation.z])}
+for(let t=0;t<1;t+=2.1/routeLength){const a=routeCurve.getPointAt(t),b=routeCurve.getPointAt(Math.min(1,t+1.3/routeLength));a.y=Math.max(.16,a.y);b.y=Math.max(.16,b.y);const dir=b.clone().sub(a),length=dir.length();if(length<.0001)continue;const rotation=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,1),dir.normalize()));put(geom.box,t>.90?tourRouteMaterial:routeMaterial,a.clone().add(b).multiplyScalar(.5).toArray(),[.20,.025,length],[rotation.x,rotation.y,rotation.z])}
 for(const t of[.18,.39,.64,.82]){const p=routeCurve.getPointAt(t),next=routeCurve.getPointAt((t+.001)%1),ang=Math.atan2(next.x-p.x,next.z-p.z);const g=new THREE.Group();g.position.copy(p);g.rotation.y=ang;scene.add(g);bar(routeMaterial,[-.3,.07,-.25],[0,.07,.2],.05,g);bar(routeMaterial,[.3,.07,-.25],[0,.07,.2],.05,g)}
 function pin(x,z){const g=new THREE.Group();g.position.set(x,6,z);scene.add(g);ell(routeMaterial,0,.2,0,.46,.53,.24,g);put(geom.cone,routeMaterial,[0,-.45,0],[.31,.85,.18],[0,0,Math.PI],g);ell(mat('#083d39'),0,.28,.245,.16,.17,.025,g);const ring=new THREE.Mesh(new THREE.RingGeometry(.32,.59,40),routeMaterial);ring.rotation.x=-Math.PI/2;ring.position.set(x,4.54,z);scene.add(ring);return g}const destinationPin=pin(17.5,-22);
 for(const g of[rival1,rival2]){put(geom.cone,mat('#fd294e'),[0,2.6,0],[.18,.4,.18],[0,0,Math.PI],g)}
@@ -251,7 +251,7 @@ for(const g of[rival1,rival2]){put(geom.cone,mat('#fd294e'),[0,2.6,0],[.18,.4,.1
 function egret(x,z){ell(M.white,x,.85,z,.11,.19,.26);bar(M.white,[x,.9,z-.12],[x,1.28,z-.25],.045);ell(M.white,x,1.32,z-.25,.07,.09,.07);bar(M.yellow,[x,1.31,z-.30],[x,1.29,z-.49],.027);for(const s of[-1,1])bar(mat('#a69346'),[x+s*.04,.73,z],[x+s*.06,.24,z+.05],.012)}egret(canalX(1)+11,1);egret(canalX(12)+11,12);egret(canalX(-13)+17,-13);
 // The reference's foreground canoe sits in a drainage channel beyond the rice plots.
 ribbon([[canalX(-6),-6],[17,-6],[27,-6],[37,-6],[47,-6]],3.2,.22,waterMaterial);
-for(const z of[-7.8,-4.2])box(M.soil,28,.25,z,36,.2,.5);
+for(const z of[-7.8,-4.2])box(M.soil,31,.25,z,32,.2,.5);
 const boat=new THREE.Group();boat.position.set(38,.38,-6);boat.rotation.y=1.3;scene.add(boat);
 const hull=new THREE.Shape();hull.moveTo(0,-2.2);hull.bezierCurveTo(.75,-1.7,.75,1.7,0,2.2);hull.bezierCurveTo(-.75,1.7,-.75,-1.7,0,-2.2);const hullGeo=new THREE.ExtrudeGeometry(hull,{depth:.32,bevelEnabled:true,bevelSize:.10,bevelThickness:.1,bevelSegments:3,curveSegments:18});hullGeo.rotateX(-Math.PI/2);put(hullGeo,M.darkWood,[0,0,0],[1,1,1],[0,0,0],boat);for(let zz=-1.5;zz<1.7;zz+=.65)box(M.wood,0,.13,zz,1.05,.08,.17,boat);bar(M.wood,[-.45,.2,-1.9],[-.62,.55,1.95],.05,boat);
 flush();
@@ -289,7 +289,7 @@ function updateFollowCamera(dt,snap=false){
 function applyCameraSettings(){
  freeCamera=false;controls.enabled=false;document.querySelector('#view').textContent='Free camera';
  controls.enableDamping=false;controls.update();
- camera.fov=cameraMode==='reference'?16.5:55;camera.far=cameraMode==='reference'?360:160;scene.fog.near=cameraMode==='reference'?220:95;scene.fog.far=cameraMode==='reference'?360:180;camera.zoom=cameraSettings.zoom;camera.updateProjectionMatrix();document.querySelector('#camera-mode').value=cameraMode;document.querySelector('#drive-status').hidden=cameraMode==='reference';updateFollowCamera(0,true);controls.enableDamping=true;
+ camera.fov=cameraMode==='reference'?16.5:55;camera.far=cameraMode==='reference'?360:160;scene.fog.near=cameraMode==='reference'?220:95;scene.fog.far=cameraMode==='reference'?360:180;camera.zoom=cameraSettings.zoom;camera.updateProjectionMatrix();document.querySelector('#camera-mode').value=cameraMode;document.querySelector('#drive-status').hidden=cameraMode==='reference';tourRouteMaterial.visible=cameraMode==='driving';updateFollowCamera(0,true);controls.enableDamping=true;
  for(const key of Object.keys(cameraLimits)){const input=document.querySelector('#camera-'+key);input.value=cameraSettings[key];document.querySelector('#camera-'+key+'-value').textContent=key==='zoom'?cameraSettings[key].toFixed(2)+'×':key==='tilt'||key==='rotation'?Math.round(cameraSettings[key])+'°':cameraSettings[key].toFixed(1)+' m'}
 }
 function resetCameraSettings(){Object.assign(cameraSettings,cameraDefaults);applyCameraSettings();saveCamera()}
