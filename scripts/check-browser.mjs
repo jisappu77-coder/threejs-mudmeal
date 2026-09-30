@@ -25,6 +25,12 @@ try {
   await page.locator('#order-panel').waitFor({ state: 'visible' });
   await page.locator('#close-orders').click();
   await page.locator('#tools-toggle').click();
+  await page.locator('#quality').click();
+  assert.equal(await page.evaluate(() => window.__MUD_MEALS__.renderer.getPixelRatio()),1);
+  await page.locator('#quality').click();
+  const density=await page.evaluate(() => ({renderer:window.__MUD_MEALS__.renderer.getPixelRatio(),composer:window.__MUD_MEALS__.graphics.composer._pixelRatio}));
+  assert.ok(density.renderer>=1.25);
+  assert.equal(density.renderer,density.composer);
   await page.locator('#reference').click();
   await page.locator('#reference-panel img').waitFor({ state: 'visible' });
   assert.equal(await page.locator('#reference-panel img').evaluate(img => img.complete && img.naturalWidth > 0), true);
