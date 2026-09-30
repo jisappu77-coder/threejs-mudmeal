@@ -72,7 +72,7 @@ try {
   for(const activity of ['walking','greeting']){
     const png=await page.evaluate(activity=>{
       const a=window.__MUD_MEALS__,n=a.life.npcs.find(n=>!n.sitting&&n.home.x>-12&&n.home.x<-10);a.reset();
-      if(activity==='greeting')a.player.position.copy(n.home).add(new a.player.position.constructor(2,0,0));
+      if(activity==='greeting'){const p=a.roadFrame(n.home.z);a.player.position.set(p.x,.025,p.z);}
       for(let i=0;i<(activity==='walking'?420:45);i++)a.life.update(1/30,i/30);
       a.camera.near=.5;a.camera.far=160;a.camera.fov=42;a.camera.zoom=1;
       a.camera.position.set(n.g.position.x+2.5,n.g.position.y+1.9,n.g.position.z+3.8);a.camera.lookAt(n.g.position.x,n.g.position.y+.85,n.g.position.z);a.camera.updateProjectionMatrix();a.graphics.render();

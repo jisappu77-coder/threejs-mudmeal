@@ -2,7 +2,7 @@ import * as THREE from 'three';
 
 // Districts are authored separately so instanced scenery can be culled outside the view.
 export function createExtendedWorld(h) {
- const {scene,M,mat,box,cyl,ell,bar,put,mesh,flush,building:baseBuilding,roof,palm,banana,shrub,person,pot,crate,table,chair,addSign,fence,rand,riceGeometry,riceMaterials,waterMaterial,setHeight,spawnVehicle,reservePlot,registerRoad,registerWater}=h;
+ const {scene,M,mat,box,cyl,ell,bar,put,mesh,flush,building:baseBuilding,roof,palm,banana,shrub,person,pot,crate,table,chair,addSign,fence,rand,riceGeometry,riceMaterials,waterMaterial,setHeight,spawnVehicle,reservePlot,plotBlocked,waterAt,getHeight,registerRoad,registerWater}=h;
  const footprints=[];
  function building(x,z,w,d,...args){footprints.push({x,z,w,d});return baseBuilding(x,z,w,d,...args)}
  const districts=[
@@ -25,7 +25,7 @@ export function createExtendedWorld(h) {
  // Cubic height interpolation can dip below flat ground before a climb.
  for(const p of roadPoints)p.y=Math.max(.16,p.y);
  registerRoad(roadPoints);
- for(const area of [{x:89,z:-86,w:78,d:64,ellipse:true},{x:-247,z:-15,w:200,d:390},{x:56,z:155,w:95,d:20},{x:2,z:114,w:28,d:24}])registerWater(area);
+ for(const area of [{x:89,z:-92,w:78,d:64,ellipse:true},{x:-247,z:-15,w:200,d:390},{x:56,z:155,w:95,d:20},{x:2,z:114,w:28,d:24}])registerWater(area);
  function roadRibbon(width,lift,material){
   const vertices=[],uv=[],indices=[];
   roadPoints.forEach((p,i)=>{const a=roadPoints[Math.max(0,i-1)],b=roadPoints[Math.min(roadPoints.length-1,i+1)],dx=b.x-a.x,dz=b.z-a.z,l=Math.max(.0001,Math.hypot(dx,dz));for(const s of[-1,1]){vertices.push(p.x+s*dz/l*width/2,p.y-.16+lift,p.z-s*dx/l*width/2);uv.push(s===-1?0:1,i*.18)}if(i<roadPoints.length-1){const j=i*2;indices.push(j,j+2,j+1,j+1,j+2,j+3)}});
@@ -33,7 +33,7 @@ export function createExtendedWorld(h) {
  }
  box(M.grass,55,-.65,-5,370,1.2,350);
  roadRibbon(9.2,.025,M.curb);roadRibbon(8.4,.055,M.road);
- for(let i=0;i<roadPoints.length-1;i+=5){const p=roadPoints[i],q=roadPoints[i+1],angle=Math.atan2(q.x-p.x,q.z-p.z);box(M.line,p.x,p.y-.09,p.z,.13,.012,1.15,null,angle);for(const s of[-1,1]){const x=p.x+s*Math.cos(angle)*4.45,z=p.z-s*Math.sin(angle)*4.45;box(M.white,x,p.y+.11,z,.24,.28,1.1,null,angle);if(i%15===0){cyl(M.darkWood,x,p.y+.68,z,.055,1.35);bar(M.wood,[x,p.y+1,z],[x+(q.x-p.x)*5,p.y+1,z+(q.z-p.z)*5],.04)}}}
+ for(let i=0;i<roadPoints.length-1;i+=5){const p=roadPoints[i],q=roadPoints[i+1],angle=Math.atan2(q.x-p.x,q.z-p.z);box(M.line,p.x,p.y-.09,p.z,.13,.012,1.15,null,angle);for(const s of[-1,1]){const x=p.x+s*Math.cos(angle)*4.45,z=p.z-s*Math.sin(angle)*4.45;box(M.white,x,p.y+.11,z,.24,.28,1.1,null,angle);if(i%15===0){reservePlot('pole',x,z,.2,.2);cyl(M.darkWood,x,p.y+.68,z,.055,1.35);if(i+15<roadPoints.length){const next=roadPoints[i+15],after=roadPoints[Math.min(i+16,roadPoints.length-1)],angle2=Math.atan2(after.x-next.x,after.z-next.z);bar(M.wood,[x,p.y+1,z],[next.x+s*Math.cos(angle2)*4.45,next.y+1,next.z-s*Math.sin(angle2)*4.45],.04)}}}}
  // A continuous raised terrain surface follows the northern hill road.
  const hillSamples=roadPoints.filter(p=>p.y>1),terrain=new THREE.PlaneGeometry(180,105,100,60);terrain.rotateX(-Math.PI/2);terrain.translate(-40,0,-132.5);
  function hillHeight(x,z){let d=Infinity,level=0;for(const p of hillSamples){const q=(p.x-x)**2+(p.z-z)**2;if(q<d){d=q;level=p.y-.30}}return Math.max(-.05,level*Math.exp(-d/350)-.07)}
@@ -42,12 +42,24 @@ export function createExtendedWorld(h) {
  // Lake, sea, beaches and islands are geometry, never a photographic backdrop.
  box(M.soil,-140,-.11,-15,22,.22,330);
  box(waterMaterial,-247,-.15,-15,200,.22,390);
- const lake=new THREE.CircleGeometry(1,96);lake.rotateX(-Math.PI/2);const lakeMesh=mesh(lake,waterMaterial);lakeMesh.position.set(89,.06,-86);lakeMesh.scale.set(39,1,32);
+ const lake=new THREE.CircleGeometry(1,96);lake.rotateX(-Math.PI/2);const lakeMesh=mesh(lake,waterMaterial);lakeMesh.position.set(89,.025,-92);lakeMesh.scale.set(39,1,32);
  for(let i=0;i<15;i++){const x=rand(65,112),z=rand(-105,-69);ell(M.grass,x,.12,z,rand(1,2.5),.23,rand(.5,1.8));}
  flush();
  function nearRoad(x,z,min=7){return roadPoints.some(p=>Math.hypot(p.x-x,p.z-z)<min)}
- function greenery(d,count=20){for(let i=0;i<count;i++){const x=d.x+rand(-23,23),z=d.z+rand(-24,24);if(nearRoad(x,z,8)||(d.id==='backwaters'&&((x-89)/39)**2+((z+86)/32)**2<1))continue;setHeight(d.y?hillHeight(x,z):0);if(i%4===0)palm(x,z,rand(7,11));else if(i%3===0)banana(x,z,rand(.7,1.2));else shrub(x,z,rand(.8,2))}setHeight(d.y)}
- function board(text,x,z){reservePlot('sign',x+1.4,z,3.3,.4);cyl(M.wood,x,1.1,z,.065,2.2);cyl(M.wood,x+2.8,1.1,z,.065,2.2);addSign(text,x+1.4,2,z,3.3,1.25,'#173e35','#f6e8c8',43)}
+ function greenery(d,count=20){for(let i=0;i<count;i++){const x=d.x+rand(-23,23),z=d.z+rand(-24,24);if(nearRoad(x,z,8)||(d.id==='backwaters'&&((x-89)/39)**2+((z+92)/32)**2<1))continue;setHeight(d.y?hillHeight(x,z):0);if(i%4===0)palm(x,z,rand(7,11));else if(i%3===0)banana(x,z,rand(.7,1.2));else shrub(x,z,rand(.8,2))}setHeight(d.y)}
+ function board(text,x,z){
+  let index=0,closest=Infinity;for(let i=0;i<roadPoints.length;i++){const p=roadPoints[i],d=(x+1.4-p.x)**2+(z-p.z)**2;if(d<closest){closest=d;index=i;}}
+  let cx,cz,yaw,normal,right;
+  search:for(const flip of [1,-1])for(const shift of [0,15,-15,30,-30,60,-60]){
+   const i=THREE.MathUtils.clamp(index+shift,0,roadPoints.length-1),p=roadPoints[i],a=roadPoints[Math.max(0,i-1)],b=roadPoints[Math.min(roadPoints.length-1,i+1)];normal=new THREE.Vector3(b.z-a.z,0,a.x-b.x).normalize();
+   const side=((x+1.4-p.x)*normal.x+(z-p.z)*normal.z<0?-1:1)*flip;cx=p.x+normal.x*side*6.8;cz=p.z+normal.z*side*6.8;yaw=Math.atan2(-normal.x*side,-normal.z*side);right=new THREE.Vector3(Math.cos(yaw),0,-Math.sin(yaw));
+   if(!waterAt(cx,cz)&&!plotBlocked(cx,cz,1.9))break search;
+  }
+  const previous=getHeight();if(previous>1)setHeight(hillHeight(cx,cz));
+  reservePlot('sign',cx,cz,Math.abs(right.x)*3.3+Math.abs(normal.x)*.4,Math.abs(right.z)*3.3+Math.abs(normal.z)*.4);
+  for(const s of[-1,1])cyl(M.wood,cx+right.x*s*1.4,1.1,cz+right.z*s*1.4,.065,2.2);
+  addSign(text,cx,2,cz,3.3,1.25,'#173e35','#f6e8c8',43,yaw);setHeight(previous);
+ }
  const boats=[];
  function houseboat(x,z,angle=0){
   const g=new THREE.Group();g.position.set(x,.13,z);g.rotation.y=angle;scene.add(g);boats.push(g);
@@ -110,7 +122,7 @@ export function createExtendedWorld(h) {
   const p=roadPoints[i],q=roadPoints[i+1],angle=Math.atan2(q.x-p.x,q.z-p.z);
   for(const side of[-1,1]){
    const distance=rand(9,15),x=p.x+Math.cos(angle)*side*distance,z=p.z-Math.sin(angle)*side*distance;
-   if(x<-129||((x-89)/39)**2+((z+86)/32)**2<1||(z>123&&x>-10&&x<108)||districts.some(d=>Math.hypot(d.x-x,d.z-z)<23))continue;
+   if(x<-129||((x-89)/39)**2+((z+92)/32)**2<1||(z>123&&x>-10&&x<108)||districts.some(d=>Math.hypot(d.x-x,d.z-z)<23))continue;
    setHeight(z<-80&&x<50?hillHeight(x,z):0);
    if(i%27===6)palm(x,z,rand(7,10));else if(i%18===6)banana(x,z,.9);else shrub(x,z,rand(1,2));
    for(let j=0;j<3;j++)shrub(x+rand(-3,3),z+rand(-3,3),rand(.7,1.4));

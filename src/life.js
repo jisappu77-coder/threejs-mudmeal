@@ -101,6 +101,9 @@ export function createWorldLife(h){
   const rig=n.sitting&&n.state==='sitting'?n.sitting:n.standing;
   animateRig(rig,n.distance*8,time+n.variant,n.state==='walking',n.wave);
   if(n.sitting&&n.state==='sitting')rig.elbows[0].rotation.x=Math.sin(time*1.1+n.variant)*.12;
+  if(close&&n.state==='idle'){
+   const angle=Math.atan2(player.position.x-n.g.position.x,player.position.z-n.g.position.z);n.g.rotation.y+=(mod(angle-n.g.rotation.y+Math.PI,Math.PI*2)-Math.PI)*Math.min(1,dt*4);
+  }
   n.g.userData.activity=n.state;n.g.userData.waving=n.wave>.5;
  }
  let shadowTime=0;

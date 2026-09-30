@@ -37,6 +37,10 @@ const audit=app.life.audit();console.log('Life audit',JSON.stringify(audit));ass
 assert.equal(audit.walkingRoutes,audit.pedestrians);assert.ok(audit.traffic>30);
 for(const b of app.extendedWorld.footprints)for(const p of app.plantings){const gap=Math.hypot(Math.max(0,Math.abs(p.x-b.x)-b.w/2),Math.max(0,Math.abs(p.z-b.z)-b.d/2));assert.ok(gap>=p.radius,`Plant overlaps a district structure at ${b.x},${b.z}`);}
 for(const n of app.npcs)if(n.pathLength)for(let i=0;i<=16;i++)assert.ok(app.life.walkable(n.path[0].clone().lerp(n.path[1],i/16),n));
+for(const p of app.extendedWorld.roadPoints){
+ const lakeDistance=((p.x-89)/39)**2+((p.z+92)/32)**2;assert.ok(lakeDistance>1,'Road center must stay outside the lake');
+}
+for(const p of app.plots.filter(p=>p.kind==='sign'))for(const r of app.extendedWorld.roadPoints){const gap=Math.hypot(Math.max(0,Math.abs(r.x-p.x)-p.w/2),Math.max(0,Math.abs(r.z-p.z)-p.d/2));assert.ok(gap>4.2,'Direction board encroaches on the carriageway');}
 const trafficStarts=app.life.traffic.map(v=>v.g.position.clone());
 for(let i=0;i<120;i++)app.life.update(1/60,i/60);
 assert.ok(app.life.traffic.some((v,i)=>v.g.position.distanceTo(trafficStarts[i])>1));

@@ -212,9 +212,9 @@ for(let i=0;i<14;i++){box(i%2?M.cream:mat('#3d8292'),-22.2+i*.48,2.45,13.7,.48,.
 function billboard(x,z,text){reservePlot('sign',x,z,3,1);box(mat('#d4ccb4'),x,2.5,z,2.6,4.9,.55);box(mat('#b2ac97'),x,5,z,2.9,.2,.75);addSign(text,x,3,z+.295,2.35,3.55,'#d0c9b6','#334339',52);box(M.stone,x,.22,z,3,.44,1);}
 billboard(2.6,-11.6,'GOOD\nFOOD\nHAPPIER\nPEOPLE');billboard(15.7,10,'GOOD\nFOOD\nBRIGHTER');
 // Traffic direction sign, stalls, baskets, tables and diners.
-for(const x of[-17.1,-13.9])cyl(mat('#82877d'),x,1.8,1.1,.07,3.6);
-reservePlot('sign',-15.5,1.17,3.9,.5);
-addSign('Ernakulam  ↑\nKakkanad  →\nInfopark  →',-15.5,3.1,1.17,3.9,2.5,'#246b61','#e3f4df',43);
+for(const x of[-25.1,-21.9])cyl(mat('#82877d'),x,1.8,1.1,.07,3.6);
+reservePlot('sign',-23.5,1.17,3.9,.5);
+addSign('Ernakulam  ↑\nKakkanad  →\nInfopark  →',-23.5,3.1,1.17,3.9,2.5,'#246b61','#e3f4df',43);
 function pot(x,z,size=.38){reservePlot('pot',x,z,size*1.5,size*1.5);put(new THREE.CylinderGeometry(.7,1,1,20),mat('#b96d38'),[x,size*.52,z],[size,size,size]);cyl(mat('#695139'),x,size*1.03,z,size*.65,.035);for(let i=0;i<8;i++){const a=i*Math.PI/4;ell([M.green,M.leaf][i%2],x+Math.cos(a)*size*.35,size*1.5+rand(0,.2),z+Math.sin(a)*size*.35,size*.32,size*.45,size*.15)}}
 function crate(x,z,w=1){
  reservePlot('crate',x,z,w,.8);
@@ -395,8 +395,8 @@ for(const [x,z,h]of[[-13,19,8.5],[-25,0,7.5],[3,-13,8],[-4,-32,8.5],[5,18,7.5]])
 for(const [x,z,k]of[[-17,18,1.1],[-22,4,1],[-8,-15,1.1],[5,-18,1.2],[13,18,1],[-22,-21,1.1]])banana(x,z,k);
 // Power lines and roadside lamps.
 function wire(a,b){const curve=new THREE.CatmullRomCurve3([new THREE.Vector3(...a),new THREE.Vector3((a[0]+b[0])/2,(a[1]+b[1])/2-.5,(a[2]+b[2])/2),new THREE.Vector3(...b)]);mesh(new THREE.TubeGeometry(curve,24,.022,6,false),mat('#484940'))}
-for(let station=-32;station<33;station+=11){const p=roadFrame(station,6.3),next=roadFrame(station+11,6.3),x=p.x,z=p.z;cyl(mat('#656965'),x,3.5,z,.12,7);box(M.wood,x,6.3,z,1.3,.10,.15);for(const d of[-.5,.5]){cyl(M.black,x+d,6.45,z,.035,.4);for(const y of[6.36,6.44,6.52])cyl(M.white,x+d,y,z,.085,.045);if(z<22)wire([x+d,6.6,z],[next.x+d,6.6,next.z])}}
-for(let station=-30;station<32;station+=12){const p=roadFrame(station,-6.3),x=p.x,z=p.z;cyl(M.black,x,2.5,z,.065,5);bar(M.black,[x,4.9,z],[x+.7,5.2,z],.04);box(M.black,x+.8,5.17,z,.4,.12,.22);box(mat('#ffffbc'),x+.8,5.1,z,.3,.02,.17)}
+for(let station=-32;station<33;station+=11){const p=roadFrame(station,6.3),next=roadFrame(station+11,6.3),x=p.x,z=p.z;reservePlot('pole',x,z,.3,.3);cyl(mat('#656965'),x,3.5,z,.12,7);box(M.wood,x,6.3,z,1.3,.10,.15);for(const d of[-.5,.5]){cyl(M.black,x+d,6.45,z,.035,.4);for(const y of[6.36,6.44,6.52])cyl(M.white,x+d,y,z,.085,.045);if(z<22)wire([x+d,6.6,z],[next.x+d,6.6,next.z])}}
+for(let station=-30;station<32;station+=12){const p=roadFrame(station,-6.3),x=p.x,z=p.z;reservePlot('pole',x,z,.2,.2);cyl(M.black,x,2.5,z,.065,5);bar(M.black,[x,4.9,z],[x+.7,5.2,z],.04);box(M.black,x+.8,5.17,z,.4,.12,.22);box(mat('#ffffbc'),x+.8,5.1,z,.3,.02,.17)}
 // Rounded vehicle bodies use bevelled extrusions rather than coarse polygons.
 function roundBox(w,h,d,r=.1){const s=new THREE.Shape();s.moveTo(-w/2+r,-h/2);s.lineTo(w/2-r,-h/2);s.quadraticCurveTo(w/2,-h/2,w/2,-h/2+r);s.lineTo(w/2,h/2-r);s.quadraticCurveTo(w/2,h/2,w/2-r,h/2);s.lineTo(-w/2+r,h/2);s.quadraticCurveTo(-w/2,h/2,-w/2,h/2-r);s.lineTo(-w/2,-h/2+r);s.quadraticCurveTo(-w/2,-h/2,-w/2+r,-h/2);let g=new THREE.ExtrudeGeometry(s,{depth:d-2*r,steps:1,bevelEnabled:true,bevelSegments:8,steps:1,bevelSize:r,bevelThickness:r,curveSegments:16});g.translate(0,0,-d/2+r);g.computeBoundingBox();const size=new THREE.Vector3();g.boundingBox.getSize(size);g.scale(w/size.x,h/size.y,d/size.z);g.center();g.deleteAttribute('uv');g.deleteAttribute('normal');g=mergeVertices(g,1e-5);g.computeVertexNormals();return g}
 const vehicles=[];
@@ -594,7 +594,7 @@ for(const g of bikes)g.scale.setScalar(1.3);
 const playerStart=player.position.clone(),playerStartAngle=player.rotation.y;
 // Keep district instance batches independent of the original market.
 flush();scene.add(sun.target);
-const extendedWorld=createExtendedWorld({scene,M,mat,box,cyl,ell,bar,put,mesh,flush,building,roof,palm,banana,shrub,person,pot,crate,table,chair,addSign,fence,rand,riceGeometry,riceMaterials,waterMaterial,roadFrame,sun,renderer,setHeight:h=>authoringHeight=h,reservePlot,registerRoad:points=>extraRoads.push(points),registerWater:area=>waterAreas.push(area),spawnVehicle:(...args)=>{const g=vehicle(...args);vehicles.pop();return g}});
+const extendedWorld=createExtendedWorld({scene,M,mat,box,cyl,ell,bar,put,mesh,flush,building,roof,palm,banana,shrub,person,pot,crate,table,chair,addSign,fence,rand,riceGeometry,riceMaterials,waterMaterial,roadFrame,sun,renderer,setHeight:h=>authoringHeight=h,reservePlot,plotBlocked,waterAt,getHeight:()=>authoringHeight,registerRoad:points=>extraRoads.push(points),registerWater:area=>waterAreas.push(area),spawnVehicle:(...args)=>{const g=vehicle(...args);vehicles.pop();return g}});
 const routeCurve=extendedWorld.route;
 const routeLength=routeCurve.getLength();let routeStart=0,routeStartDistance=Infinity;
 for(let i=0;i<=1000;i++){const t=i/1000,p=routeCurve.getPointAt(t),distance=(p.x-playerStart.x)**2+(p.z-playerStart.z)**2;if(distance<routeStartDistance){routeStartDistance=distance;routeStart=t}}
