@@ -25,6 +25,10 @@ try {
   assert.equal(touchUI.selection,'none');
   await page.locator('#pause').click();
   await page.screenshot({ path: 'artifacts/landscape.png' });
+  await page.setViewportSize({width:1536,height:864});
+  await page.evaluate(()=>{const a=window.__MUD_MEALS__;a.resize();a.graphics.render()});
+  await page.screenshot({path:'artifacts/reference-view.png'});
+  await page.setViewportSize({width:960,height:540});
   await page.locator('#orders').click();
   await page.locator('#order-panel').waitFor({ state: 'visible' });
   await page.locator('#close-orders').click();
@@ -37,6 +41,9 @@ try {
   assert.equal(density.renderer,density.composer);
   await page.locator('#camera-settings').click();
   await page.locator('#camera-panel').waitFor({state:'visible'});
+  assert.equal(await page.evaluate(()=>window.__MUD_MEALS__.cameraMode),'reference');
+  await page.locator('#camera-mode').selectOption('driving');
+  assert.equal(await page.evaluate(()=>window.__MUD_MEALS__.cameraMode),'driving');
   const initialZoom=await page.evaluate(()=>window.__MUD_MEALS__.camera.zoom);
   await page.locator('#camera-zoom').press('ArrowRight');
   assert.ok(await page.evaluate(()=>window.__MUD_MEALS__.camera.zoom)>initialZoom);
@@ -51,6 +58,9 @@ try {
   await page.locator('#reference').click();
   await page.locator('#reference-panel img').waitFor({ state: 'visible' });
   assert.equal(await page.locator('#reference-panel img').evaluate(img => img.complete && img.naturalWidth > 0), true);
+  await page.locator('#reference-opacity').evaluate(input=>{input.value='0.5';input.dispatchEvent(new Event('input',{bubbles:true}))});
+  assert.equal(await page.locator('#reference-panel img').evaluate(img=>img.style.opacity),'0.5');
+  await page.locator('#reference-opacity').evaluate(input=>{input.value='1';input.dispatchEvent(new Event('input',{bubbles:true}))});
   await page.locator('#close-reference').click();
   await page.locator('#world-explore').click();
   await page.locator('#world-panel').waitFor({state:'visible'});
@@ -59,6 +69,7 @@ try {
   assert.equal(await page.locator('#location').textContent(),'FORT KOCHI MARKET');
   // Exercise real movement through a turn with the normal follow camera.
   await page.locator('#pause').click();
+  await page.evaluate(()=>window.__MUD_MEALS__.setCameraMode('driving'));
   const start=await page.evaluate(()=>window.__MUD_MEALS__.player.position.toArray());
   await page.keyboard.down('ArrowUp');
   await page.evaluate(()=>{for(let i=0;i<180;i++)window.__MUD_MEALS__.update(1/60)});

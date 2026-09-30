@@ -32,6 +32,8 @@ for(const v of app.vehicles){const offset=v.x-app.roadFrame(v.z).x,p=app.roadFra
 globalThis.innerWidth=932;globalThis.innerHeight=430;app.resize();assert.equal(app.graphics.ao.width,764*pixelRatio);assert.equal(app.graphics.ao.height,430*pixelRatio);assert.ok(Math.abs(app.camera.aspect-16/9)<.01);
 globalThis.innerWidth=1536;globalThis.innerHeight=864;app.resize();
 // A turning, moving rider is followed from behind, with interpolation rather than snapping.
+assert.equal(app.cameraMode,'reference');assert.ok(app.camera.fov<20);
+app.setCameraMode('driving');
 const beforeFollow=app.camera.position.clone();
 app.player.position.x+=8;app.player.rotation.y+=Math.PI/2;app.updateFollowCamera(1/60);
 assert.ok(app.camera.position.distanceTo(beforeFollow)>0);
