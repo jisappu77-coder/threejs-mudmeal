@@ -51,3 +51,26 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+  test-live:
+    name: Test the deployed website
+    needs: deploy
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: npx playwright install --with-deps chromium
+      - name: Check GitHub Pages in Chromium
+        run: npm run check:browser
+        env:
+          PREVIEW_URL: https://jisappu77-coder.github.io/threejs-mudmeal/
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: live-browser-screenshots
+          path: artifacts/
+          retention-days: 7
