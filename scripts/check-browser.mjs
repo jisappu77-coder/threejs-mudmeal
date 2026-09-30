@@ -57,7 +57,7 @@ try {
 
   // Advance the real simulation: every NPC has a safe route; cars cannot interpenetrate.
   const lifeChecks=await page.evaluate(()=>{
-    const a=window.__MUD_MEALS__,life=a.life,starts=life.traffic.map(v=>v.g.position.clone());a.reset();
+    const a=window.__MUD_MEALS__,life=a.life;a.reset();const starts=life.traffic.map(v=>v.g.position.clone()),greeter=life.npcs.find(n=>!n.sitting);a.player.position.copy(greeter.home);a.player.position.x+=2;
     let overlap=false,walked=false,waved=false;
     for(let i=0;i<900;i++){
       life.update(1/30,i/30);

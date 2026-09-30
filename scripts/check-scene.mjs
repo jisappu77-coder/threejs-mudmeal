@@ -46,7 +46,8 @@ for(let frame=0;frame<1800;frame++){
  if(frame%30===0)for(let i=0;i<app.life.traffic.length;i++)for(let j=i+1;j<app.life.traffic.length;j++)assert.equal(app.life.overlaps(app.life.traffic[i],app.life.traffic[j]),false,`Traffic overlap: ${i},${j} at ${frame/30}s`);
 }
 assert.ok(app.npcs.some(n=>n.distance>0));
-app.life.reset();
+app.life.reset();const greeter=app.npcs.find(n=>!n.sitting);app.player.position.copy(greeter.home);app.player.position.x+=2;
+for(let i=0;i<45;i++)app.life.update(1/30,i/30);assert.ok(greeter.wave>.5);app.reset();
 // A wide display retains the original 16:9 scene without enlarging the HUD.
 globalThis.innerWidth=932;globalThis.innerHeight=430;app.resize();assert.equal(app.graphics.ao.width,764*pixelRatio);assert.equal(app.graphics.ao.height,430*pixelRatio);assert.ok(Math.abs(app.camera.aspect-16/9)<.01);
 globalThis.innerWidth=1536;globalThis.innerHeight=864;app.resize();
