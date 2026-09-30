@@ -17,6 +17,7 @@ try {
   await page.goto(url, { waitUntil: 'networkidle' });
   await page.waitForFunction(() => window.__MUD_MEALS__ && !document.querySelector('#loading'), null, { timeout: 120000 });
   assert.equal(await page.evaluate(() => window.__MUD_MEALS__.renderer.getContext().isContextLost()), false);
+  assert.equal(await page.evaluate(()=>window.__MUD_MEALS__.camera.isPerspectiveCamera),true);
   // Capture an existing rendered frame without flooding the CI software GPU.
   await page.evaluate(() => window.__MUD_MEALS__.renderer.setAnimationLoop(null));
   const touchUI=await page.locator('#accelerate').evaluate(button=>{const menu=new MouseEvent('contextmenu',{bubbles:true,cancelable:true});button.dispatchEvent(menu);return {menuBlocked:menu.defaultPrevented,selection:getComputedStyle(button).userSelect}});
@@ -41,7 +42,7 @@ try {
   assert.ok(await page.evaluate(()=>window.__MUD_MEALS__.camera.zoom)>initialZoom);
   await page.locator('#camera-panX').press('ArrowRight');
   assert.equal(await page.evaluate(()=>window.__MUD_MEALS__.cameraSettings.panX),.5);
-  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('mud-meals-camera')).panX),.5);
+  assert.equal(await page.evaluate(()=>JSON.parse(localStorage.getItem('mud-meals-follow-camera')).panX),.5);
   await page.locator('#reset-camera').click();
   assert.equal(await page.evaluate(()=>window.__MUD_MEALS__.camera.zoom),initialZoom);
   assert.equal(await page.evaluate(()=>window.__MUD_MEALS__.cameraSettings.panX),0);

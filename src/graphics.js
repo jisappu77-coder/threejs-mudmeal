@@ -10,9 +10,9 @@ export function setupGraphics(renderer,scene,camera){
  const composer=new EffectComposer(renderer,target);
  composer.setPixelRatio(renderer.getPixelRatio());
  const ao=new SSAOPass(scene,camera,innerWidth,innerHeight,innerHeight<600?12:24);
- // The reference camera is orthographic; the pass defaults to perspective depth.
- ao.ssaoMaterial.defines.PERSPECTIVE_CAMERA=0;
- ao.depthRenderMaterial.defines.PERSPECTIVE_CAMERA=0;
+ // Depth reconstruction must match the active driving camera.
+ ao.ssaoMaterial.defines.PERSPECTIVE_CAMERA=camera.isPerspectiveCamera?1:0;
+ ao.depthRenderMaterial.defines.PERSPECTIVE_CAMERA=camera.isPerspectiveCamera?1:0;
  ao.kernelRadius=.65;ao.minDistance=.00025;ao.maxDistance=.015;
  composer.addPass(new RenderPass(scene,camera));composer.addPass(ao);composer.addPass(new OutputPass());
  return {composer,setQuality:sharp=>{const ratio=sharp?Math.min(Math.max(devicePixelRatio,1.25),2):Math.min(devicePixelRatio,1);renderer.setPixelRatio(ratio);composer.setPixelRatio(ratio)},render:()=>{ao.ssaoMaterial.uniforms.cameraProjectionMatrix.value.copy(camera.projectionMatrix);ao.ssaoMaterial.uniforms.cameraInverseProjectionMatrix.value.copy(camera.projectionMatrixInverse);composer.render()},resize:(w,h)=>composer.setSize(w,h),ao};

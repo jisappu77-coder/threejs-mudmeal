@@ -19,12 +19,12 @@ const scene=new THREE.Scene();
 scene.background=new THREE.Color('#b5cc8b');
 scene.fog=new THREE.Fog('#b5cc8b',95,180);
 const aspect=innerWidth/innerHeight;
-const camera=new THREE.OrthographicCamera(-29,29,29/aspect,-29/aspect,.1,160);
+const camera=new THREE.PerspectiveCamera(55,aspect,.1,160);
 const defaultZoom=1.12;camera.zoom=defaultZoom;
 const originalPosition=new THREE.Vector3(23,49,48), originalTarget=new THREE.Vector3(0,0,0);
 camera.position.copy(originalPosition);camera.lookAt(originalTarget);
 const controls=new OrbitControls(camera,canvas);controls.target.copy(originalTarget);controls.enabled=false;controls.update();
-controls.enableDamping=true;controls.minZoom=.55;controls.maxZoom=2.5;controls.maxPolarAngle=Math.PI*.46;
+controls.enableDamping=true;controls.minDistance=4;controls.maxDistance=40;controls.maxPolarAngle=Math.PI*.46;
 scene.add(new THREE.HemisphereLight('#fff6d7','#617357',1.25));
 const sun=new THREE.DirectionalLight('#fff2db',3.0);sun.position.set(-30,55,28);sun.castShadow=true;
 sun.shadow.mapSize.set(innerWidth<800?2048:4096,innerWidth<800?2048:4096);Object.assign(sun.shadow.camera,{left:-48,right:48,top:48,bottom:-48,near:1,far:130});
@@ -250,19 +250,27 @@ flush();
 let paused=false,freeCamera=false,speed=0,steer=0,travel=0,delivered=false;const keys=new Set();
 const toast=document.querySelector('#toast');let toastTimer;
 function notify(message){toast.textContent=message;toast.style.opacity=1;clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.style.opacity=0,2600)}
-const cameraDefaults={zoom:defaultZoom,tilt:Math.atan2(originalPosition.y,Math.hypot(originalPosition.x,originalPosition.z))*180/Math.PI,rotation:Math.atan2(originalPosition.x,originalPosition.z)*180/Math.PI,panX:0,panZ:0};
-const cameraLimits={zoom:[.7,2.2],tilt:[25,75],rotation:[-75,75],panX:[-12,12],panZ:[-15,15]};
+const cameraDefaults={zoom:defaultZoom,tilt:24,rotation:0,panX:0,panZ:12};
+const cameraLimits={zoom:[.7,2.2],tilt:[10,65],rotation:[-75,75],panX:[-4,4],panZ:[6,24]};
 const cameraSettings={...cameraDefaults};
-try{const saved=JSON.parse(localStorage.getItem('mud-meals-camera')||'null');if(saved&&typeof saved==='object')for(const key of Object.keys(cameraLimits)){const value=saved[key];if(typeof value==='number'&&Number.isFinite(value))cameraSettings[key]=THREE.MathUtils.clamp(value,...cameraLimits[key])}}catch{}
-function saveCamera(){try{localStorage.setItem('mud-meals-camera',JSON.stringify(cameraSettings))}catch{}}
+try{const saved=JSON.parse(localStorage.getItem('mud-meals-follow-camera')||'null');if(saved&&typeof saved==='object')for(const key of Object.keys(cameraLimits)){const value=saved[key];if(typeof value==='number'&&Number.isFinite(value))cameraSettings[key]=THREE.MathUtils.clamp(value,...cameraLimits[key])}}catch{}
+function saveCamera(){try{localStorage.setItem('mud-meals-follow-camera',JSON.stringify(cameraSettings))}catch{}}
+const followPosition=new THREE.Vector3(),followLookAt=new THREE.Vector3(),followForward=new THREE.Vector3(),followRight=new THREE.Vector3();
+function updateFollowCamera(dt,snap=false){
+ if(freeCamera)return;
+ const heading=player.rotation.y,angle=heading+THREE.MathUtils.degToRad(cameraSettings.rotation),tilt=THREE.MathUtils.degToRad(cameraSettings.tilt),distance=cameraSettings.panZ+speed*.3;
+ followForward.set(-Math.sin(heading),0,-Math.cos(heading));followRight.set(Math.cos(heading),0,-Math.sin(heading));
+ followPosition.copy(player.position).addScaledVector(followRight,cameraSettings.panX);
+ followPosition.x+=Math.sin(angle)*Math.cos(tilt)*distance;followPosition.z+=Math.cos(angle)*Math.cos(tilt)*distance;followPosition.y+=1.4+Math.sin(tilt)*distance;
+ followLookAt.copy(player.position).addScaledVector(followForward,2+speed*.45).addScaledVector(followRight,cameraSettings.panX);followLookAt.y+=1.1;
+ const blend=snap?1:1-Math.exp(-5*Math.max(0,dt));
+ camera.position.lerp(followPosition,blend);controls.target.lerp(followLookAt,blend);camera.lookAt(controls.target);
+}
 function applyCameraSettings(){
  freeCamera=false;controls.enabled=false;document.querySelector('#view').textContent='Free camera';
- // Drain any orbit damping before applying an exact slider position.
  controls.enableDamping=false;controls.update();
- controls.target.set(cameraSettings.panX,0,cameraSettings.panZ);
- camera.position.setFromSphericalCoords(originalPosition.distanceTo(originalTarget),THREE.MathUtils.degToRad(90-cameraSettings.tilt),THREE.MathUtils.degToRad(cameraSettings.rotation)).add(controls.target);
- camera.zoom=cameraSettings.zoom;camera.updateProjectionMatrix();controls.update();controls.enableDamping=true;
- for(const key of Object.keys(cameraLimits)){const input=document.querySelector('#camera-'+key);input.value=cameraSettings[key];document.querySelector('#camera-'+key+'-value').textContent=key==='zoom'?cameraSettings[key].toFixed(2)+'×':key==='tilt'||key==='rotation'?Math.round(cameraSettings[key])+'°':cameraSettings[key].toFixed(1)}
+ camera.zoom=cameraSettings.zoom;camera.updateProjectionMatrix();updateFollowCamera(0,true);controls.enableDamping=true;
+ for(const key of Object.keys(cameraLimits)){const input=document.querySelector('#camera-'+key);input.value=cameraSettings[key];document.querySelector('#camera-'+key+'-value').textContent=key==='zoom'?cameraSettings[key].toFixed(2)+'×':key==='tilt'||key==='rotation'?Math.round(cameraSettings[key])+'°':cameraSettings[key].toFixed(1)+' m'}
 }
 function resetCameraSettings(){Object.assign(cameraSettings,cameraDefaults);applyCameraSettings();saveCamera()}
 for(const key of Object.keys(cameraLimits))document.querySelector('#camera-'+key).addEventListener('input',event=>{cameraSettings[key]=THREE.MathUtils.clamp(Number(event.target.value),...cameraLimits[key]);applyCameraSettings();saveCamera()});
@@ -310,8 +318,8 @@ function update(dt){if(!paused){elapsed+=dt;if(speed>.02&&Math.floor(elapsed*12)
  for(const g of[rival1,rival2])g.position.y=Math.sin(elapsed*4+(g===rival1?0:2))*.025;
  const left=Math.max(0,165-Math.floor(elapsed));document.querySelector('#timer').textContent=`${String(Math.floor(left/60)).padStart(2,'0')}:${String(left%60).padStart(2,'0')}`;
  }
- if(freeCamera)controls.update();mapTime+=dt;if(mapTime>.10){minimap();mapTime=0}}
-function resize(){const stage=document.querySelector('#game-stage').getBoundingClientRect();const w=Math.max(1,Math.round(stage.width)),h=Math.max(1,Math.round(stage.height));camera.left=-29;camera.right=29;camera.top=29*h/w;camera.bottom=-29*h/w;camera.updateProjectionMatrix();renderer.setSize(w,h,false);graphics.resize(w,h)}
+ if(freeCamera)controls.update();else updateFollowCamera(dt);mapTime+=dt;if(mapTime>.10){minimap();mapTime=0}}
+function resize(){const stage=document.querySelector('#game-stage').getBoundingClientRect();const w=Math.max(1,Math.round(stage.width)),h=Math.max(1,Math.round(stage.height));camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false);graphics.resize(w,h)}
 const graphics=setupGraphics(renderer,scene,camera);
 let sharpGraphics=true;
 try{sharpGraphics=localStorage.getItem('mud-meals-graphics')!=='balanced'}catch{}
@@ -322,5 +330,5 @@ window.addEventListener('resize',resize);
 new ResizeObserver(resize).observe(document.querySelector('#game-stage'));
 resize();minimap();
 renderer.setAnimationLoop(()=>{update(Math.min(clock.getDelta(),.05));graphics.render()});
-window.__MUD_MEALS__={scene,camera,renderer,player,reset,cameraSettings,resetCameraSettings,graphics,resize,roadFrame,roadDetails,vehicles,stats:()=>({triangles:renderer.info.render.triangles,calls:renderer.info.render.calls,geometries:renderer.info.memory.geometries,objects:scene.children.length})};
+window.__MUD_MEALS__={scene,camera,renderer,player,reset,cameraSettings,resetCameraSettings,updateFollowCamera,graphics,resize,roadFrame,roadDetails,vehicles,stats:()=>({triangles:renderer.info.render.triangles,calls:renderer.info.render.calls,geometries:renderer.info.memory.geometries,objects:scene.children.length})};
 renderer.compileAsync(scene,camera).then(()=>{document.querySelector('#loading').style.opacity=0;setTimeout(()=>document.querySelector('#loading').remove(),450)}).catch(()=>document.querySelector('#loading').remove());
