@@ -6,7 +6,8 @@ import { setupGraphics } from './graphics.js';
 const canvas = document.querySelector('#world');
 const renderer = new THREE.WebGLRenderer({canvas, antialias:true, powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio, 1.65));
-renderer.setSize(innerWidth,innerHeight);
+// CSS owns the canvas display size; resizing must never leave viewport-sized inline styles.
+renderer.setSize(innerWidth,innerHeight,false);
 renderer.shadowMap.enabled=true;
 renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 renderer.outputColorSpace=THREE.SRGBColorSpace;
@@ -285,9 +286,11 @@ function update(dt){if(!paused){elapsed+=dt;if(speed>.02&&Math.floor(elapsed*12)
  const left=Math.max(0,165-Math.floor(elapsed));document.querySelector('#timer').textContent=`${String(Math.floor(left/60)).padStart(2,'0')}:${String(left%60).padStart(2,'0')}`;
  }
  if(freeCamera)controls.update();mapTime+=dt;if(mapTime>.10){minimap();mapTime=0}}
-function resize(){const w=Math.round(Math.min(innerWidth,innerHeight*16/9)),h=Math.round(w*9/16);camera.left=-29;camera.right=29;camera.top=29*9/16;camera.bottom=-29*9/16;camera.updateProjectionMatrix();renderer.setSize(w,h,false);graphics.resize(w,h)}
+function resize(){const stage=document.querySelector('#game-stage').getBoundingClientRect();const w=Math.max(1,Math.round(stage.width)),h=Math.max(1,Math.round(stage.height));camera.left=-29;camera.right=29;camera.top=29*h/w;camera.bottom=-29*h/w;camera.updateProjectionMatrix();renderer.setSize(w,h,false);graphics.resize(w,h)}
 const graphics=setupGraphics(renderer,scene,camera);
-window.addEventListener('resize',resize);resize();minimap();
+window.addEventListener('resize',resize);
+new ResizeObserver(resize).observe(document.querySelector('#game-stage'));
+resize();minimap();
 renderer.setAnimationLoop(()=>{update(Math.min(clock.getDelta(),.05));graphics.render()});
 window.__MUD_MEALS__={scene,camera,renderer,player,reset,graphics,resize,roadFrame,roadDetails,vehicles,stats:()=>({triangles:renderer.info.render.triangles,calls:renderer.info.render.calls,geometries:renderer.info.memory.geometries,objects:scene.children.length})};
 renderer.compileAsync(scene,camera).then(()=>{document.querySelector('#loading').style.opacity=0;setTimeout(()=>document.querySelector('#loading').remove(),450)}).catch(()=>document.querySelector('#loading').remove());

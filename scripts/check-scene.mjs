@@ -6,8 +6,9 @@ import * as THREE from 'three';
 const noop=()=>{};
 const ctx=new Proxy({},{get:(_,key)=>key==='measureText'?()=>({width:100}):key==='createLinearGradient'?()=>({addColorStop:noop}):noop,set:()=>true});
 const els=new Map();
-function el(){return {style:{},hidden:true,tagName:'DIV',getContext:()=>ctx,addEventListener:noop,setAttribute:noop,setPointerCapture:noop,remove:noop,dataset:{steer:'0'}}}
+function el(){return {style:{},hidden:true,tagName:'DIV',getContext:()=>ctx,getBoundingClientRect:()=>({width:Math.min(innerWidth,innerHeight*16/9),height:Math.min(innerHeight,innerWidth*9/16)}),addEventListener:noop,setAttribute:noop,setPointerCapture:noop,remove:noop,dataset:{steer:'0'}}}
 globalThis.document={querySelector:s=>{if(!els.has(s))els.set(s,el());return els.get(s)},querySelectorAll:()=>[],createElement:()=>el(),addEventListener:noop};
+globalThis.ResizeObserver=class {observe(){}};
 globalThis.window={addEventListener:noop};globalThis.innerWidth=1536;globalThis.innerHeight=864;globalThis.devicePixelRatio=1;
 const fakeRenderer={getPixelRatio:()=>1,capabilities:{maxSamples:4},setPixelRatio:noop,setSize:noop,shadowMap:{},setAnimationLoop:noop,render:noop,compileAsync:()=>Promise.resolve(),info:{render:{triangles:0,calls:0},memory:{geometries:0}}};
 const FakeControls=class {constructor(){this.target=new THREE.Vector3()}update(){}};
@@ -26,6 +27,6 @@ els.get('#pause').onclick();assert.equal(els.get('#pause').textContent,'▶');el
 for(const d of app.roadDetails){const center=app.roadFrame(d.sourceZ);assert.ok(Math.abs(d.angle-center.angle)<1e-8);if(d.kind==='kerb')assert.ok(Math.abs(Math.hypot(d.x-center.x,d.z-center.z)-4.97)<1e-7)}
 for(const v of app.vehicles){const offset=v.x-app.roadFrame(v.z).x,p=app.roadFrame(v.z,offset);assert.ok(Math.abs(v.g.position.x-p.x)<1e-8);assert.ok(Math.abs(v.g.position.z-p.z)<1e-8)}
 // A wide display retains the original 16:9 scene without enlarging the HUD.
-globalThis.innerWidth=932;globalThis.innerHeight=430;app.resize();assert.equal(app.graphics.ao.width,764);assert.equal(app.graphics.ao.height,430);assert.equal(app.camera.left,-29);assert.equal(app.camera.right,29);assert.equal(app.camera.top,29*9/16);
+globalThis.innerWidth=932;globalThis.innerHeight=430;app.resize();assert.equal(app.graphics.ao.width,764);assert.equal(app.graphics.ao.height,430);assert.equal(app.camera.left,-29);assert.equal(app.camera.right,29);assert.ok(Math.abs(app.camera.top-29*9/16)<.01);
 globalThis.innerWidth=1536;globalThis.innerHeight=864;app.resize();
 console.log(JSON.stringify({ok:true,meshes,instances,triangles,sceneObjects:app.scene.children.length}));

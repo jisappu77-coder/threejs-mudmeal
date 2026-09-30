@@ -34,8 +34,26 @@ try {
   await page.screenshot({ path: 'artifacts/portrait.png' });
   await page.setViewportSize({ width: 932, height: 430 });
   await page.locator('#landscape-prompt').waitFor({ state: 'hidden' });
-  const stage = await page.locator('#game-stage').boundingBox();
-  assert.ok(Math.abs(stage.width / stage.height - 16 / 9) < 0.01);
+  // Catch stale inline canvas dimensions after rotation, browser zoom, and wide displays.
+  for (const viewport of [{width:1536,height:691},{width:932,height:430},{width:390,height:844},{width:960,height:540}]) {
+    await page.setViewportSize(viewport);
+    await page.waitForFunction(() => {
+      const stage=document.querySelector('#game-stage').getBoundingClientRect();
+      const canvas=document.querySelector('#world').getBoundingClientRect();
+      return Math.abs(stage.width-canvas.width)<1 && Math.abs(stage.height-canvas.height)<1;
+    });
+    const bounds=await page.evaluate(() => {
+      const stage=document.querySelector('#game-stage').getBoundingClientRect();
+      const canvas=document.querySelector('#world');
+      return {width:stage.width,height:stage.height,inlineWidth:canvas.style.width,inlineHeight:canvas.style.height};
+    });
+    assert.ok(Math.abs(bounds.width/bounds.height-16/9)<0.01);
+    assert.equal(bounds.inlineWidth,'');
+    assert.equal(bounds.inlineHeight,'');
+  }
+  await page.evaluate(() => window.__MUD_MEALS__.graphics.render());
+  await page.screenshot({path:'artifacts/resized-landscape.png'});
+
   assert.deepEqual(errors, []);
   console.log('Browser checks passed: WebGL, orders, reference assets, and landscape layout.');
 } finally {
