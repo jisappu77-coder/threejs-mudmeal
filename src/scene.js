@@ -78,13 +78,13 @@ const paving=mat('#c2baa5');paving.bumpMap=stoneBump;paving.bumpScale=.04;
 paving.map=texCanvas(256,256,(c,w,h)=>{c.fillStyle='#e4dcc7';c.fillRect(0,0,w,h);c.strokeStyle='#a49c88';c.lineWidth=2;for(let y=0;y<=h;y+=32){c.beginPath();c.moveTo(0,y);c.lineTo(w,y);c.stroke();for(let x=(y%64?16:0);x<=w;x+=32){c.beginPath();c.moveTo(x,y);c.lineTo(x,y+32);c.stroke()}}});paving.map.wrapS=paving.map.wrapT=THREE.RepeatWrapping;paving.map.repeat.set(4,1);
 ribbon(roadPoints,13.6,.018,paving);ribbon(roadPoints,10.2,.03,M.curb);ribbon(roadPoints,9.6,.045,M.road);
 const canalPoints=Array.from({length:131},(_,i)=>{const z=-48+i*.75;return[canalX(z),z]});
-ribbon(canalPoints,8.9,.03,mat('#739351'));
+ribbon(canalPoints,10.4,.03,mat('#739351'));
 const waterTime={value:0},waterMaterial=new THREE.MeshPhysicalMaterial({color:'#16aeb7',roughness:.26,metalness:.16,clearcoat:.8,clearcoatRoughness:.20});
 const waterBump=texCanvas(256,256,(c,w,h)=>{c.fillStyle='#808080';c.fillRect(0,0,w,h);for(let y=0;y<h;y+=6){c.strokeStyle=y%12?'#bbbbbb':'#565656';c.lineWidth=2;c.beginPath();for(let x=0;x<=w;x+=4){const yy=y+Math.sin(x*.055+y*.14)*3;x?c.lineTo(x,yy):c.moveTo(x,yy)}c.stroke()}});
 waterBump.colorSpace=THREE.NoColorSpace;waterBump.wrapS=waterBump.wrapT=THREE.RepeatWrapping;waterBump.repeat.set(4,10);waterMaterial.bumpMap=waterBump;waterMaterial.bumpScale=.045;
 waterMaterial.onBeforeCompile=shader=>{shader.uniforms.uWaterTime=waterTime;shader.vertexShader=shader.vertexShader.replace('#include <common>','#include <common>\nuniform float uWaterTime;').replace('#include <begin_vertex>','#include <begin_vertex>\ntransformed.y += sin(position.x * 4.0 + uWaterTime) * cos(position.z * 2.3 + uWaterTime * 0.6) * 0.012;')};
 waterMaterial.customProgramCacheKey=()=> 'mud-water-wave-v1';
-ribbon(canalPoints,7.4,.08,waterMaterial);
+ribbon(canalPoints,9,.08,waterMaterial);
 // Offset every roadside object along the road normal, not the world's X axis.
 const roadDetails=[];
 for(let z=-48;z<47;z+=1.1){const c=roadFrame(z);if(Math.round((z+48)/1.1)%2===0){box(M.line,c.x,.056,c.z,.13,.008,.82,null,c.angle);roadDetails.push({kind:'paint',x:c.x,z:c.z,angle:c.angle,sourceZ:z})}
@@ -93,29 +93,29 @@ for(let z=-48;z<47;z+=1.1){const c=roadFrame(z);if(Math.round((z+48)/1.1)%2===0)
 const branchCurve=new THREE.CatmullRomCurve3([new THREE.Vector3(roadX(4),0,4),new THREE.Vector3(2,0,-1),new THREE.Vector3(6,0,-8),new THREE.Vector3(10,0,-10),new THREE.Vector3(21,0,-10)]);
 const bp=branchCurve.getPoints(70).map(p=>[p.x,p.z]);ribbon(bp,4.2,.055,M.curb);ribbon(bp,3.55,.07,M.road);
 // Sandy footpath and terraced paddy fields.
-ribbon(canalPoints.map(([x,z])=>[x+6.4,z]),2,.045,M.soil);
-for(let z=-40;z<39;z+=10){box(mat('#789442'),canalX(z)+15,.05,z,14,.24,8.8);box(M.soil,canalX(z+4.5)+15,.21,z+4.5,16,.26,.55);}
+ribbon(canalPoints.map(([x,z])=>[x+7.3,z]),2,.045,M.soil);
+for(let z=-40;z<39;z+=10){box(mat('#789442'),canalX(z)+17,.05,z,14,.24,8.8);box(M.soil,canalX(z+4.5)+17,.21,z+4.5,16,.26,.55);}
 // Curved rice tufts contain several separate blades instead of scattered cones.
 const riceVertices=[],riceIndices=[];
 for(let blade=0;blade<3;blade++){const a=blade*Math.PI*2/3,start=riceVertices.length/3;for(let row=0;row<=5;row++){const t=row/5,bend=t*t*.16,w=Math.sin((t*.92+.04)*Math.PI)*.035;for(const side of[-1,1])riceVertices.push(Math.cos(a)*bend+Math.sin(a)*w*side,t,Math.sin(a)*bend-Math.cos(a)*w*side);if(row<5){const k=start+row*2;riceIndices.push(k,k+2,k+1,k+1,k+2,k+3)}}}
 const riceGeometry=new THREE.BufferGeometry();riceGeometry.setAttribute('position',new THREE.Float32BufferAttribute(riceVertices,3));riceGeometry.setIndex(riceIndices);riceGeometry.computeVertexNormals();
 const riceMaterials=['#88b833','#abc839','#659f2c'].map(c=>{const m=mat(c);m.side=THREE.DoubleSide;return m});
-for(let i=0;i<19000;i++){const z=rand(-40,39),x=canalX(z)+rand(8,22);if(Math.abs((z+40)%10-4.5)<.65)continue;put(riceGeometry,riceMaterials[i%3],[x,.19,z],[rand(.8,1.2),rand(.55,.95),1],[0,random()*6.28,0])}
+for(let i=0;i<19000;i++){const z=rand(-40,39),x=canalX(z)+rand(10,24);if(Math.abs((z+40)%10-4.5)<.65||Math.abs(z+6)<1.7)continue;put(riceGeometry,riceMaterials[i%3],[x,.19,z],[rand(.8,1.2),rand(.55,.95),1],[0,random()*6.28,0])}
 // Stone canal walls: varied individual blocks with coping stones.
-for(let z=-47;z<46;z+=.95){for(const s of[-1,1]){const x=canalX(z)+s*4.1;for(let row=0;row<3;row++)box([M.stone,mat('#949484'),mat('#6b7267')][Math.floor(random()*3)],x, row*.36-.24,z+(row%2)*.25,.62,.35,.92,null,rand(-.04,.04));box(mat('#b6b298'),x,.72,z,.76,.19,.99);}}
+for(let z=-47;z<46;z+=.95){for(const s of[-1,1]){const x=canalX(z)+s*5.0;for(let row=0;row<3;row++)box([M.stone,mat('#949484'),mat('#6b7267')][Math.floor(random()*3)],x, row*.36-.24,z+(row%2)*.25,.62,.35,.92,null,rand(-.04,.04));box(mat('#b6b298'),x,.72,z,.76,.19,.99);}}
 const rippleMat=new THREE.MeshStandardMaterial({color:'#9de5c2',transparent:true,opacity:.3,roughness:.32});
 const rippleGeometry=new THREE.RingGeometry(.8,1,32,1,0,Math.PI*1.5);
 for(let i=0;i<155;i++){const z=rand(-47,44),x=canalX(z)+rand(-3.4,3.4);put(rippleGeometry,rippleMat,[x,.11,z],[rand(.10,.30),rand(.03,.12),1],[-Math.PI/2,0,rand(-.4,.4)])}
 for(let i=0;i<76;i++){const z=rand(-38,38);put(new THREE.CylinderGeometry(1,1,.02,24),mat(i%3?'#94bd29':'#bed339'),[canalX(z)+rand(-2.7,2.7),.11,z],[rand(.10,.27),1,rand(.1,.23)]);}
 // Footbridge with masonry piers, crossbeams, bollards and continuous rails.
-box(M.stone,11.1,.66,-10,10.4,.66,3.3);box(mat('#bab6a3'),11.1,1.05,-10,10.8,.2,3.5);
+box(M.stone,10.3,.66,-10,11.4,.66,3.3);box(mat('#bab6a3'),10.3,1.05,-10,11.8,.2,3.5);
 for(const x of[7.5,13.6]){box(M.stone,x,-.08,-10,1.15,1.5,3.1);box(mat('#999b88'),x,-.6,-10,1.6,.4,3.5)}
-for(let x=6;x<=16.2;x+=1.45){for(const z of[-11.65,-8.35]){box(mat('#c6c2aa'),x,1.62,z,.24,1.18,.28);box(M.white,x,2.22,z,.33,.13,.37)}}
-for(const z of[-11.65,-8.35]){box(mat('#c7c5b6'),11.1,2.05,z,10.7,.15,.15);box(mat('#909a91'),11.1,1.55,z,10.7,.09,.12)}
+for(let x=4.6;x<=16.1;x+=1.45){for(const z of[-11.65,-8.35]){box(mat('#c6c2aa'),x,1.62,z,.24,1.18,.28);box(M.white,x,2.22,z,.33,.13,.37)}}
+for(const z of[-11.65,-8.35]){box(mat('#c7c5b6'),10.3,2.05,z,11.8,.15,.15);box(mat('#909a91'),10.3,1.55,z,11.8,.09,.12)}
 // Weathered wood fencing on both banks and field boundaries.
 function fence(points){points.forEach((p,i)=>{cyl(M.wood,p[0],1.12,p[1],.095,1.5);ell(M.wood,p[0],1.89,p[1],.13,.07,.13);if(i){for(const y of[1.05,1.6])bar(M.wood,[points[i-1][0],y,points[i-1][1]],[p[0],y,p[1]],.045)}})}
-for(const s of[-1,1]){for(const range of[[-45,-13],[-6,42]]){const pts=[];for(let z=range[0];z<=range[1];z+=1.8)pts.push([canalX(z)+s*5,z]);fence(pts)}}
-for(let z=-38;z<40;z+=10)fence([8,12,16,20,24].map(dx=>[canalX(z)+dx,z]));
+for(const s of[-1,1]){for(const range of[[-45,-13],[-6,42]]){const pts=[];for(let z=range[0];z<=range[1];z+=1.8)pts.push([canalX(z)+s*6,z]);fence(pts)}}
+for(let z=-38;z<40;z+=10)fence([10,14,18,22,26].map(dx=>[canalX(z)+dx,z]));
 // Hip roofs have actual rounded terracotta tiles along all four faces.
 const tileGeo=new THREE.CylinderGeometry(.105,.105,1,12,1,false,0,Math.PI);
 const roofMats=['#b95036','#c2563a','#c8593c','#bc5137','#ce5e40'].map(c=>{const m=mat(c);m.bumpMap=tileBump;m.bumpScale=.025;return m});
@@ -157,7 +157,7 @@ addSign('KERALA\nSPICES',-19,2.65,13.12,4.6,1.5,'#6e4e2d','#fff0c7',64);
 box(M.wood,-19,1,13.1,6.5,1.6,.15);
 for(let i=0;i<14;i++){box(i%2?M.cream:mat('#3d8292'),-22.2+i*.48,2.45,13.7,.48,.10,1.45)}
 function billboard(x,z,text){box(mat('#d4ccb4'),x,2.5,z,2.6,4.9,.55);box(mat('#b2ac97'),x,5,z,2.9,.2,.75);addSign(text,x,3,z+.295,2.35,3.55,'#d0c9b6','#334339',52);box(M.stone,x,.22,z,3,.44,1);}
-billboard(4.2,-11.6,'GOOD\nFOOD\nHAPPIER\nPEOPLE');billboard(15.7,10,'GOOD\nFOOD\nBRIGHTER');
+billboard(2.6,-11.6,'GOOD\nFOOD\nHAPPIER\nPEOPLE');billboard(15.7,10,'GOOD\nFOOD\nBRIGHTER');
 // Traffic direction sign, stalls, baskets, tables and diners.
 for(const x of[-17.1,-13.9])cyl(mat('#82877d'),x,1.8,1.1,.07,3.6);
 addSign('Ernakulam  ↑\nKakkanad  →\nInfopark  →',-15.5,3.1,1.17,3.9,2.5,'#246b61','#e3f4df',43);
@@ -187,11 +187,11 @@ for(const [x,z,h]of[[-15,-15,9],[-3,-16,8.5],[6,-22,8],[15,-29,9],[16,-2,8],[8,1
 for(const [x,z,s]of[[4,-8,1.2],[3,-15,1.3],[6,4,1.2],[15,12,1.25],[19,20,1.2],[-13,7,1.3],[-21,3,1.1],[-12,24,1.3],[21,-16,1],[23,-32,1.2],[5,23,1.4],[-2,-28,1],[17,-35,1.2]])banana(x,z,s);
 const shrubLeaf=leafGeometry(.52,.13,.12),shrubCore=new THREE.SphereGeometry(1,12,8);
 function shrub(x,z,s=.7){for(let i=0;i<22;i++){const a=i*2.4;put(shrubLeaf,leafMaterials[i%4],[x+Math.sin(a)*s*.38,.5+Math.cos(a*3)*s*.2,z+Math.cos(a)*s*.35],[s,s,s],[rand(-.6,.7),a,rand(-.4,.4)])}for(let i=0;i<3;i++)put(shrubCore,[mat('#77a829'),mat('#90b72d'),mat('#4e8a27')][i%3],[x+rand(-.2,.2)*s,.35+rand(0,.18)*s,z+rand(-.2,.2)*s],[s*.30,s*.30,s*.27])}
-for(let i=0;i<250;i++){const z=rand(-45,44),x=canalX(z)+(random()>.5?1:-1)*rand(4.5,5.2);if(z>-13&&z<-7)continue;shrub(x,z,rand(.5,.9))}
+for(let i=0;i<250;i++){const z=rand(-45,44),x=canalX(z)+(random()>.5?1:-1)*rand(5.4,6.0);if(z>-13&&z<-7)continue;shrub(x,z,rand(.5,.9))}
 for(let i=0;i<150;i++){const x=rand(-30,33),z=rand(-45,43);if(Math.abs(x-roadX(z))<6||Math.abs(x-canalX(z))<7||x>18)continue;if((x>-15&&x<3&&z>-14&&z<0)||(x>-24&&x<-14&&z>6&&z<15))continue;shrub(x,z,rand(.6,1.3))}
 // Continuous planting beds along the pavements and the market lane.
-const occupiedPlots=[[-9.3,-5,8.5,7.3],[-.3,-5.1,5.6,5],[-10,-24,6.4,6],[-.5,-22,7.4,6.6],[-21,-10,7,6],[-19,10,8,7],[-17,26,8,7]];
-function clearForPlant(x,z){const dx=(roadX(z+.05)-roadX(z-.05))/.1;const distance=Math.abs(x-roadX(z))/Math.hypot(1,dx);if(distance<7||Math.abs(x-canalX(z))<4.4||x>canalX(z)+7)return false;if(occupiedPlots.some(([px,pz,w,d])=>Math.abs(x-px)<w/2+.8&&Math.abs(z-pz)<d/2+.8))return false;if(x>-16&&x<7&&z>-2&&z<6)return false;return true}
+const occupiedPlots=[[-8.5,-9,10.1,7.7],[-.3,-5.1,6.6,5.6],[-10,-24,6.4,6],[-.5,-22,7.4,6.6],[-21,-10,7,6],[-19,10,8,7],[-17,26,8,7]];
+function clearForPlant(x,z){const dx=(roadX(z+.05)-roadX(z-.05))/.1;const distance=Math.abs(x-roadX(z))/Math.hypot(1,dx);if(distance<7||Math.abs(x-canalX(z))<5.2||x>canalX(z)+7)return false;if(occupiedPlots.some(([px,pz,w,d])=>Math.abs(x-px)<w/2+.8&&Math.abs(z-pz)<d/2+.8))return false;if(x>-16&&x<7&&z>-2&&z<6)return false;return true}
 for(let i=0;i<780;i++){const x=rand(-29,19),z=rand(-43,35);if(clearForPlant(x,z))shrub(x,z,rand(.55,.95))}
 for(let z=-40;z<35;z+=1.4)for(const side of[-1,1]){const p=roadFrame(z,side*7.2);if(clearForPlant(p.x,p.z))shrub(p.x,p.z,.62)}
 for(const [x,z,h]of[[-13,19,8.5],[-25,0,7.5],[3,-13,8],[-4,-32,8.5],[5,18,7.5]])palm(x,z,h);
@@ -249,7 +249,10 @@ function pin(x,z){const g=new THREE.Group();g.position.set(x,6,z);scene.add(g);e
 for(const g of[rival1,rival2]){put(geom.cone,mat('#fd294e'),[0,2.6,0],[.18,.4,.18],[0,0,Math.PI],g)}
 // White egrets and the small wooden canoe add scale to the paddy-side canal.
 function egret(x,z){ell(M.white,x,.85,z,.11,.19,.26);bar(M.white,[x,.9,z-.12],[x,1.28,z-.25],.045);ell(M.white,x,1.32,z-.25,.07,.09,.07);bar(M.yellow,[x,1.31,z-.30],[x,1.29,z-.49],.027);for(const s of[-1,1])bar(mat('#a69346'),[x+s*.04,.73,z],[x+s*.06,.24,z+.05],.012)}egret(canalX(1)+11,1);egret(canalX(12)+11,12);egret(canalX(-13)+17,-13);
-const boat=new THREE.Group();boat.position.set(canalX(24),.23,24);boat.rotation.y=.38;scene.add(boat);
+// The reference's foreground canoe sits in a drainage channel beyond the rice plots.
+ribbon([[canalX(-6),-6],[17,-6],[27,-6],[37,-6],[47,-6]],3.2,.22,waterMaterial);
+for(const z of[-7.8,-4.2])box(M.soil,28,.25,z,36,.2,.5);
+const boat=new THREE.Group();boat.position.set(38,.38,-6);boat.rotation.y=1.3;scene.add(boat);
 const hull=new THREE.Shape();hull.moveTo(0,-2.2);hull.bezierCurveTo(.75,-1.7,.75,1.7,0,2.2);hull.bezierCurveTo(-.75,1.7,-.75,-1.7,0,-2.2);const hullGeo=new THREE.ExtrudeGeometry(hull,{depth:.32,bevelEnabled:true,bevelSize:.10,bevelThickness:.1,bevelSegments:3,curveSegments:18});hullGeo.rotateX(-Math.PI/2);put(hullGeo,M.darkWood,[0,0,0],[1,1,1],[0,0,0],boat);for(let zz=-1.5;zz<1.7;zz+=.65)box(M.wood,0,.13,zz,1.05,.08,.17,boat);bar(M.wood,[-.45,.2,-1.9],[-.62,.55,1.95],.05,boat);
 flush();
 // UI and real scene controls.
