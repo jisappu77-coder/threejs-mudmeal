@@ -34,3 +34,6 @@ body{background:#06150f}#game-stage{position:absolute;left:50%;top:50%;transform
  #pause{right:1%;top:2.1%;width:2.8cqw;height:2.8cqw;font-size:1.6cqw}
  .tools{left:1.3%;bottom:8%}.tools button{font-size:12px;padding:8px}#tools-toggle{width:24px;height:24px;font-size:16px}
 }
+
+/* Game labels and held controls are not selectable browser text. */
+#game-stage,#game-stage *{-webkit-user-select:none;user-select:none;-webkit-touch-callout:none;-webkit-tap-highlight-color:transparent}

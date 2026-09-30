@@ -4,6 +4,8 @@ import { setupGraphics } from './graphics.js';
 
 // All scenery is actual geometry. The supplied reference is only shown in its comparison overlay.
 const canvas = document.querySelector('#world');
+// Holding a game control must not open Chrome's copy/select context menu.
+document.querySelector('#game-stage').addEventListener('contextmenu',event=>event.preventDefault());
 const renderer = new THREE.WebGLRenderer({canvas, antialias:true, powerPreference:'high-performance'});
 renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
 // CSS owns the canvas display size; resizing must never leave viewport-sized inline styles.

@@ -19,6 +19,9 @@ try {
   assert.equal(await page.evaluate(() => window.__MUD_MEALS__.renderer.getContext().isContextLost()), false);
   // Capture an existing rendered frame without flooding the CI software GPU.
   await page.evaluate(() => window.__MUD_MEALS__.renderer.setAnimationLoop(null));
+  const touchUI=await page.locator('#accelerate').evaluate(button=>{const menu=new MouseEvent('contextmenu',{bubbles:true,cancelable:true});button.dispatchEvent(menu);return {menuBlocked:menu.defaultPrevented,selection:getComputedStyle(button).userSelect}});
+  assert.equal(touchUI.menuBlocked,true);
+  assert.equal(touchUI.selection,'none');
   await page.locator('#pause').click();
   await page.screenshot({ path: 'artifacts/landscape.png' });
   await page.locator('#orders').click();
