@@ -1,8 +1,9 @@
+import {checkGameUpdate} from './check-game-update.mjs';
 import { chromium } from 'playwright';
 import { mkdir, writeFile } from 'node:fs/promises';
 import assert from 'node:assert/strict';
 await mkdir('artifacts', { recursive: true });
-const browser = await chromium.launch();
+const browser = await chromium.launch(process.env.HARDWARE_GL==='1'?{channel:'chromium',args:['--use-angle=gl']}:{});
 const page = await browser.newPage({ viewport: { width: 960, height: 540 } });
 page.setDefaultTimeout(120000);
 const errors = [];
@@ -15,16 +16,18 @@ try {
     catch { await new Promise(resolve => setTimeout(resolve, 1000)); }
   }
   await page.goto(url, { waitUntil: 'networkidle' });
-  await page.waitForFunction(() => window.__MUD_MEALS__ && !document.querySelector('#loading'), null, { timeout: 120000 });
+  await page.waitForFunction(() => {const a=window.__MUD_MEALS__;if(a?.ready)a.renderer.setAnimationLoop(null);return a?.ready && !document.querySelector('#loading')}, null, { timeout: 120000,polling:50 });
   assert.equal(await page.evaluate(() => window.__MUD_MEALS__.renderer.getContext().isContextLost()), false);
   assert.equal(await page.evaluate(()=>window.__MUD_MEALS__.camera.isPerspectiveCamera),true);
+  await mkdir('artifacts/game-update',{recursive:true});
+  await checkGameUpdate(page);
   // Capture an existing rendered frame without flooding the CI software GPU.
   await page.evaluate(() => window.__MUD_MEALS__.renderer.setAnimationLoop(null));
   const touchUI=await page.locator('#accelerate').evaluate(button=>{const menu=new MouseEvent('contextmenu',{bubbles:true,cancelable:true});button.dispatchEvent(menu);return {menuBlocked:menu.defaultPrevented,selection:getComputedStyle(button).userSelect}});
   assert.equal(touchUI.menuBlocked,true);
   assert.equal(touchUI.selection,'none');
   await page.setViewportSize({width:1536,height:864});
-  await page.evaluate(()=>{const a=window.__MUD_MEALS__;a.reset();a.resize();a.graphics.render()});
+  await page.evaluate(()=>{const a=window.__MUD_MEALS__;a.reset();a.setCameraMode('reference');a.resize();a.graphics.render()});
   // Catch depth-setting regressions and unstable rendering of an unchanged scene.
   const depth=await page.evaluate(()=>{const a=window.__MUD_MEALS__;a.graphics.render();return {near:a.camera.near,far:a.camera.far,aoNear:a.graphics.ao.ssaoMaterial.uniforms.cameraNear.value,aoFar:a.graphics.ao.ssaoMaterial.uniforms.cameraFar.value}});
   assert.equal(depth.near,10);assert.equal(depth.aoNear,depth.near);assert.equal(depth.aoFar,depth.far);
@@ -96,7 +99,7 @@ try {
   assert.equal(density.renderer,density.composer);
   await page.locator('#camera-settings').click();
   await page.locator('#camera-panel').waitFor({state:'visible'});
-  assert.equal(await page.evaluate(()=>window.__MUD_MEALS__.cameraMode),'reference');
+  assert.equal(await page.evaluate(()=>window.__MUD_MEALS__.cameraMode),'driving');
   await page.locator('#camera-mode').selectOption('driving');
   assert.equal(await page.evaluate(()=>window.__MUD_MEALS__.cameraMode),'driving');
   const followDepth=await page.evaluate(()=>{const a=window.__MUD_MEALS__;a.graphics.render();return [a.camera.near,a.graphics.ao.ssaoMaterial.uniforms.cameraNear.value,a.camera.far,a.graphics.ao.ssaoMaterial.uniforms.cameraFar.value]});
@@ -190,4 +193,3 @@ try {
   await page.screenshot({ path: 'artifacts/final-state.png', timeout: 5000 }).catch(error => console.log('Screenshot:', error.message));
   await browser.close();
 }
-

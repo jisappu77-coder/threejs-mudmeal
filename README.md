@@ -65,3 +65,7 @@ Reference specifications: [Bajaj RE](https://www.bajajauto.com/three-wheelers/re
 The object review identified uniformly bright foliage, flat teal glass, rounded toy-like cabins and smooth skin/cloth. The revised art direction uses muted vegetation and clay, neutral daylight, reflective glass, separate paint/rubber/canvas finishes, woven clothing, fine skin variation and weathered plaster. Car and van cabins now use matching lofted body/window surfaces; wheel openings are cut into the metal body profile. Scene checks verify every window sits outside its opaque cabin and preserve the metre-scale dimensions and circular rolling wheels. Chromium produces isolated studio renders of every vehicle and both person poses, plus the world and scale lineup.
 
 These remain procedural game assets; this revision moves them toward natural materials and forms but does not make them photorealistic scanned models. The generated photographic sheet is an art-direction reference, not the rendered game.
+
+## NPC wardrobe and driving
+
+The approved textured human now supplies four rigged NPC clothing/hair styles in the game. Inspect them at `crowd.html`. Driving includes gradual lane steering, hill resistance, wet braking, corner speed limits and predictive traffic braking. The default camera follows the rider. See [implementation and limitations](docs/driving-and-crowd.md).

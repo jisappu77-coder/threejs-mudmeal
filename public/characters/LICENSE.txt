@@ -1,0 +1,26 @@
+Mud Meals game crowd: authored MakeHuman CC0 system assets, September 2020.
+Body meshes and morph targets from version-pinned revision:
+https://github.com/makehumancommunity/makehuman/tree/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data
+Assets from official pack:
+https://files.makehumancommunity.org/asset_packs/makehuman_system_assets/makehuman_system_assets_cc0.zip
+Pack license table: https://static.makehumancommunity.org/assets/assetpacks/makehuman_system_assets.html
+CC0: https://creativecommons.org/publicdomain/zero/1.0/
+Listed copyright holders at release: Data Collection AB, Joel Palmius, Jonas Hauquier.
+
+Selected source assets:
+- hm08 base.obj; asian-male-young.target and asian-female-young.target.
+- male_casualsuit01 (collared shirt / jeans), male_casualsuit03 (striped shirt / jeans),
+  male_casualsuit06 (short-sleeved tee / jeans), female_casualsuit01 (tee / jeans).
+- short01, short02, short04, ponytail01 hair.
+- shoes01 and shoes02 footwear.
+- eyebrow001 brows, high-poly eyes and brown_eye atlas.
+- young_darkskinned_male_diffuse and young_darkskinned_female_diffuse skin atlases.
+The skin selection is not a claim about regional identity.
+
+Modifications: fitted source proxy topology, covered body masks removed,
+separate tops/trousers, lowered arms, staggered feet, meshes simplified,
+16-bone skeleton and reduced authored CC0 default_weights.mhw blend weights, textures resized to at most 1024 px,
+dark-brown iris grading, varied clothing/skin/hair pigments and builds at runtime.
+Female elbow fit and hand weights corrected through browser render inspection.
+Heights: 1.65–1.78 metres. The approved high-detail customer review remains separate.
+Rebuild: scripts/build-npcs.py using Blender 4.0 and the official source pack.

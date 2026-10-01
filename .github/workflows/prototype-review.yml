@@ -1,7 +1,7 @@
 name: Render person and autorickshaw prototypes
 on:
   push:
-    paths: ['src/prototypes/**', 'public/review/**', 'review.html', 'scripts/check-prototype*', 'scripts/check-review-startup.mjs', '.github/workflows/prototype-review.yml']
+    paths: ['src/prototypes/**', 'src/characters.js', 'public/characters/**', 'crowd.html', 'public/review/**', 'review.html', 'scripts/check-prototype*', 'scripts/check-review-startup.mjs', '.github/workflows/prototype-review.yml']
   workflow_dispatch:
 permissions:
   contents: read
@@ -24,9 +24,12 @@ jobs:
           npm run preview -- --port 4173 --strictPort > /tmp/prototype-preview.log 2>&1 &
           node scripts/check-prototype-browser.mjs
           node scripts/check-review-startup.mjs
+          node scripts/check-crowd-browser.mjs
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: prototype-renders
-          path: artifacts/prototypes/
+          path: |
+            artifacts/prototypes/
+            artifacts/crowd/
           retention-days: 14

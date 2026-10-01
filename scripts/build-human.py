@@ -17,7 +17,9 @@ from mathutils import Vector, Quaternion
 ROOT = Path(__file__).resolve().parents[1]
 PACK = zipfile.ZipFile(sys.argv[sys.argv.index('--') + 1])
 CACHE = Path('/tmp/opencode/mudmeals-human-source')
-CACHE.mkdir(exist_ok=True)
+CACHE.mkdir(parents=True, exist_ok=True)
+IMAGE_LIMIT = 2048
+ARM_THRESHOLD = 2.7
 SOURCE = 'https://raw.githubusercontent.com/makehumancommunity/makehuman/a8bc2d54ff0ac92e78ff71431b1023eda42bf482/makehuman/data/'
 
 
@@ -103,7 +105,7 @@ def pose(point):
     a = Vector((side * 1.677, 5.245, .146))
     b = Vector((side * 3.13, 3.493, .131))
     c = Vector((side * 4.312, 2.452, 1.756))
-    if ((abs(p.x) > 2.7 and p.y > -.7) or (abs(p.x) > 1.5 and p.y > 2.5)) and p.y < 5.8:
+    if ((abs(p.x) > ARM_THRESHOLD and p.y > -.7) or (abs(p.x) > 1.5 and p.y > 2.5)) and p.y < 5.8:
         q1 = Quaternion((0, 0, 1), -side * (.44 if side > 0 else .40))
         target_b = a + q1 @ (b - a)
         q2 = (c - b).normalized().rotation_difference(Vector((side * .11, -1, .09)).normalized())
@@ -130,7 +132,7 @@ def image(path):
     if not target.exists():
         target.write_bytes(PACK.read(path))
     im = bpy.data.images.load(str(target), check_existing=True)
-    limit = 1024 if any(s in path for s in ('normal', '_ao', 'hair/', 'eyebrows/')) else 2048
+    limit = 1024 if any(s in path for s in ('normal', '_ao', 'hair/', 'eyebrows/')) else IMAGE_LIMIT
     if max(im.size) > limit:
         factor = limit / max(im.size)
         im.scale(round(im.size[0] * factor), round(im.size[1] * factor))
@@ -201,25 +203,7 @@ def material(name, diffuse, roughness=.85, tint=(1, 1, 1, 1), normal=None, ao=No
     return mat
 
 
-skin = material('Skin · authored colour atlas', 'skins/young_african_male/young_darkskinned_male_diffuse.png', .68)
-outfit_path = 'clothes/male_casualsuit01/male_casualsuit01'
-outfit = material('Cotton shirt and denim · seams, pockets, belt', outfit_path + '_diffuse.png', .92,
-                  normal=outfit_path + '_normal.png', ao=outfit_path + '_ao.png')
-shoes = material('Leather shoes and cotton socks', 'clothes/shoes01/shoes01_diffuse.png', .8,
-                 normal='clothes/shoes01/shoes01_normal.png')
-hair = material('Short hair · textured black crop', 'hair/short02/short02_diffuse.png', .88,
-                tint=(.12, .10, .09, 1), alpha=True)
-brows = material('Eyebrows · tapered hair cards', 'eyebrows/eyebrow001/eyebrow001.png', .95, alpha=True)
-eyes = material('Brown eyes · iris and sclera atlas', 'eyes/materials/brown_eye.png', .23, alpha=True)
-
-clothing = proxy(outfit_path)
-footwear = proxy('clothes/shoes01/shoes01')
-deleted = clothing[4] | footwear[4]
-body_faces = [f for f, g in zip(base_faces, base_groups) if g == 'body' and not any(v in deleted for v, uv in f)]
-assert len(body_faces) > 1000, 'Missing exposed anatomical body'
-
-
-def mesh(name, positions, uvs, faces, mat, subdivision=1):
+def mesh(name, positions, uvs, faces, mat, subdivision=1, weights=None):
     used = sorted({v for f in faces for v, uv in f})
     mapping = {v: i for i, v in enumerate(used)}
     geo = bpy.data.meshes.new(name)
@@ -233,6 +217,12 @@ def mesh(name, positions, uvs, faces, mat, subdivision=1):
     ob = bpy.data.objects.new(name, geo)
     bpy.context.collection.objects.link(ob)
     ob.data.materials.append(mat)
+    if weights is not None:
+        groups = {name: ob.vertex_groups.new(name=name) for name in {name for weight in weights for name in weight}}
+        for v in used:
+            for name, weight in weights[v].items():
+                if weight > 0:
+                    groups[name].add([mapping[v]], weight, 'REPLACE')
     if subdivision:
         bpy.context.view_layer.objects.active = ob
         mod = ob.modifiers.new('Smooth authored surface', 'SUBSURF')
@@ -243,35 +233,61 @@ def mesh(name, positions, uvs, faces, mat, subdivision=1):
     return ob
 
 
-body = mesh('Human · face, ears, neck and articulated hands', morphed, base_uvs, body_faces, skin, 2)
-# Separate garment objects, preserving the authored collar, cuffs, fly and pockets.
-for name, predicate in [('Shirt · collar, placket and cuffs', lambda y: y > .5),
-                         ('Jeans · belt, pockets and hems', lambda y: y <= .5)]:
-    selected = [f for f in clothing[2] if predicate(sum(clothing[0][v].y for v, uv in f) / len(f))]
-    mesh(name, *clothing[:2], selected, outfit)
-# The sock shafts are concealed by these full-length jeans. Do not retain
-# overlapping upper shafts: they visibly pierced the denim in the close render.
-shoe_faces = [f for f in footwear[2] if sum(footwear[0][v].y for v, uv in f) / len(f) < -7.15]
-mesh('Footwear · welt, laces and soles', *footwear[:2], shoe_faces, shoes)
-for name, path, mat in [('Hair · authored short waves', 'hair/short02/short02', hair),
-                         ('Eyebrows · individual textured hairs', 'eyebrows/eyebrow001/eyebrow001', brows),
-                         ('Eyes · anatomical brown eyes', 'eyes/high-poly/high-poly', eyes)]:
-    fitted = proxy(path)
-    part = mesh(name, *fitted[:3], mat, 0 if mat in (hair, brows) else 1)
 
-# Blender Z-up; glTF exporter converts back to Three.js Y-up. One unit = one metre.
-objects = list(bpy.context.scene.objects)
-low = min(v.co.y for ob in objects for v in ob.data.vertices)
-high = max(v.co.y for ob in objects for v in ob.data.vertices)
-scale = 1.75 / (high - low)
-for ob in objects:
-    for v in ob.data.vertices:
-        p = v.co.copy()
-        v.co = (p.x * scale, -p.z * scale, (p.y - low) * scale)
-    ob['reviewOnly'] = True
-    ob['source'] = 'MakeHuman system assets CC0 · September 2020 release'
-    ob.data.update()
+def build_review():
+    skin = material('Skin · authored colour atlas', 'skins/young_african_male/young_darkskinned_male_diffuse.png', .68)
+    outfit_path = 'clothes/male_casualsuit01/male_casualsuit01'
+    outfit = material('Cotton shirt and denim · seams, pockets, belt', outfit_path + '_diffuse.png', .92,
+                      normal=outfit_path + '_normal.png', ao=outfit_path + '_ao.png')
+    shoes = material('Leather shoes and cotton socks', 'clothes/shoes01/shoes01_diffuse.png', .8,
+                     normal='clothes/shoes01/shoes01_normal.png')
+    hair = material('Short hair · textured black crop', 'hair/short02/short02_diffuse.png', .88,
+                    tint=(.12, .10, .09, 1), alpha=True)
+    brows = material('Eyebrows · tapered hair cards', 'eyebrows/eyebrow001/eyebrow001.png', .95, alpha=True)
+    eyes = material('Brown eyes · iris and sclera atlas', 'eyes/materials/brown_eye.png', .23, alpha=True)
 
-bpy.ops.export_scene.gltf(filepath=str(ROOT / 'public/review/customer.glb'), export_format='GLB',
-                          export_yup=True, export_extras=True, export_image_format='AUTO')
-print('Exported review human:', len(objects), 'meshes; height 1.75 m')
+    clothing = proxy(outfit_path)
+    footwear = proxy('clothes/shoes01/shoes01')
+    deleted = clothing[4] | footwear[4]
+    body_faces = [f for f, g in zip(base_faces, base_groups) if g == 'body' and not any(v in deleted for v, uv in f)]
+    assert len(body_faces) > 1000, 'Missing exposed anatomical body'
+
+
+
+
+    body = mesh('Human · face, ears, neck and articulated hands', morphed, base_uvs, body_faces, skin, 2)
+    # Separate garment objects, preserving the authored collar, cuffs, fly and pockets.
+    for name, predicate in [('Shirt · collar, placket and cuffs', lambda y: y > .5),
+                             ('Jeans · belt, pockets and hems', lambda y: y <= .5)]:
+        selected = [f for f in clothing[2] if predicate(sum(clothing[0][v].y for v, uv in f) / len(f))]
+        mesh(name, *clothing[:2], selected, outfit)
+    # The sock shafts are concealed by these full-length jeans. Do not retain
+    # overlapping upper shafts: they visibly pierced the denim in the close render.
+    shoe_faces = [f for f in footwear[2] if sum(footwear[0][v].y for v, uv in f) / len(f) < -7.15]
+    mesh('Footwear · welt, laces and soles', *footwear[:2], shoe_faces, shoes)
+    for name, path, mat in [('Hair · authored short waves', 'hair/short02/short02', hair),
+                             ('Eyebrows · individual textured hairs', 'eyebrows/eyebrow001/eyebrow001', brows),
+                             ('Eyes · anatomical brown eyes', 'eyes/high-poly/high-poly', eyes)]:
+        fitted = proxy(path)
+        part = mesh(name, *fitted[:3], mat, 0 if mat in (hair, brows) else 1)
+
+    # Blender Z-up; glTF exporter converts back to Three.js Y-up. One unit = one metre.
+    objects = list(bpy.context.scene.objects)
+    low = min(v.co.y for ob in objects for v in ob.data.vertices)
+    high = max(v.co.y for ob in objects for v in ob.data.vertices)
+    scale = 1.75 / (high - low)
+    for ob in objects:
+        for v in ob.data.vertices:
+            p = v.co.copy()
+            v.co = (p.x * scale, -p.z * scale, (p.y - low) * scale)
+        ob['reviewOnly'] = True
+        ob['source'] = 'MakeHuman system assets CC0 · September 2020 release'
+        ob.data.update()
+
+    bpy.ops.export_scene.gltf(filepath=str(ROOT / 'public/review/customer.glb'), export_format='GLB',
+                              export_yup=True, export_extras=True, export_image_format='AUTO')
+    print('Exported review human:', len(objects), 'meshes; height 1.75 m')
+
+
+if __name__ == "__main__":
+    build_review()

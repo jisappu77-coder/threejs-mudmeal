@@ -5,6 +5,8 @@ const {createWorldLife}=await import('../src/life.js');
 const {setupGraphics}=await import('../src/graphics.js');
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
+import {createDriving} from '../src/driving.js';
+import {clone as cloneCharacter} from 'three/addons/utils/SkeletonUtils.js';
 import {mergeVertices} from 'three/addons/utils/BufferGeometryUtils.js';
 const noop=()=>{};
 const ctx=new Proxy({},{get:(_,key)=>key==='measureText'?()=>({width:100}):key==='createLinearGradient'?()=>({addColorStop:noop}):noop,set:()=>true});
@@ -17,7 +19,7 @@ let pixelRatio=1;
 const fakeRenderer={getPixelRatio:()=>pixelRatio,capabilities:{maxSamples:4},setPixelRatio:r=>pixelRatio=r,setSize:noop,shadowMap:{},setAnimationLoop:noop,render:noop,compileAsync:()=>Promise.resolve(),info:{render:{triangles:0,calls:0},memory:{geometries:0}}};
 const FakeControls=class {constructor(){this.target=new THREE.Vector3()}update(){}};
 let source=fs.readFileSync('./src/scene.js','utf8').replace(/^import .*;\n/gm,'').replace(/const renderer = new THREE.WebGLRenderer\([^\n]*\);/,'const renderer = fakeRenderer;').replace('new OrbitControls(camera,canvas)','new FakeControls(camera,canvas)');
-new Function('THREE','fakeRenderer','FakeControls','setupGraphics','createExtendedWorld','mergeVertices','createWorldLife','createExtensionRoad',source)(THREE,fakeRenderer,FakeControls,setupGraphics,createExtendedWorld,mergeVertices,createWorldLife,createExtensionRoad);
+new Function('THREE','fakeRenderer','FakeControls','setupGraphics','createExtendedWorld','mergeVertices','createWorldLife','createExtensionRoad','createDriving','installCrowd','cloneCharacter',source)(THREE,fakeRenderer,FakeControls,setupGraphics,createExtendedWorld,mergeVertices,createWorldLife,createExtensionRoad,createDriving,async()=>{},cloneCharacter);
 const app=window.__MUD_MEALS__;assert.ok(app.scene.children.length>100);assert.equal(app.camera.isPerspectiveCamera,true);assert.equal(app.graphics.ao.ssaoMaterial.defines.PERSPECTIVE_CAMERA,1);assert.equal(app.graphics.composer.passes.length,3);
 let meshes=0,triangles=0,instances=0;
 app.scene.traverse(o=>{if(!o.isMesh)return;meshes++;const p=o.geometry.attributes.position;assert.ok(p);for(const n of p.array)assert.ok(Number.isFinite(n));const mult=o.isInstancedMesh?o.count:1;instances+=mult;triangles+=(o.geometry.index?o.geometry.index.count:p.count)/3*mult;if(o.isInstancedMesh)for(const n of o.instanceMatrix.array)assert.ok(Number.isFinite(n))});
@@ -95,7 +97,7 @@ for(let i=0;i<45;i++)app.life.update(1/30,i/30);assert.ok(greeter.wave>.5);app.r
 globalThis.innerWidth=932;globalThis.innerHeight=430;app.resize();assert.equal(app.graphics.ao.width,764*pixelRatio);assert.equal(app.graphics.ao.height,430*pixelRatio);assert.ok(Math.abs(app.camera.aspect-16/9)<.01);
 globalThis.innerWidth=1536;globalThis.innerHeight=864;app.resize();
 // A turning, moving rider is followed from behind, with interpolation rather than snapping.
-assert.equal(app.cameraMode,'reference');assert.ok(app.camera.fov<20);assert.equal(app.camera.near,10);
+assert.equal(app.cameraMode,'driving');assert.equal(app.camera.near,.5);
 app.setCameraMode('driving');assert.equal(app.camera.near,.5);
 const beforeFollow=app.camera.position.clone();
 app.player.position.x+=8;app.player.rotation.y+=Math.PI/2;app.updateFollowCamera(1/60);
