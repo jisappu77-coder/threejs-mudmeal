@@ -7,3 +7,36 @@ The extracted body topology is included in human-base.json. Helper meshes are om
 
 Adult male shape uses 75% of the CC0 asian-male-young anatomical morph target from the same repository (original author Manuel Bastioni, rights transferred to the listed holders).
 Source: https://github.com/makehumancommunity/makehuman/blob/master/makehuman/data/targets/macrodetails/asian-male-young.target
+
+Textured customer (customer.glb), added October 2026 for isolated visual review:
+Authored body and adult male target from MakeHuman revision
+a8bc2d54ff0ac92e78ff71431b1023eda42bf482.
+Authored clothing, footwear, hair, eyebrows, eye mesh and texture atlases from:
+https://files.makehumancommunity.org/asset_packs/makehuman_system_assets/makehuman_system_assets_cc0.zip
+Pack documentation and license declaration:
+https://static.makehumancommunity.org/assets/assetpacks/makehuman_system_assets.html
+Each selected OBJ, mhclo and material header explicitly releases the asset
+under CC0 in September 2020, with Data Collection AB, Joel Palmius and Jonas
+Hauquier listed as the copyright holders at release.
+
+Selected assets:
+- clothes/male_casualsuit01: authored collared shirt, jeans and belt;
+  diffuse, normal and ambient-occlusion maps.
+- clothes/shoes01: authored leather shoes and socks; diffuse and normal maps.
+- hair/short02: authored strand cards and alpha colour atlas, fitted through the source proxy mappings, preserving authored strand layers.
+- eyebrows/eyebrow001: authored tapered eyebrow cards and alpha colour atlas.
+- eyes/high-poly and eyes/materials/brown_eye.png: anatomical eyes,
+  authored iris/sclera colour map and transparent cornea region.
+- skins/young_african_male/young_darkskinned_male_diffuse.png:
+  authored UV skin colour atlas. Texture selection is not a claim of regional identity.
+
+Modifications: fitted to the adult body through the authored proxy mappings,
+posed with lowered arms and slightly staggered/outward feet; concealed body
+faces removed using garment delete masks; shirt and jeans separated into
+objects; surfaces subdivided; scaled to 1.75 metres; colour maps compressed,
+normal maps resized; iris colour graded to less saturated dark brown.
+Concealed upper sock shafts removed after close-up clipping review.
+The browser darkens the hair material, uses alpha cutouts for strands and brows,
+and slightly warms the sclera. The original strand topology is preserved. GLB contains the meshes and textures.
+Rebuild instructions: scripts/build-human.py (Blender 4.0).
+CC0 1.0 Universal legal text: https://creativecommons.org/publicdomain/zero/1.0/legalcode
