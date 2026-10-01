@@ -1,0 +1,31 @@
+name: Render person and autorickshaw prototypes
+on:
+  push:
+    paths: ['src/prototypes/**', 'public/review/**', 'review.html', 'scripts/check-prototype*', '.github/workflows/prototype-review.yml']
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  render:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node scripts/check-prototypes.mjs
+      - run: npm run build
+      - run: npx playwright install --with-deps chromium
+      - name: Render actual prototypes in Chromium
+        run: |
+          npm run preview -- --port 4173 --strictPort > /tmp/prototype-preview.log 2>&1 &
+          node scripts/check-prototype-browser.mjs
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: prototype-renders
+          path: artifacts/prototypes/
+          retention-days: 14
