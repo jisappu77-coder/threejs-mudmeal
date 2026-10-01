@@ -13,18 +13,19 @@ export function buildAuto(){
  const tube=(points,r,m)=>add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p))),Math.max(12,points.length*8),r,12,false),m);
  const cylinder=(r,h,m,p,rotation=[0,0,0])=>add(new THREE.CylinderGeometry(r,r,h,48),m,p,rotation);
  function surface(rows,cols,point,material){const v=[],uv=[],idx=[];for(let y=0;y<=rows;y++)for(let x=0;x<=cols;x++){v.push(...point(x/cols,y/rows));uv.push(x/cols,y/rows);if(x<cols&&y<rows){const k=y*(cols+1)+x;idx.push(k,k+cols+1,k+1,k+1,k+cols+1,k+cols+2);}}const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(v,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();return add(g,material);}
- box(1.24,.10,2.35,.025,frame,[0,.32,.02]);
- box(1.24,.065,1.94,.015,rubber,[0,.402,.24]);
- box(1.28,.29,.60,.035,metal,[0,.58,.985]);
+ box(1.0,.10,2.02,.025,frame,[0,.32,.22]);
+ for(const side of[-1,1])tube([[side*.47,.33,-.70],[side*.45,.34,-1.17]],.020,frame);
+ box(1.0,.065,1.94,.015,rubber,[0,.402,.24]);
+ box(1.28,.19,.60,.025,metal,[0,.66,.985]);
  // Curved pressed nose: shoulders sweep back around the headlight recesses.
- const profiles=[[.39,.46,-1.17],[.49,.56,-1.27],[.73,.63,-1.27],[.94,.61,-1.16],[1.055,.58,-1.03]];
+ const profiles=[[.39,.46,-1.17],[.49,.56,-1.27],[.73,.63,-1.27],[.945,.61,-1.16]];
  const profile=new THREE.CatmullRomCurve3(profiles.map(([y,w,z])=>new THREE.Vector3(w,y,z)));
- surface(48,64,(u,v)=>{const p=profile.getPoint(v),t=u*2-1;return[t*p.x,p.y+.012*Math.cos(t*Math.PI),p.z+.205*t*t];},metal).material.side=THREE.DoubleSide;
+ surface(48,64,(u,v)=>{const p=profile.getPoint(v),t=u*2-1;return[t*p.x,p.y+.18*Math.exp(-t*t*14)*(1-v)**3,p.z+.205*t*t];},metal).material.side=THREE.DoubleSide;
  surface(10,64,(u,v)=>{const t=u*2-1;return[t*(.61-v*.03),.947+v*.105,-1.158+v*.126+.205*t*t];},paint).material.side=THREE.DoubleSide;
  tube([[-.59,1.053,-.96],[0,1.066,-1.03],[.59,1.053,-.96]],.012,frame);
  for(const side of[-1,1]){
   // Rounded side stampings and thin door sills surround a genuinely open entrance.
-  box(.052,.29,.57,.015,metal,[side*.625,.61,.92]);
+  box(.052,.18,.57,.015,metal,[side*.625,.655,.92]);
   box(.06,.035,1.12,.012,chrome,[side*.636,.434,.13]);
   tube([[side*.606,1.037,-.96],[side*.558,1.555,-.79],[side*.555,1.63,-.74]],.018,paint);
   tube([[side*.614,.66,1.15],[side*.618,1.34,1.13],[side*.610,1.61,1.09]],.014,frame);
@@ -33,7 +34,7 @@ export function buildAuto(){
   tube([[side*.571,1.37,-.86],[side*.725,1.39,-.92],[side*.783,1.445,-.95]],.009,frame);
   const mirror=add(new THREE.SphereGeometry(1,40,28),frame,[side*.785,1.448,-.956]);mirror.scale.set(.053,.082,.019);
   const mirrorGlass=add(new THREE.SphereGeometry(1,40,28),chrome,[side*.785,1.448,-.934]);mirrorGlass.scale.set(.046,.075,.006);
-  box(.087,.056,.025,.009,new THREE.MeshStandardMaterial({color:'#a86718',roughness:.25}),[side*.53,.97,-1.165]);
+  box(.087,.056,.025,.009,new THREE.MeshStandardMaterial({color:'#a86718',roughness:.25}),[side*.53,.97,-.979]);
   box(.087,.128,.027,.012,new THREE.MeshPhysicalMaterial({color:'#8d2820',roughness:.28,clearcoat:1}),[side*.51,.69,1.292]);
   // Real reflector, recessed lamp glass and fine fluting replace solid white discs.
   const x=side*.418,z=-1.247+.205*(x/.63)**2;
@@ -53,6 +54,7 @@ export function buildAuto(){
  // Flat-centred canvas canopy with rounded shoulders, cloth sag and sewn seams.
  const roofPoint=(u,v)=>{const t=u*2-1,z=-.84+v*2.06,y=1.567+.129*Math.pow(Math.max(0,1-t*t),.23)-.008*Math.sin(v*Math.PI)**2-.004*Math.sin(v*Math.PI*6)*(1-t*t);return[t*.65,y,z];};
  surface(48,64,roofPoint,cloth);
+ for(const end of[0,1])surface(8,64,(u,v)=>{const roof=roofPoint(u,end),t=u*2-1;return[roof[0],(1-v)*(1.585+.012*t*t)+v*roof[1],roof[2]+(end? .001:-.001)];},cloth);
  for(const v of[.01,.48,.98])tube(Array.from({length:25},(_,i)=>{const p=roofPoint(i/24,v);p[1]+=.001;return p;}),.002,new THREE.MeshStandardMaterial({color:'#515148',roughness:1}));
  // Rear curtains are built around their opening, not layered over opaque panels.
  box(1.26,.30,.033,.016,cloth,[0,.988,1.225]);box(1.26,.18,.033,.016,cloth,[0,1.52,1.225]);
@@ -60,6 +62,7 @@ export function buildAuto(){
  box(.595,.37,.018,.018,glazing,[0,1.282,1.242]);
  box(1.05,.105,.47,.035,seat,[0,.758,.70]);box(1.05,.36,.075,.024,seat,[0,.969,.965]);
  for(let x=-.45;x<.46;x+=.15)tube([[x,.815,.505],[x,.815,.903]],.0018,new THREE.MeshStandardMaterial({color:'#675c4d',roughness:.95}));
+ for(const side of[-1,1]){tube([[side*.14,.405,-.42],[side*.14,.675,-.42]],.017,frame);tube([[side*.40,.405,.72],[side*.40,.705,.72]],.018,frame);}
  box(.43,.11,.36,.026,seat,[0,.735,-.385]);box(.43,.27,.06,.025,seat,[0,.91,-.225]);
  box(.48,.10,.19,.022,frame,[0,1.055,-.72]);
  tube([[0,.37,-1.00],[0,1.027,-.751]],.015,chrome);
@@ -68,9 +71,10 @@ export function buildAuto(){
  function wheel(x,z){const axle=new THREE.Group();axle.position.set(x,.255,z);root.add(axle);axle.userData.wheelRadius=.245;
   const before=root.children.length;add(new THREE.TorusGeometry(.192,.053,24,64),rubber,[x,.255,z],[0,Math.PI/2,0]);cylinder(.144,.135,frame,[x,.255,z],[0,0,Math.PI/2]);
   for(const side of[-1,1]){cylinder(.129,.014,chrome,[x+side*.072,.255,z],[0,0,Math.PI/2]);cylinder(.043,.022,frame,[x+side*.083,.255,z],[0,0,Math.PI/2]);for(let i=0;i<6;i++){const a=i*Math.PI/3;cylinder(.011,.004,rubber,[x+side*.084,.255+Math.sin(a)*.091,z+Math.cos(a)*.091],[0,0,Math.PI/2]);}}
-  for(let i=0;i<48;i++){const a=i*Math.PI/24,o=box(.101,.008,.019,.002,rubber,[x,.255+Math.cos(a)*.242,z+Math.sin(a)*.242]);o.rotation.x=a;}
+  for(let i=0;i<48;i++){const a=i*Math.PI/24,o=box(.092,.0025,.022,.0008,rubber,[x,.255+Math.cos(a)*.2455,z+Math.sin(a)*.2455]);o.rotation.x=a;}
   const parts=root.children.slice(before);for(const o of parts){axle.attach(o);}return axle;
  }
+for(const side of[-1,1])tube([[side*.08,.26,-1.025],[side*.08,.58,-.98]],.012,chrome);
  wheel(0,-1.025);wheel(-.587,.97);wheel(.587,.97);
  const arch=(x,z,width,r,material)=>surface(48,8,(u,v)=>{const a=u*Math.PI;return[x+(v-.5)*width,.255+r*Math.sin(a),z+r*Math.cos(a)];},material);
  arch(0,-1.025,.265,.279,metal).material.side=THREE.DoubleSide;
