@@ -44,16 +44,7 @@ try {
   }
   // Close-up renders expose silhouettes and construction details hidden in the world view.
   for(const type of ['delivery-bike','auto','bus','car','van']){
-    const assetPNG=await page.evaluate(type=>{
-      const a=window.__MUD_MEALS__;if(type==='auto')return a.renderAssetPreview(type);let model;
-      a.scene.traverse(o=>{if(!model&&o.userData.assetType===type)model=o});
-      if(!model)throw new Error('Missing model: '+type);
-      a.camera.near=.5;a.camera.far=160;a.camera.fov=42;a.camera.zoom=1;
-      const distance=type==='bus'?16:type==='delivery-bike'?5:6;
-      a.camera.position.set(model.position.x+distance*.65,model.position.y+distance*.55,model.position.z+distance*.9);
-      a.camera.lookAt(model.position.x,model.position.y+(type==='bus'?2:1.2),model.position.z);
-      a.camera.updateProjectionMatrix();a.graphics.render();return a.renderer.domElement.toDataURL('image/png');
-    },type);
+    const assetPNG=await page.evaluate(type=>window.__MUD_MEALS__.renderAssetPreview(type),type);
     const assetBytes=Buffer.from(assetPNG.split(',')[1],'base64');assert.ok(assetBytes.length>15000,'Asset preview must contain rendered geometry');
     await writeFile('artifacts/asset-'+type+'.png',assetBytes);
   }

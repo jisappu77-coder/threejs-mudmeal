@@ -36,6 +36,13 @@ for(const type of ['customer','auto','car','van','bus','delivery-bike']){
 }
 assert.ok(measured['delivery-bike'].height<1.9);assert.ok(measured.customer.height>1.70&&measured.customer.height<1.76);assert.ok(measured.car.height<measured.customer.height);assert.ok(measured.bus.length>measured.car.length*3);
 console.log('Metre scale',JSON.stringify(measured));
+// Glazing must remain outside the opaque cabin after reshaping, not buried in it.
+for(const type of ['car','van']){
+ const car=app.vehicles.find(v=>v.type===type).g,van=type==='van',halfH=van?.575:.425,halfD=van?1.36:.955,cabZ=van?.24:.08;
+ assert.ok(car.children.some(o=>o.userData.wheelOpenings===2));
+ const panes=car.children.filter(o=>o.userData.cabinGlass);assert.ok(panes.length>=6);
+ for(const pane of panes){assert.ok(pane.material.isMeshPhysicalMaterial&&pane.material.map);const p=pane.geometry.attributes.position;assert.ok(pane.geometry.attributes.uv);for(let i=0;i<p.count;i++){const t=(p.getY(i)-1.49+halfH)/(halfH*2),x=.74-.111*t,front=cabZ-halfD+.34*t,back=cabZ+halfD-.17*t;assert.ok(Math.abs(p.getX(i))>x+.002||p.getZ(i)<front-.002||p.getZ(i)>back+.002,'Window is buried in opaque cabin');}}
+}
 const initial=app.player.position.clone();app.player.position.x+=5;app.reset();assert.equal(app.player.position.x,initial.x);
 for(const name of ['src/scene.js','src/graphics.js','src/main.js','src/style.css','public/food.png','public/reference.png'])assert.ok(fs.existsSync(name));
 els.get('#orders').onclick();assert.equal(els.get('#order-panel').hidden,false);els.get('#close-orders').onclick();assert.equal(els.get('#order-panel').hidden,true);
@@ -109,4 +116,3 @@ for(const d of app.extendedWorld.districts){app.visitDistrict(d.id);assert.ok(ap
 app.extendedWorld.setWeather('rain');assert.equal(app.extendedWorld.weather,'rain');app.extendedWorld.setWeather('day');
 app.visitDistrict('hills');const start=app.player.position.clone();app.update(1/60);assert.ok(app.player.position.distanceTo(start)<.001);app.reset();
 console.log(JSON.stringify({ok:true,meshes,instances,triangles,sceneObjects:app.scene.children.length,life:audit}));
-
