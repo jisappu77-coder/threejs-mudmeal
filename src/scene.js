@@ -278,11 +278,13 @@ function bodySurface(rings){
  const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(vertices,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(indices);g.computeVertexNormals();return g;
 }
 const shirtGeometry=bodySurface([[0,.165,.115],[.07,.165,.12],[.19,.173,.13],[.33,.195,.135],[.44,.205,.115],[.49,.15,.1],[.53,.063,.07],[.54,.06,.065]]);
+// Small fitted folds break up the smooth mannequin surface without changing anatomy.
+for(let i=0;i<shirtGeometry.attributes.position.count;i++){const p=shirtGeometry.attributes.position,x=p.getX(i),y=p.getY(i),z=p.getZ(i),fold=.0018*Math.sin(y*67+x*31)*Math.sin(Math.PI*y/.54)**2;p.setXYZ(i,x+fold*Math.sign(x),y,z+fold*Math.sign(z));}shirtGeometry.computeVertexNormals();
 const limbGeometry=bodySurface([[0,.58,.6],[.09,.75,.72],[.25,1, .86],[.48,.88,.82],[.7,.75,.73],[.9,.58,.6],[1,.54,.55]]);
 const headGeometry=new THREE.SphereGeometry(1,48,40);
 for(let i=0;i<headGeometry.attributes.position.count;i++){
  const v=headGeometry.attributes.position,x=v.getX(i),y=v.getY(i),z=v.getZ(i),jaw=y<-.15?1+(y+.15)*.32:1;
- const nose=z>0?.036*Math.exp(-x*x/ .026-(y+.13)**2/.09):0;
+ const nose=z>0?.022*Math.exp(-x*x/ .026-(y+.13)**2/.09):0;
  const cheek=z>0?.008*Math.exp(-((Math.abs(x)-.48)**2)/.06-(y+.12)**2/.16):0;
  v.setXYZ(i,x*.096*jaw,y*.119,z*.103+nose+cheek);
 }headGeometry.computeVertexNormals();
@@ -315,8 +317,9 @@ function hand(parent,skin,p,grip=false){
 }
 function face(parent,skin,headY,variant){
  put(headGeometry,skin,[0,headY,0],[1,1,1],[0,0,0],parent);
- const hair=mat(variant%3?'#24201c':'#373029',.94);hair.bumpMap=plasterBump;hair.bumpScale=.003;
+ const hair=mat(variant%3?'#24201c':'#373029',.88);hair.bumpMap=woodBump;hair.bumpScale=.0014;
  put(hairGeometry,hair,[0,headY+.022,-.008],[.099,.108,.106],[0,0,.07],parent);
+ for(let lock=0;lock<12;lock++){const a=lock/12*Math.PI*2,points=[];for(let row=0;row<6;row++){const p=.12+row*.17,az=a+row*.07;points.push([Math.sin(p)*Math.sin(az)*.10,headY+.022+Math.cos(p)*.109,-.008+Math.sin(p)*Math.cos(az)*.107]);}organicLimb(parent,hair,points,[.0014,.002,.0012]);}
  // Swept locks and sideburns follow the scalp, rather than forming a helmet.
  for(const side of[-1,1]){
   ell(skin,side*.095,headY-.008,-.006,.016,.031,.017,parent);
@@ -574,10 +577,10 @@ function vehicle(type,x,z,rot=0,color='#d5e2df'){
   // Windows follow the same loft as the cabin; they cannot disappear inside a rounded box.
   const cabZ=van?.24:.08,cabHalfD=(van?2.72:1.91)/2,cabHalfH=(van?1.15:.85)/2;
   const lowY=1.49-cabHalfH,highY=1.49+cabHalfH;
-  const low=[[-.74,lowY,cabZ-cabHalfD],[.74,lowY,cabZ-cabHalfD],[.74,lowY,cabZ+cabHalfD],[-.74,lowY,cabZ+cabHalfD]];
-  const high=[[-.629,highY,cabZ-cabHalfD+.34],[.629,highY,cabZ-cabHalfD+.34],[.629,highY,cabZ+cabHalfD-.17],[-.629,highY,cabZ+cabHalfD-.17]];
-  for(let i=0;i<4;i++)pane([low[i],low[(i+1)%4],high[(i+1)%4],high[i]],body);
-  pane([high[0],high[1],high[2],high[3]],body);
+  const cabin=rounded(1.48,van?1.15:.85,van?2.72:1.91,.035,body,[0,1.49,cabZ]);
+  const cabinPosition=cabin.geometry.attributes.position;
+  for(let i=0;i<cabinPosition.count;i++){const y=cabinPosition.getY(i),z=cabinPosition.getZ(i),t=THREE.MathUtils.clamp((y+cabHalfH)/(2*cabHalfH),0,1),front=(cabHalfD-z)/(2*cabHalfD);cabinPosition.setXYZ(i,cabinPosition.getX(i)*(1-.15*t),y,z+t*(front*.34-(1-front)*.17));}
+  cabin.geometry.computeVertexNormals();
   function pane(points,material){const geo=new THREE.BufferGeometry();geo.setAttribute('position',new THREE.Float32BufferAttribute(points.flat(),3));geo.setAttribute('uv',new THREE.Float32BufferAttribute([0,0,1,0,1,1,0,1],2));geo.setIndex([0,1,2,0,2,3]);geo.computeVertexNormals();material.side=THREE.DoubleSide;const panel=put(geo,material,[0,0,0],[1,1,1],[0,0,0],g);if(material===M.glass)panel.userData.cabinGlass=true;return panel;}
   const frontAt=(y,inset)=>cabZ-cabHalfD+.34*((y-1.49+cabHalfH)/(2*cabHalfH))-inset;
   const backAt=(y,inset)=>cabZ+cabHalfD-.17*((y-1.49+cabHalfH)/(2*cabHalfH))+inset;
