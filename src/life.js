@@ -10,9 +10,10 @@ export function createWorldLife(h){
  player.traverse(o=>{if(o.userData.wheelRadius)playerWheels.push(o)});
  function nearestS(g,road){let best=Infinity,s=0;for(let i=0;i<=1200;i++){const t=i/1200,p=roads[road].getPointAt(t),d=(p.x-g.position.x)**2+(p.z-g.position.z)**2;if(d<best){best=d;s=t*lengths[road];}}return s;}
  function addTraffic(g,type,road,s,direction){
-  const scale=g.scale.x,width=type==='bus'?2.85:type==='bike'?.95:type==='auto'?1.65:1.95,length=type==='bus'?7.4:type==='bike'?2.3:type==='auto'?2.75:type==='van'?3.7:3.3;
+  const {width,length}=g.userData.footprint;
+
   const wheels=[];g.traverse(o=>{if(o.userData.wheelRadius)wheels.push(o)});
-  const v={g,type,road,s,direction,width:width*scale,length:length*scale,speed:0,cruise:type==='bus'?3.2:type==='bike'?4.2:3.8,wheels};traffic.push(v);return v;
+  const v={g,type,road,s,direction,width,length,speed:0,cruise:type==='bus'?3.2:type==='bike'?4.2:3.8,wheels};traffic.push(v);return v;
  }
  for(const v of vehicles)addTraffic(v.g,v.type,0,nearestS(v.g,0),v.x-h.roadPoints.reduce((p,q)=>Math.abs(q[1]-v.z)<Math.abs(p[1]-v.z)?q:p)[0]<0?-1:1);
  for(const g of bikes.filter(g=>g!==player))addTraffic(g,'bike',0,nearestS(g,0),-1);
@@ -28,7 +29,7 @@ export function createWorldLife(h){
   const axes=v=>[new THREE.Vector2(Math.cos(v.g.rotation.y),-Math.sin(v.g.rotation.y)),new THREE.Vector2(Math.sin(v.g.rotation.y),Math.cos(v.g.rotation.y))],aa=axes(a),bb=axes(b),delta=new THREE.Vector2(b.g.position.x-a.g.position.x,b.g.position.z-a.g.position.z);
   return [...aa,...bb].every(axis=>Math.abs(delta.dot(axis))<(Math.abs(aa[0].dot(axis))*a.width+Math.abs(aa[1].dot(axis))*a.length+Math.abs(bb[0].dot(axis))*b.width+Math.abs(bb[1].dot(axis))*b.length)/2+margin);
  }
- function riderFootprint(position=player.position){return {g:{position,rotation:player.rotation},width:1.24,length:3.05};}
+ function riderFootprint(position=player.position){return {g:{position,rotation:player.rotation},width:player.userData.footprint.width,length:player.userData.footprint.length};}
  function blocked(position,radius=.62,ignore=player){
   if(ignore===player){if(traffic.some(v=>overlaps(riderFootprint(position),v,.1)))return true;}
   else if(traffic.some(v=>v.g!==ignore&&Math.abs(v.g.position.y-position.y)<2&&rectangleDistance(position,v)<radius))return true;
@@ -84,7 +85,7 @@ export function createWorldLife(h){
   const close=n.g.position.distanceTo(player.position)<9,walking=n.state==='walking';
   n.wave=THREE.MathUtils.damp(n.wave,close&&!walking&&Math.sin(time*.45+n.variant)>-.25?1:0,5,dt);
   if(n.state==='rising'){
-   const t=Math.min(1,n.wait/.9);n.g.position.copy(n.home).lerp(n.exit,t);n.standing.g.position.y=-.29*(1-t);
+   const t=Math.min(1,n.wait/.9);n.g.position.copy(n.home).lerp(n.exit,t);n.standing.g.position.y=n.standing.restY-.29*(1-t);
    if(t===1){n.state='walking';n.wait=0;n.distance=0;}
   }else if(n.state==='walking'){
    const total=n.pathLength*2,advance=.62*dt,proposed=Math.min(total,n.distance+advance),outward=proposed<=n.pathLength;
@@ -95,7 +96,7 @@ export function createWorldLife(h){
    }
    if(n.distance>=total){n.state=n.sitting?'sitting-down':'idle';n.wait=0;}
   }else if(n.state==='sitting-down'){
-   const t=Math.min(1,n.wait/.9);n.g.position.copy(n.exit).lerp(n.home,t);n.g.rotation.y=n.homeAngle;n.standing.g.position.y=-.29*t;
+   const t=Math.min(1,n.wait/.9);n.g.position.copy(n.exit).lerp(n.home,t);n.g.rotation.y=n.homeAngle;n.standing.g.position.y=n.standing.restY-.29*t;
    if(t===1){n.state='sitting';n.wait=0;n.sitting.g.visible=true;n.standing.g.visible=false;}
   }else if(n.wait>12+n.variant%7&&n.pathLength){
    n.state=n.sitting?'rising':'walking';n.wait=0;n.distance=0;n.standing.g.visible=true;if(n.sitting)n.sitting.g.visible=false;
@@ -111,7 +112,7 @@ export function createWorldLife(h){
  let shadowTime=0;
  function update(dt,time){
   windTime.value=time;windStrength.value=h.extendedWorld.weather==='rain'?1.8:1;
-  const playerStep=player.position.distanceTo(playerLast);if(playerStep<3)for(const wheel of playerWheels)wheel.rotation.x-=playerStep/wheel.userData.wheelRadius/player.scale.x;playerLast.copy(player.position);
+  const playerStep=player.position.distanceTo(playerLast);if(playerStep<3)for(const wheel of playerWheels)wheel.rotation.x-=playerStep/(wheel.userData.rollingRadius||wheel.userData.wheelRadius);playerLast.copy(player.position);
   for(const n of npcs)updateNPC(n,dt,time);
   for(const v of traffic){
    const length=lengths[v.road];let gap=Infinity;
@@ -120,7 +121,7 @@ export function createWorldLife(h){
    for(const obstacle of [player,...traffic.filter(o=>o!==v).map(o=>o.g)]){
     if(Math.abs(obstacle.position.y-v.g.position.y)>2)continue;
     const delta=obstacle.position.clone().sub(v.g.position),ahead=delta.dot(forward),side=Math.abs(delta.x*forward.z-delta.z*forward.x);
-    const other=traffic.find(o=>o.g===obstacle),otherHalf=other?other.length/2:1.525;
+    const other=traffic.find(o=>o.g===obstacle),otherHalf=other?other.length/2:player.userData.footprint.length/2;
     if(ahead>0&&side<v.width/2+(other?other.width/2:.6)+.15)gap=Math.min(gap,ahead-v.length/2-otherHalf-1.1);
    }
    v.speed=THREE.MathUtils.damp(v.speed,Math.min(v.cruise,Math.max(0,gap*.8)),2,dt);
@@ -128,14 +129,14 @@ export function createWorldLife(h){
    // Closed roads wrap continuously at the same physical point.
    v.s=mod(v.s+step*v.direction,length);pose(v);
    if(traffic.some(other=>other!==v&&overlaps(v,other,.05))||overlaps(v,riderFootprint(),.1)){v.s=oldS;v.speed=0;step=0;pose(v);}
-   for(const wheel of v.wheels)wheel.rotation.x-=step/wheel.userData.wheelRadius/v.g.scale.x;
+   for(const wheel of v.wheels)wheel.rotation.x-=step/(wheel.userData.rollingRadius||wheel.userData.wheelRadius);
    if(before.distanceTo(v.g.position)>20){v.speed=0;}
   }
   shadowTime+=dt;if(shadowTime>.1){sun.shadow.needsUpdate=true;shadowTime=0;}
  }
  function reset(){
   for(const v of traffic){v.s=v.initialS;v.speed=0;pose(v);for(const w of v.wheels)w.rotation.x=0;}
-  for(const n of npcs){n.g.position.copy(n.home);n.g.rotation.y=n.homeAngle;n.wait=n.variant*.63;n.distance=0;n.wave=0;n.state=n.sitting?'sitting':'idle';n.standing.g.position.y=0;n.standing.g.visible=!n.sitting;if(n.sitting)n.sitting.g.visible=true;animateRig(n.standing,0,0,false,0);if(n.sitting)animateRig(n.sitting,0,0,false,0);}
+  for(const n of npcs){n.g.position.copy(n.home);n.g.rotation.y=n.homeAngle;n.wait=n.variant*.63;n.distance=0;n.wave=0;n.state=n.sitting?'sitting':'idle';n.standing.g.position.y=n.standing.restY;n.standing.g.visible=!n.sitting;if(n.sitting)n.sitting.g.visible=true;animateRig(n.standing,0,0,false,0);if(n.sitting)animateRig(n.sitting,0,0,false,0);}
   playerLast.copy(player.position);for(const wheel of playerWheels)wheel.rotation.x=0;windTime.value=0;sun.shadow.needsUpdate=true;
  }
  function audit(){return {plantsInRoad:plantings.filter(p=>h.roadClearance(p.x,p.z)<p.radius+.35),plantsInBuildings:plantings.filter(p=>plotBlocked(p.x,p.z,p.radius,true)),plantsInWater:plantings.filter(p=>waterAt(p.x,p.z)),pedestrians:npcs.length,walkingRoutes:npcs.filter(n=>n.pathLength>0).length,traffic:traffic.length};}

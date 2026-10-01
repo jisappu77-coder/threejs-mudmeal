@@ -21,11 +21,21 @@ new Function('THREE','fakeRenderer','FakeControls','setupGraphics','createExtend
 const app=window.__MUD_MEALS__;assert.ok(app.scene.children.length>100);assert.equal(app.camera.isPerspectiveCamera,true);assert.equal(app.graphics.ao.ssaoMaterial.defines.PERSPECTIVE_CAMERA,1);assert.equal(app.graphics.composer.passes.length,3);
 let meshes=0,triangles=0,instances=0;
 app.scene.traverse(o=>{if(!o.isMesh)return;meshes++;const p=o.geometry.attributes.position;assert.ok(p);for(const n of p.array)assert.ok(Number.isFinite(n));const mult=o.isInstancedMesh?o.count:1;instances+=mult;triangles+=(o.geometry.index?o.geometry.index.count:p.count)/3*mult;if(o.isInstancedMesh)for(const n of o.instanceMatrix.array)assert.ok(Number.isFinite(n))});
-assert.ok(triangles>200000);assert.ok(instances>10000);assert.ok(app.player.children.length>30);
+assert.ok(triangles>200000);assert.ok(instances>10000);assert.ok(app.player.getObjectsByProperty('isMesh',true).length>30);
 const modelTypes=new Set();app.scene.traverse(o=>{if(o.userData.designVersion>=2)modelTypes.add(o.userData.assetType)});
 for(const type of ['delivery-bike','auto','bus','car','van','customer'])assert.ok(modelTypes.has(type),'Missing approved asset: '+type);
 const customers=app.scene.children.filter(o=>o.userData.assetType==='customer');assert.ok(customers.some(o=>o.userData.seated));assert.ok(customers.every(o=>o.userData.designVersion===4));
 const bus=app.vehicles.find(v=>v.type==='bus').g;const roof=bus.children.find(o=>o.isMesh&&Math.abs(o.position.y-3.19)<.001);const roofSize=new THREE.Vector3();roof.geometry.computeBoundingBox();roof.geometry.boundingBox.getSize(roofSize);assert.ok(Math.abs(roofSize.x-2.68)<1e-5&&Math.abs(roofSize.y-.27)<1e-5&&Math.abs(roofSize.z-7.15)<1e-5,'Bevels must preserve designed vehicle dimensions');
+// One unit is one metre; mirrors are included in collision bounds but excluded from body specifications.
+const measured={};
+for(const type of ['customer','auto','car','van','bus','delivery-bike']){
+ const original=app.scene.children.find(o=>o.userData.assetType===type&&!o.userData.seated),copy=original.clone(true);copy.position.set(0,0,0);copy.rotation.set(0,0,0);copy.updateMatrixWorld(true);
+ const bounds=new THREE.Box3().setFromObject(copy),size=bounds.getSize(new THREE.Vector3());measured[type]={width:size.x,height:bounds.max.y,length:size.z};
+ if(app.vehicleDimensions[type]){const d=app.vehicleDimensions[type];assert.ok(Math.abs(size.z-d.length)<.01,`${type} length`);assert.ok(Math.abs(bounds.max.y-d.height)<.01,`${type} height`);assert.ok(Math.abs(size.x-original.userData.footprint.width)<.001);}
+ copy.traverse(o=>{if(!o.userData.wheelRadius)return;for(const angle of[0,.8]){o.rotation.x=angle;copy.updateMatrixWorld(true);const wheelSize=new THREE.Box3().setFromObject(o).getSize(new THREE.Vector3());assert.ok(Math.abs(wheelSize.y-wheelSize.z)<.004,'Wheel must stay round while spinning');}});
+}
+assert.ok(measured['delivery-bike'].height<1.9);assert.ok(measured.customer.height>1.70&&measured.customer.height<1.76);assert.ok(measured.car.height<measured.customer.height);assert.ok(measured.bus.length>measured.car.length*3);
+console.log('Metre scale',JSON.stringify(measured));
 const initial=app.player.position.clone();app.player.position.x+=5;app.reset();assert.equal(app.player.position.x,initial.x);
 for(const name of ['src/scene.js','src/graphics.js','src/main.js','src/style.css','public/food.png','public/reference.png'])assert.ok(fs.existsSync(name));
 els.get('#orders').onclick();assert.equal(els.get('#order-panel').hidden,false);els.get('#close-orders').onclick();assert.equal(els.get('#order-panel').hidden,true);
@@ -58,7 +68,7 @@ for(const p of app.extendedWorld.roadPoints){
 }
 for(const p of app.plots.filter(p=>p.kind==='sign'))for(const r of app.extendedWorld.roadPoints){const gap=Math.hypot(Math.max(0,Math.abs(r.x-p.x)-p.w/2),Math.max(0,Math.abs(r.z-p.z)-p.d/2));assert.ok(gap>4.2,'Direction board encroaches on the carriageway');}
 const lead=app.life.traffic.find(v=>v.type==='car'),riderAngle=app.player.rotation.y;app.player.rotation.y=lead.g.rotation.y;
-const rear=lead.g.position.clone().addScaledVector(new THREE.Vector3(-Math.sin(lead.g.rotation.y),0,-Math.cos(lead.g.rotation.y)),-lead.length/2-1.2);
+const rear=lead.g.position.clone().addScaledVector(new THREE.Vector3(-Math.sin(lead.g.rotation.y),0,-Math.cos(lead.g.rotation.y)),-lead.length/2-.9);
 assert.equal(app.life.blocked(rear,.62,app.player),true,'Rider wheels and cargo must stop before entering a vehicle');app.player.rotation.y=riderAngle;
 for(const v of app.life.traffic)assert.equal(app.life.overlaps(v,app.life.riderFootprint()),false,'Spawn overlaps rider');
 const trafficStarts=app.life.traffic.map(v=>v.g.position.clone());

@@ -59,6 +59,10 @@ try {
   }
   await page.evaluate(()=>{const a=window.__MUD_MEALS__;a.reset();a.graphics.render()});
 
+  const scalePNG=await page.evaluate(()=>window.__MUD_MEALS__.renderScalePreview());
+  await writeFile('artifacts/real-world-scale.png',Buffer.from(scalePNG.split(',')[1],'base64'));
+  await page.evaluate(()=>{const a=window.__MUD_MEALS__;a.reset();a.graphics.render()});
+
   // Advance the real simulation: every NPC has a safe route; cars cannot interpenetrate.
   const lifeChecks=await page.evaluate(()=>{
     const a=window.__MUD_MEALS__,life=a.life;a.reset();const starts=life.traffic.map(v=>v.g.position.clone()),greeter=life.npcs.find(n=>!n.sitting);a.player.position.copy(greeter.home);a.player.position.x+=2;
