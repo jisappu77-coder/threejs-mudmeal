@@ -29,3 +29,13 @@ The customer was subsequently approved by the user; its rigged wardrobe variants
 The first Mud C3 render exposed front quarter panels that did not meet the nose and oversized projecting lamps. The quarter surfaces now share the nose profile exactly; lamp depth and angle follow the curved front. The review includes front, side, rear, cabin and person/vehicle comparison views. The main game's vehicle fleet remains unchanged until appearance approval, following the requested prototype-first workflow.
 
 Verified with `node scripts/check-prototypes.mjs`, production Vite build and hardware Chromium prototype checks. Captures are real Three.js renders in `artifacts/prototypes/`. The recorded body is approximately 2.64 m long and 1.69 m high; width including mirrors is 1.68 m. These checks establish loading, geometry and framing, not visual acceptance or legal clearance.
+
+## Fleet continuation
+
+`src/prototypes/vehicles.js` adds the fictional Mud C4 compact car, V4 crew van, M9 local bus and D2 delivery scooter. The review vehicle selector offers each model and a common fleet comparison beside the approved 1.75 m human; a second selector changes the camera angle. Direct links support `?view=car`, `van`, `bus`, `bike` and `fleet`, with `-front`, `-side` and `-rear` suffixes for individual vehicles.
+
+These models are project-authored indexed surfaces, glazing, structural members and interior components, with original canvas lettering and cloth grain. They use generic construction and fictional Mud branding. No third-party vehicle mesh, manufacturer CAD, photographs or real operator livery is included. This is a record of asset provenance, not a legal clearance claim.
+
+Body design dimensions (length × width × height in metres): car 4.05 × 1.72 × 1.50; van 4.45 × 1.78 × 2.03; bus 9.70 × 2.50 × 3.10; scooter approximately 2.00 × 0.75 × 1.25. Mirrors and lamp fixtures extend beyond body dimensions. Interiors include seats, right-hand steering, dashboard and van cargo space; the bus has passenger seating, handrails and a front passenger door with steps. The scooter has a separate saddle, footboard, fork, suspension, exhaust and delivery cargo box.
+
+Actual browser iteration corrected window gasket overshoot, body/endcap discontinuities, roof/glazing gaps, shadow banding, saddle overlap and clipped destination lettering. Geometry checks verify finite vertices, ground clearance, height, wheel count and a per-model geometry budget. Hardware Chromium captures all four models from multiple angles plus the 900 × 500 landscape layout and tests the vehicle/angle controls. These establish rendering and interface behavior, not visual approval or physical mobile performance. No fleet replacement is made in the game during this review phase.

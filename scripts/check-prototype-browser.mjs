@@ -25,10 +25,16 @@ try {
   assert.ok(human.meshes.every(m=>m.textured));
   assert.ok(Math.abs(human.size[1]-1.75)<.01,'Human must be 1.75 metres tall');
   assert.ok(human.size[0]<.75,'Relaxed arms must remain beside torso');
-  for(const view of ['person','face','front','back','hands','feet','auto','auto-front','side','auto-rear','cabin','pair']) {
+  for(const view of ['person','face','front','back','hands','feet','auto','auto-front','side','auto-rear','cabin','pair','fleet',...['car','van','bus','bike'].flatMap(v=>[v,v+'-front',v+'-side',v+'-rear'])]) {
     await page.evaluate(view=>{const a=window.__ASSET_REVIEW__;a.setView(view)},view);
     await page.screenshot({path:`${output}/${view}.png`});
   }
+  await page.locator('#vehicle-select').selectOption('van');
+  await page.locator('#vehicle-angle').selectOption('side');
+  assert.deepEqual(await page.evaluate(()=>{const a=window.__ASSET_REVIEW__;return Object.entries(a.vehicles).filter(([,m])=>m.visible).map(([name])=>name)}),['van']);
+  assert.ok(await page.evaluate(()=>Math.abs(window.__ASSET_REVIEW__.camera.position.z)<.01),'Side control must change camera');
+  await page.locator('#vehicle-select').selectOption('fleet');
+  assert.ok(await page.evaluate(()=>Object.values(window.__ASSET_REVIEW__.vehicles).every(m=>m.visible)));
   await page.setViewportSize({width:900,height:500});
   await page.evaluate(()=>{const a=window.__ASSET_REVIEW__;a.setView('person')});
   assert.ok(await page.locator('nav').evaluate(n=>n.getBoundingClientRect().width<=innerWidth));
@@ -36,6 +42,10 @@ try {
   await page.screenshot({path:`${output}/mobile-landscape.png`});
   await page.evaluate(()=>window.__ASSET_REVIEW__.setView('auto'));
   await page.screenshot({path:`${output}/auto-mobile.png`});
+  await page.evaluate(()=>window.__ASSET_REVIEW__.setView('bus'));
+  await page.screenshot({path:`${output}/bus-mobile.png`});
+  await page.evaluate(()=>window.__ASSET_REVIEW__.setView('fleet'));
+  await page.screenshot({path:`${output}/fleet-mobile.png`});
   assert.deepEqual(errors,[]);
   console.log('Prototype Chromium checks passed:',JSON.stringify(human));
 } finally {

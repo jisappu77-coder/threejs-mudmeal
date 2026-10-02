@@ -2,6 +2,11 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import * as THREE from 'three';
 import {buildAuto} from '../src/prototypes/auto.js';
+import {buildVehiclePrototypes} from '../src/prototypes/vehicles.js';
+for(const [kind,model]of Object.entries(buildVehiclePrototypes())){
+ let wheelCount=0,triangles=0;model.traverse(o=>{if(o.userData.wheelRadius)wheelCount++;if(!o.isMesh)return;for(const n of o.geometry.attributes.position.array)assert.ok(Number.isFinite(n),kind+' has invalid geometry');triangles+=(o.geometry.index?.count||o.geometry.attributes.position.count)/3;});
+ assert.equal(wheelCount,kind==='bike'?2:4);const bounds=new THREE.Box3().setFromObject(model),size=bounds.getSize(new THREE.Vector3());assert.ok(bounds.min.y>=-.01,kind+' must stand on ground');assert.ok(Math.abs(size.y-model.userData.bodyDimensions.height)<.10,kind+' height');assert.ok(triangles<120000,kind+' geometry budget');console.log(kind,JSON.stringify(size),Math.round(triangles)+' triangles');
+}
 const auto=buildAuto();
 auto.updateMatrixWorld(true);auto.traverse(o=>{if(o.isMesh)for(const x of o.geometry.attributes.position.array)assert.ok(Number.isFinite(x));});
 const size=new THREE.Box3().setFromObject(auto).getSize(new THREE.Vector3());assert.ok(size.y>1.65&&size.y<1.82);console.log(auto.name,JSON.stringify(size));
