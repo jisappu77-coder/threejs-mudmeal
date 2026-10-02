@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 
 const output=process.env.CAPTURE_PUBLIC==='1'?'public/review/renders':'artifacts/prototypes';
 await mkdir(output,{recursive:true});
-const browser=await chromium.launch();
+const browser=await chromium.launch(process.env.HARDWARE_GL==='1'?{channel:'chromium',args:['--use-angle=gl']}:{});
 const page=await browser.newPage({viewport:{width:1600,height:1000}}),errors=[];
 page.setDefaultTimeout(120000);
 page.on('pageerror',e=>errors.push(e.message));
@@ -25,7 +25,7 @@ try {
   assert.ok(human.meshes.every(m=>m.textured));
   assert.ok(Math.abs(human.size[1]-1.75)<.01,'Human must be 1.75 metres tall');
   assert.ok(human.size[0]<.75,'Relaxed arms must remain beside torso');
-  for(const view of ['person','face','front','back','hands','feet','auto','side','pair']) {
+  for(const view of ['person','face','front','back','hands','feet','auto','auto-front','side','auto-rear','cabin','pair']) {
     await page.evaluate(view=>{const a=window.__ASSET_REVIEW__;a.setView(view)},view);
     await page.screenshot({path:`${output}/${view}.png`});
   }
@@ -34,6 +34,8 @@ try {
   assert.ok(await page.locator('nav').evaluate(n=>n.getBoundingClientRect().width<=innerWidth));
   assert.equal(await page.locator('[data-view="person"]').evaluate(b=>getComputedStyle(b).userSelect),'none');
   await page.screenshot({path:`${output}/mobile-landscape.png`});
+  await page.evaluate(()=>window.__ASSET_REVIEW__.setView('auto'));
+  await page.screenshot({path:`${output}/auto-mobile.png`});
   assert.deepEqual(errors,[]);
   console.log('Prototype Chromium checks passed:',JSON.stringify(human));
 } finally {

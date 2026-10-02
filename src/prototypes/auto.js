@@ -1,13 +1,12 @@
 import * as THREE from 'three';
 import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.js';
 
-// A separate metre-scale body rebuild, not a recolour of the live world's model.
+// Original project-authored geometry and canvas badge; no manufacturer meshes, logos or photos.
 export function buildAuto(){
- const root=new THREE.Group();root.name='Formed-panel autorickshaw prototype';
- const paint=new THREE.MeshPhysicalMaterial({color:'#bc8b22',metalness:.16,roughness:.34,clearcoat:.55,clearcoatRoughness:.23});
- const metal=new THREE.MeshPhysicalMaterial({color:'#242722',metalness:.12,roughness:.44,clearcoat:.3});
+ const root=new THREE.Group();root.name='Mud C3 · original utility autorickshaw';
+ const paint=new THREE.MeshPhysicalMaterial({color:'#d5a62c',metalness:.22,roughness:.42,clearcoat:.32,clearcoatRoughness:.3});
  const frame=new THREE.MeshStandardMaterial({color:'#272a28',metalness:.5,roughness:.44}),rubber=new THREE.MeshStandardMaterial({color:'#191b1a',roughness:.97}),chrome=new THREE.MeshStandardMaterial({color:'#9b9c93',metalness:.9,roughness:.3}),cloth=new THREE.MeshStandardMaterial({color:'#242521',roughness:.98,side:THREE.DoubleSide}),seat=new THREE.MeshStandardMaterial({color:'#322c25',roughness:.87});
- cloth.userData.surface='cloth';
+ cloth.userData.surface='cloth';seat.userData.surface='cloth';paint.userData.surface='paint';
  const add=(geometry,material,p=[0,0,0],rotation=[0,0,0])=>{const o=new THREE.Mesh(geometry,material);o.position.set(...p);o.rotation.set(...rotation);o.castShadow=o.receiveShadow=true;root.add(o);return o;};
  const box=(w,h,d,r,m,p)=>add(new RoundedBoxGeometry(w,h,d,5,r),m,p);
  const tube=(points,r,m)=>add(new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p))),Math.max(12,points.length*8),r,12,false),m);
@@ -16,16 +15,27 @@ export function buildAuto(){
  box(1.0,.10,2.02,.025,frame,[0,.32,.22]);
  for(const side of[-1,1])tube([[side*.47,.33,-.70],[side*.45,.34,-1.17]],.020,frame);
  box(1.0,.065,1.94,.015,rubber,[0,.402,.24]);
- box(1.28,.19,.60,.025,metal,[0,.66,.985]);
+ box(1.06,.19,.51,.025,frame,[0,.60,.985]);
  // Curved pressed nose: shoulders sweep back around the headlight recesses.
  const profiles=[[.39,.46,-1.17],[.49,.56,-1.27],[.73,.63,-1.27],[.945,.61,-1.16]];
  const profile=new THREE.CatmullRomCurve3(profiles.map(([y,w,z])=>new THREE.Vector3(w,y,z)));
- surface(48,64,(u,v)=>{const p=profile.getPoint(v),t=u*2-1;return[t*p.x,p.y+.18*Math.exp(-t*t*14)*(1-v)**3,p.z+.205*t*t];},metal).material.side=THREE.DoubleSide;
+ function nose(y,x=0){let low=0,high=1;for(let i=0;i<20;i++){const v=(low+high)/2;if(profile.getPoint(v).y<y)low=v;else high=v;}const v=(low+high)/2,p=profile.getPoint(v),t=x/p.x;return p.z+.205*t*t-.008*Math.exp(-t*t*35)*Math.sin(v*Math.PI);}
+ surface(48,64,(u,v)=>{const p=profile.getPoint(v),t=u*2-1;return[t*p.x,p.y+.18*Math.exp(-t*t*14)*(1-v)**3,p.z+.205*t*t-.008*Math.exp(-t*t*35)*Math.sin(v*Math.PI)];},paint).material.side=THREE.DoubleSide;
  surface(10,64,(u,v)=>{const t=u*2-1;return[t*(.61-v*.03),.947+v*.105,-1.158+v*.126+.205*t*t];},paint).material.side=THREE.DoubleSide;
  tube([[-.59,1.053,-.96],[0,1.066,-1.03],[.59,1.053,-.96]],.012,frame);
  for(const side of[-1,1]){
   // Rounded side stampings and thin door sills surround a genuinely open entrance.
-  box(.052,.18,.57,.015,metal,[side*.625,.655,.92]);
+  // Formed rear quarter shell with an actual wheel opening, not a covered wheel.
+  const quarter=surface(24,40,(u,v)=>{
+   const z=.30+u*.99,dz=z-.97,arch=Math.abs(dz)<.30?.255+Math.sqrt(.30**2-dz**2):.425;
+   const low=Math.max(.425,arch),high=.875+.018*Math.sin(u*Math.PI);
+   return[side*(.625+.014*Math.sin(v*Math.PI)*Math.sin(u*Math.PI)),low+(high-low)*v,z];
+  },paint);quarter.material.side=THREE.DoubleSide;quarter.name='Pressed rear quarter '+side;
+  surface(40,20,(u,v)=>{const p=profile.getPoint(v);return[side*(p.x*(1-u)+.555*u),p.y,(p.z+.205)*(1-u)-.69*u+.012*Math.sin(u*Math.PI)*Math.sin(v*Math.PI)];},paint).material.side=THREE.DoubleSide;
+  tube([[side*.634,.878,.30],[side*.636,.895,.79],[side*.627,.878,1.28]],.009,rubber);
+  // Rear canvas wraps the passenger cabin, while the entry stays open.
+  surface(16,18,(u,v)=>[side*(.617+.005*Math.sin(u*Math.PI)*Math.sin(v*Math.PI)),.89+v*.68,.91+u*.31],cloth);
+  tube([[side*.623,.90,.91],[side*.623,1.25,.91],[side*.623,1.58,.91]],.003,cloth);
   box(.06,.035,1.12,.012,chrome,[side*.636,.434,.13]);
   tube([[side*.606,1.037,-.96],[side*.558,1.555,-.79],[side*.555,1.63,-.74]],.018,paint);
   tube([[side*.614,.66,1.15],[side*.618,1.34,1.13],[side*.610,1.61,1.09]],.014,frame);
@@ -36,12 +46,13 @@ export function buildAuto(){
   const mirrorGlass=add(new THREE.SphereGeometry(1,40,28),chrome,[side*.785,1.448,-.934]);mirrorGlass.scale.set(.046,.075,.006);
   box(.087,.056,.025,.009,new THREE.MeshStandardMaterial({color:'#a86718',roughness:.25}),[side*.53,.97,-.979]);
   box(.087,.128,.027,.012,new THREE.MeshPhysicalMaterial({color:'#8d2820',roughness:.28,clearcoat:1}),[side*.51,.69,1.292]);
-  // Real reflector, recessed lamp glass and fine fluting replace solid white discs.
-  const x=side*.418,z=-1.247+.205*(x/.63)**2;
-  cylinder(.092,.042,rubber,[x,.769,z-.012],[Math.PI/2,0,0]);
-  cylinder(.080,.024,chrome,[x,.769,z-.038],[Math.PI/2,0,0]);
-  const lens=add(new THREE.SphereGeometry(1,48,32),new THREE.MeshPhysicalMaterial({color:'#ced4cc',roughness:.12,metalness:.08,clearcoat:1,transparent:true,opacity:.47}),[x,.769,z-.057]);lens.scale.set(.076,.076,.017);
-  for(let y=-.052;y<.056;y+=.013){const half=Math.sqrt(.072**2-y*y);tube([[x-half,.769+y,z-.074],[x+half,.769+y,z-.074]],.0011,chrome);}
+  // Original twin horizontal lamp assemblies, fitted to the compound nose curve.
+  const x=side*.403,z=nose(.826,x),yaw=-side*.41;
+  const housing=box(.238,.119,.022,.032,rubber,[x,.826,z-.004]);housing.rotation.y=yaw;housing.name='C3 headlight housing '+side;
+  const reflector=box(.211,.091,.011,.025,chrome,[x,.826,z-.014]);reflector.rotation.y=yaw;
+  const lens=box(.205,.085,.010,.024,new THREE.MeshPhysicalMaterial({color:'#d7dfd5',roughness:.15,metalness:.05,clearcoat:.7,transparent:true,opacity:.43,depthWrite:false}),[x,.826,z-.021]);lens.rotation.y=yaw;
+  for(let y=-.028;y<=.029;y+=.009)tube([[x-.083,.826+y,z-.030-side*.035],[x+.083,.826+y,z-.030+side*.035]],.0008,chrome);
+
  }
  // Single curved windshield, thin rubber seal, and a blade that follows its rake.
  const glazing=new THREE.MeshPhysicalMaterial({color:'#aebcbb',roughness:.10,metalness:0,clearcoat:1,transparent:true,opacity:.18,depthWrite:false,side:THREE.DoubleSide});
@@ -56,6 +67,9 @@ export function buildAuto(){
  surface(48,64,roofPoint,cloth);
  for(const end of[0,1])surface(8,64,(u,v)=>{const roof=roofPoint(u,end),t=u*2-1;return[roof[0],(1-v)*(1.585+.012*t*t)+v*roof[1],roof[2]+(end? .001:-.001)];},cloth);
  for(const v of[.01,.48,.98])tube(Array.from({length:25},(_,i)=>{const p=roofPoint(i/24,v);p[1]+=.001;return p;}),.002,new THREE.MeshStandardMaterial({color:'#515148',roughness:1}));
+ // Curved rear engine cover closes the body below the canvas cabin.
+ surface(18,40,(u,v)=>{const t=u*2-1;return[t*.628,.425+v*.485,1.278+.013*(1-t*t)*Math.sin(v*Math.PI)];},paint).material.side=THREE.DoubleSide;
+ for(const side of[-1,1])tube([[side*.45,.56,1.294],[side*.45,.72,1.294]],.012,rubber);
  // Rear curtains are built around their opening, not layered over opaque panels.
  box(1.26,.30,.033,.016,cloth,[0,.988,1.225]);box(1.26,.18,.033,.016,cloth,[0,1.52,1.225]);
  for(const side of[-1,1])box(.325,.38,.033,.012,cloth,[side*.465,1.28,1.225]);
@@ -77,9 +91,22 @@ export function buildAuto(){
 for(const side of[-1,1])tube([[side*.08,.26,-1.025],[side*.08,.58,-.98]],.012,chrome);
  wheel(0,-1.025);wheel(-.587,.97);wheel(.587,.97);
  const arch=(x,z,width,r,material)=>surface(48,8,(u,v)=>{const a=u*Math.PI;return[x+(v-.5)*width,.255+r*Math.sin(a),z+r*Math.cos(a)];},material);
- arch(0,-1.025,.265,.279,metal).material.side=THREE.DoubleSide;
- for(const side of[-1,1])arch(side*.592,.97,.155,.281,metal);
+ arch(0,-1.025,.265,.279,paint).material.side=THREE.DoubleSide;
+ for(const side of[-1,1])arch(side*.592,.97,.155,.292,paint);
  box(.68,.043,.08,.013,frame,[0,.386,-1.29]);box(1.16,.072,.07,.018,frame,[0,.385,1.27]);
- for(let y=.54;y<.65;y+=.023)box(.16,.007,.012,.001,frame,[0,y,-1.287]);
- root.userData={assetType:'autorickshaw-prototype',reviewOnly:true,dimensions:{length:2.635,width:1.30,height:1.70},wheelCount:3};return root;
+ // Open grille blades and a small original game badge, with no manufacturer marks.
+ for(let y=.625;y<.73;y+=.024)box(.18,.008,.009,.002,frame,[0,y,nose(y)-.005]);
+ for(let z=-.63;z<.43;z+=.095)box(.93,.003,.011,.001,frame,[0,.438,z]);
+ for(const side of[-1,1]){
+  cylinder(.016,.21,chrome,[side*.08,.395,-1.012]);
+  tube(Array.from({length:65},(_,i)=>{const t=i/64,a=t*Math.PI*12;return[side*.08+.024*Math.cos(a),.37+t*.14,-1.012+.024*Math.sin(a)];}),.0035,frame);
+ }
+ const dial=cylinder(.039,.006,rubber,[0,1.112,-.696]);dial.rotation.x=.35;
+ if(typeof document!=='undefined'){
+  const c=document.createElement('canvas');c.width=512;c.height=128;const ctx=c.getContext('2d');ctx.clearRect(0,0,512,128);ctx.fillStyle='#534426';ctx.font='600 62px sans-serif';ctx.textAlign='center';ctx.fillText('MUD / C3',256,88);
+  const texture=new THREE.CanvasTexture(c);texture.colorSpace=THREE.SRGBColorSpace;
+  const badge=add(new THREE.PlaneGeometry(.26,.065),new THREE.MeshStandardMaterial({map:texture,transparent:true,depthWrite:false,roughness:.8}),[0,.938,nose(.938)-.003],[0,Math.PI,0]);badge.name='Original Mud C3 badge';
+ }
+
+ root.userData={assetType:'autorickshaw-prototype',reviewOnly:true,design:'Original Mud C3; generic three-wheeler construction, no manufacturer assets or badges',dimensions:{length:2.635,width:1.30,height:1.70},wheelCount:3};return root;
 }
