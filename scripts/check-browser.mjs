@@ -8,6 +8,7 @@ const page = await browser.newPage({ viewport: { width: 960, height: 540 } });
 page.setDefaultTimeout(120000);
 const errors = [];
 page.on('pageerror', error => errors.push(error.message));
+page.on('response',response=>{if(response.status()>=400)errors.push(`${response.status()} ${response.url()}`)});
 page.on('console', message => { if (message.type() === 'error') console.error('Browser:', message.text()); });
 try {
   const url = process.env.PREVIEW_URL || 'http://localhost:4173';

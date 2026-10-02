@@ -4,6 +4,7 @@ export function createDriving(){
  const clamp=(v,a,b)=>Math.max(a,Math.min(b,v)),damp=(a,b,k,dt)=>b+(a-b)*Math.exp(-k*dt);
  function reset(offset=0){Object.assign(state,{speed:0,throttle:0,steering:0,lateralSpeed:0,offset,lean:0,acceleration:0})}
  function step(dt,{throttle=0,brake=0,steering=0,grade=0,curvature=0,wet=false,speedLimit=14,obstacleDistance=Infinity}={}){
+  if(!Number.isFinite(dt)||dt<=0)return 0;
   // Small substeps keep stopping distances and steering stable at low frame rates.
   const count=Math.max(1,Math.ceil(dt/(1/120))),h=dt/count;
   let distance=0;
@@ -26,7 +27,7 @@ export function createDriving(){
    distance+=(previous+state.speed)*.5*h;
    const oldLateral=state.lateralSpeed;
    const targetLateral=state.steering*state.speed*.22;
-   state.lateralSpeed=damp(state.lateralSpeed,targetLateral,wet?2.8:4.5,h);
+   state.lateralSpeed=state.speed===0?0:damp(state.lateralSpeed,targetLateral,wet?2.8:4.5,h);
    state.offset+=state.lateralSpeed*h;
    if(Math.abs(state.offset)>3.15){state.offset=clamp(state.offset,-3.15,3.15);state.lateralSpeed=0;}
    const lateralAcceleration=(state.lateralSpeed-oldLateral)/h+curvature*state.speed**2;

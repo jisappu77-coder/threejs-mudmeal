@@ -18,6 +18,8 @@ for(const model of[person,auto,...Object.values(vehicles)])model.traverse(o=>{if
 scene.add(person,auto,...Object.values(vehicles));document.querySelector('#loading').remove();
 let selectedVehicle='auto';
 function setView(view){
+ if(!['person','face','front','back','hands','feet','auto','side','auto-front','auto-rear','cabin','pair','fleet',...Object.keys(vehicles).flatMap(name=>[name,name+'-front',name+'-side',name+'-rear'])].includes(view))view='person';
+ document.querySelector('#vehicle-angle').disabled=['person','face','front','back','hands','feet','pair','cabin','fleet'].includes(view);
  const parts=view.split('-'),kind=parts[0],angle=parts[1]||'three';
  for(const model of Object.values(vehicles)){model.visible=false;model.position.set(0,0,0);model.rotation.y=0;}
  if(vehicles[kind]||view==='fleet'){
@@ -60,7 +62,7 @@ startReview().catch(error=>{
  const retry=document.createElement('button');retry.textContent='Reload review';retry.onclick=()=>location.reload();label.append(retry);
  const evidence=document.createElement('p');evidence.textContent='Saved Chromium screenshots from the Three.js review (not a live 3D fallback): ';label.append(evidence);
  for(const [view,text]of[['person','Full body'],['face','Face detail']]){const link=document.createElement('a');link.href=new URL(`review/renders/${view}.png`,document.baseURI).href;link.textContent=text;evidence.append(link,document.createTextNode(' '));}
- document.querySelectorAll('nav button').forEach(button=>button.disabled=true);
+ document.querySelectorAll('nav button,nav select').forEach(control=>control.disabled=true);
  window.__ASSET_REVIEW_ERROR__={kind:webglFailure?'webgl':'startup',message:error.message};
  console.error('Asset review startup failed:',error);
 });

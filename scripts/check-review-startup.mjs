@@ -16,7 +16,7 @@ try {
   assert.equal(await page.evaluate(()=>window.__ASSET_REVIEW_ERROR__.kind),'webgl');
   assert.equal(await page.locator('#loading').getAttribute('role'),'alert');
   assert.match(await page.locator('#loading').innerText(),/graphics acceleration/);
-  assert.equal(await page.locator('nav button:enabled').count(),0);
+  assert.equal(await page.locator('nav button:enabled,nav select:enabled').count(),0);
   assert.equal(await page.locator('#loading a').count(),2);
   assert.deepEqual(uncaught,[]);
   assert.deepEqual(assetRequests,[]);

@@ -13,4 +13,6 @@ const steer=run(60,{throttle:1,steering:1},3).d;assert.ok(steer.state.offset>0&&
 const offset=steer.state.offset;steer.step(1/60,{});assert.ok(Math.abs(steer.state.offset-offset)<.1,'Steering release must not teleport to road centre');
 steer.reset();steer.step(1,{steering:1});assert.equal(steer.state.offset,0,'Stationary steering must not slide the scooter');
 const traffic=run(60,{throttle:1,obstacleDistance:2});assert.ok(traffic.d.state.speed<3);
+const idle=createDriving(),before={...idle.state};for(const dt of[0,-.1,NaN,Infinity])assert.equal(idle.step(dt,{throttle:1}),0);assert.deepEqual(idle.state,before,'Invalid or zero time must not corrupt physics');
+const stationary=createDriving();stationary.state.lateralSpeed=2;const startOffset=stationary.state.offset;stationary.step(1/60);assert.equal(stationary.state.offset,startOffset,'Stopped vehicle must not accumulate invisible lateral movement');assert.equal(stationary.state.lateralSpeed,0);
 console.log('Driving checks passed: frame rate, hills, dry/wet braking, corners, lane control and traffic response.');

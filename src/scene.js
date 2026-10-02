@@ -753,7 +753,9 @@ for(const n of npcs){n.home.y=floorAt(n.home.x,n.home.z);n.g.position.y=n.home.y
 const life=createWorldLife({scene,THREE,npcs,vehicles,bikes,player,roadPoints,extendedWorld,vehicle,plots,plantings,roadDistance,roadClearance,floorAt,waterAt,plotBlocked,windTime,windStrength,sun});
 // UI and real scene controls.
 let cameraMode='driving';
-let paused=false,freeCamera=false,speed=0,steer=0,travel=0,delivered=false;const keys=new Set();
+let paused=false,freeCamera=false,speed=0,steer=0,travel=0,delivered=false;const keys=new Set(),touchKeys=new Map(),touchSteering=new Map();
+const pressed=key=>keys.has(key)||[...touchKeys.values()].includes(key);
+function clearControls(){keys.clear();touchKeys.clear();touchSteering.clear();steer=0;}
 const driving=createDriving();
 const toast=document.querySelector('#toast');let toastTimer;
 function notify(message){toast.textContent=message;toast.style.opacity=1;clearTimeout(toastTimer);toastTimer=setTimeout(()=>toast.style.opacity=0,2600)}
@@ -797,11 +799,11 @@ document.querySelector('#camera-settings').onclick=()=>{document.querySelector('
 document.querySelector('#close-camera').onclick=()=>document.querySelector('#camera-panel').hidden=true;
 document.querySelector('#reset-camera').onclick=()=>{resetCameraSettings();notify('Camera reset')};
 applyCameraSettings();
-function reset(){elapsed=0;document.querySelector('#timer').textContent='02:45';cameraMode='driving';driving.reset();player.position.copy(playerStart);player.rotation.set(0,playerStartAngle,0);speed=0;travel=0;routeStart=initialRouteStart;delivered=false;document.querySelector('#cash').textContent='₹1,240';life.reset();resetCameraSettings()}
-function hold(button,key){const el=document.querySelector(button);el.addEventListener('pointerdown',e=>{keys.add(key);el.setPointerCapture(e.pointerId)});for(const ev of['pointerup','pointercancel','lostpointercapture'])el.addEventListener(ev,()=>keys.delete(key))}
+function reset(){clearControls();document.querySelector('#speed').textContent='0';elapsed=0;document.querySelector('#timer').textContent='02:45';cameraMode='driving';driving.reset();player.position.copy(playerStart);player.rotation.set(0,playerStartAngle,0);speed=0;travel=0;routeStart=initialRouteStart;delivered=false;document.querySelector('#cash').textContent='₹1,240';life.reset();resetCameraSettings();minimap()}
+function hold(button,key){const el=document.querySelector(button);el.addEventListener('pointerdown',e=>{touchKeys.set(e.pointerId,key);el.setPointerCapture(e.pointerId)});for(const ev of['pointerup','pointercancel','lostpointercapture'])el.addEventListener(ev,e=>touchKeys.delete(e.pointerId))}
 hold('#accelerate','ArrowUp');hold('#brake','ArrowDown');
-for(const btn of document.querySelectorAll('[data-steer]')){const n=Number(btn.dataset.steer);btn.addEventListener('pointerdown',e=>{steer=n;btn.setPointerCapture(e.pointerId)});for(const ev of['pointerup','pointercancel','lostpointercapture'])btn.addEventListener(ev,()=>steer=0)}
-document.querySelector('#pause').onclick=()=>{paused=!paused;document.querySelector('#pause').textContent=paused?'▶':'Ⅱ';document.querySelector('#pause').setAttribute('aria-label',paused?'Resume animation':'Pause animation')};
+for(const btn of document.querySelectorAll('[data-steer]')){const n=Number(btn.dataset.steer);btn.addEventListener('pointerdown',e=>{touchSteering.set(e.pointerId,n);steer=n;btn.setPointerCapture(e.pointerId)});for(const ev of['pointerup','pointercancel','lostpointercapture'])btn.addEventListener(ev,e=>{touchSteering.delete(e.pointerId);steer=[...touchSteering.values()].at(-1)||0})}
+document.querySelector('#pause').onclick=()=>{paused=!paused;if(paused)clearControls();document.querySelector('#pause').textContent=paused?'▶':'Ⅱ';document.querySelector('#pause').setAttribute('aria-label',paused?'Resume animation':'Pause animation')};
 document.querySelector('#view').onclick=()=>{freeCamera=!freeCamera;controls.enabled=freeCamera;if(freeCamera){camera.near=.5;camera.updateProjectionMatrix()}document.querySelector('#view').textContent=freeCamera?'Locked camera':'Free camera';notify(freeCamera?'Drag to orbit · Scroll to zoom':'Camera settings restored');if(!freeCamera)applyCameraSettings()};
 document.querySelector('#reset').onclick=()=>{reset();notify('Scene reset')};
 document.querySelector('#orders').onclick=()=>document.querySelector('#order-panel').hidden=false;
@@ -826,7 +828,7 @@ document.querySelector('#enter-landscape').onclick=enterLandscape;
 document.querySelector('#fullscreen').onclick=async()=>{if(document.fullscreenElement){try{await document.exitFullscreen();screen.orientation?.unlock?.()}catch{}}else await enterLandscape()};
 document.addEventListener('fullscreenchange',resize);
 
-window.addEventListener('keydown',e=>{if(['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName))return;if(e.target.tagName==='BUTTON'&&e.code==='Space')return;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();keys.add(e.key.length===1?e.key.toLowerCase():e.key);if(e.key.toLowerCase()==='h')toggleHUD();if(e.key.toLowerCase()==='r')reset();if(e.code==='Space')document.querySelector('#pause').click()});window.addEventListener('keyup',e=>keys.delete(e.key.length===1?e.key.toLowerCase():e.key));window.addEventListener('blur',()=>{keys.clear();steer=0});
+window.addEventListener('keydown',e=>{if(e.defaultPrevented||e.isComposing||e.ctrlKey||e.metaKey||e.altKey)return;if(['INPUT','TEXTAREA','SELECT'].includes(e.target.tagName))return;if(e.target.tagName==='BUTTON'&&e.code==='Space')return;if(['ArrowUp','ArrowDown','ArrowLeft','ArrowRight',' '].includes(e.key))e.preventDefault();keys.add(e.key.length===1?e.key.toLowerCase():e.key);if(e.repeat)return;if(e.key.toLowerCase()==='h')toggleHUD();if(e.key.toLowerCase()==='r')reset();if(e.code==='Space')document.querySelector('#pause').click()});window.addEventListener('keyup',e=>keys.delete(e.key.length===1?e.key.toLowerCase():e.key));window.addEventListener('blur',clearControls);document.addEventListener('visibilitychange',()=>{if(document.hidden)clearControls()});
 const mapCanvas=document.querySelector('#minimap'),ctx=mapCanvas.getContext('2d');
 function minimap(){ctx.clearRect(0,0,300,300);ctx.fillStyle='#7f9952';ctx.fillRect(0,0,300,300);const project=(x,z)=>[150+(x-player.position.x)*3.3,155+(z-player.position.z)*3.3];
  for(let i=0;i<100;i++){const x=(Math.sin(i*12.7)*.5+.5)*300,y=(Math.cos(i*4.3)*.5+.5)*300;ctx.fillStyle=['#608c3e','#a2b563','#547b3b'][i%3];ctx.beginPath();ctx.arc(x,y,3+i%5,0,Math.PI*2);ctx.fill()}
@@ -839,7 +841,7 @@ function minimap(){ctx.clearRect(0,0,300,300);ctx.fillStyle='#7f9952';ctx.fillRe
  const d=project(destinationPin.position.x,destinationPin.position.z);ctx.fillStyle='#35f3e2';ctx.beginPath();ctx.arc(...d,9,0,6.28);ctx.fill();ctx.fillStyle='#13423b';ctx.beginPath();ctx.arc(...d,3,0,6.28);ctx.fill()}
 const clock=new THREE.Clock();let elapsed=0,mapTime=0;
 function update(dt){if(!paused){elapsed+=dt;waterTime.value=elapsed;waterBump.offset.x=elapsed*.007;waterBump.offset.y=elapsed*.004;
- const throttle=keys.has('ArrowUp')||keys.has('w')?1:0,brake=keys.has('ArrowDown')||keys.has('s')?1:0;
+ const throttle=pressed('ArrowUp')||pressed('w')?1:0,brake=pressed('ArrowDown')||pressed('s')?1:0;
  const turn=THREE.MathUtils.clamp(steer+(keys.has('ArrowLeft')||keys.has('a')?-1:0)+(keys.has('ArrowRight')||keys.has('d')?1:0),-1,1);
  const currentT=THREE.MathUtils.euclideanModulo(routeStart+travel/routeLength,1),tangent=routeCurve.getTangentAt(currentT);
  // Look ahead along the road to ease off before a tight corner, rather than after it.

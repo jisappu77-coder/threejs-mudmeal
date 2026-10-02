@@ -29,12 +29,17 @@ try {
     await page.evaluate(view=>{const a=window.__ASSET_REVIEW__;a.setView(view)},view);
     await page.screenshot({path:`${output}/${view}.png`});
   }
+  await page.evaluate(()=>window.__ASSET_REVIEW__.setView('missing-model'));
+  assert.deepEqual(await page.evaluate(()=>{const a=window.__ASSET_REVIEW__;return [a.person.visible,a.auto.visible,Object.values(a.vehicles).some(m=>m.visible)]}),[true,false,false]);
+  assert.ok(await page.locator('[data-view="person"]').evaluate(b=>b.classList.contains('active')));
   await page.locator('#vehicle-select').selectOption('van');
+  assert.equal(await page.locator('#vehicle-angle').isEnabled(),true);
   await page.locator('#vehicle-angle').selectOption('side');
   assert.deepEqual(await page.evaluate(()=>{const a=window.__ASSET_REVIEW__;return Object.entries(a.vehicles).filter(([,m])=>m.visible).map(([name])=>name)}),['van']);
   assert.ok(await page.evaluate(()=>Math.abs(window.__ASSET_REVIEW__.camera.position.z)<.01),'Side control must change camera');
   await page.locator('#vehicle-select').selectOption('fleet');
   assert.ok(await page.evaluate(()=>Object.values(window.__ASSET_REVIEW__.vehicles).every(m=>m.visible)));
+  assert.equal(await page.locator('#vehicle-angle').isDisabled(),true);
   await page.setViewportSize({width:900,height:500});
   await page.evaluate(()=>{const a=window.__ASSET_REVIEW__;a.setView('person')});
   assert.ok(await page.locator('nav').evaluate(n=>n.getBoundingClientRect().width<=innerWidth));
