@@ -39,3 +39,18 @@ These models are project-authored indexed surfaces, glazing, structural members 
 Body design dimensions (length × width × height in metres): car 4.05 × 1.72 × 1.50; van 4.45 × 1.78 × 2.03; bus 9.70 × 2.50 × 3.10; scooter approximately 2.00 × 0.75 × 1.25. Mirrors and lamp fixtures extend beyond body dimensions. Interiors include seats, right-hand steering, dashboard and van cargo space; the bus has passenger seating, handrails and a front passenger door with steps. The scooter has a separate saddle, footboard, fork, suspension, exhaust and delivery cargo box.
 
 Actual browser iteration corrected window gasket overshoot, body/endcap discontinuities, roof/glazing gaps, shadow banding, saddle overlap and clipped destination lettering. Geometry checks verify finite vertices, ground clearance, height, wheel count and a per-model geometry budget. Hardware Chromium captures all four models from multiple angles plus the 900 × 500 landscape layout and tests the vehicle/angle controls. These establish rendering and interface behavior, not visual approval or physical mobile performance. No fleet replacement is made in the game during this review phase.
+
+## Kerala vehicle direction
+
+The generic sedan and large crew van were revised following the user's request for vehicles seen in Kerala. The C4 now uses a short-bonnet, five-door hatchback layout with an upright tailgate, rear wiper and broad rear quarter pillars. Its body dimensions are 3.65 × 1.62 × 1.54 m. The V4 is a compact sliding-door passenger van, 3.78 × 1.60 × 1.87 m, with a shorter wheelbase and smaller window openings. These supersede the earlier car/van dimensions above.
+
+The M9 now has red-and-cream ordinary-service proportions, a solid header above the passenger windows, Malayalam Kochi–Aluva route lettering and fictional Mud Local branding. The C3 has a black rear body and yellow nose below its black canopy. The D2 uses a broader handlebar headlamp cowl, fuller engine cover and footboard appropriate to a commuter scooter adapted for deliveries. Manufacturer badges and existing operator names are absent.
+
+Reference pages used for vehicle classes and construction cues (photographs and manufacturer assets are not bundled in the project):
+
+- [Maruti Suzuki Alto K10](https://www.marutisuzuki.com/arena/alto-k10), compact Indian hatchback packaging.
+- [Maruti Suzuki Eeco](https://www.marutisuzuki.com/arena/eeco), compact passenger van packaging.
+- [KSRTC ordinary-service bus photograph](https://commons.wikimedia.org/wiki/File:KSRTC_Ordinary_Service_Bus.jpg), by Outlander07, CC BY-SA 3.0; reviewed for local bus proportions and palette.
+- [Alappuzha–Erattakulangara private bus photograph](https://commons.wikimedia.org/wiki/File:Alappuzha_-_Erattakulangara_bus_-_Aradhana.jpg), reviewed for regional window/route-board construction.
+
+The resulting meshes are original stylized prototypes, not exact commercial model replicas. This revision does not establish reference-level polish or visual acceptance. The game still retains its prior fleet until the revised models are approved, as required by the user's workflow. Verified geometry, production build, Chromium views and landscape controls; physical mobile performance remains unmeasured.

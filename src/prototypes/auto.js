@@ -3,7 +3,7 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 
 // Original project-authored geometry and canvas badge; no manufacturer meshes, logos or photos.
 export function buildAuto(){
- const root=new THREE.Group();root.name='Mud C3 · original utility autorickshaw';
+ const root=new THREE.Group();root.name='Mud C3 · Kerala autorickshaw';
  const paint=new THREE.MeshPhysicalMaterial({color:'#d5a62c',metalness:.22,roughness:.42,clearcoat:.32,clearcoatRoughness:.3});
  const frame=new THREE.MeshStandardMaterial({color:'#272a28',metalness:.5,roughness:.44}),rubber=new THREE.MeshStandardMaterial({color:'#191b1a',roughness:.97}),chrome=new THREE.MeshStandardMaterial({color:'#9b9c93',metalness:.9,roughness:.3}),cloth=new THREE.MeshStandardMaterial({color:'#242521',roughness:.98,side:THREE.DoubleSide}),seat=new THREE.MeshStandardMaterial({color:'#322c25',roughness:.87});
  cloth.userData.surface='cloth';seat.userData.surface='cloth';paint.userData.surface='paint';
@@ -108,5 +108,6 @@ for(const side of[-1,1])tube([[side*.08,.26,-1.025],[side*.08,.58,-.98]],.012,ch
   const badge=add(new THREE.PlaneGeometry(.26,.065),new THREE.MeshStandardMaterial({map:texture,transparent:true,depthWrite:false,roughness:.8}),[0,.938,nose(.938)-.003],[0,Math.PI,0]);badge.name='Original Mud C3 badge';
  }
 
+ const bodyBlack=paint.clone();bodyBlack.color.set('#262b29');root.traverse(o=>{if(!o.isMesh||o.material!==paint)return;o.geometry.computeBoundingBox();if(o.geometry.boundingBox.getCenter(new THREE.Vector3()).z+o.position.z>-.35)o.material=bodyBlack;});
  root.userData={assetType:'autorickshaw-prototype',reviewOnly:true,design:'Original Mud C3; generic three-wheeler construction, no manufacturer assets or badges',dimensions:{length:2.635,width:1.30,height:1.70},wheelCount:3};return root;
 }
