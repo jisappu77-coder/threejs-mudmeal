@@ -3,7 +3,7 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 
 // Original project-authored geometry and canvas badge; no manufacturer meshes, logos or photos.
 export function buildAuto(){
- const root=new THREE.Group();root.name='Mud C3 · Kerala autorickshaw';
+ const root=new THREE.Group();root.name='Mud C3 · modern Kerala autorickshaw';
  const paint=new THREE.MeshPhysicalMaterial({color:'#d5a62c',metalness:.22,roughness:.42,clearcoat:.32,clearcoatRoughness:.3});
  const frame=new THREE.MeshStandardMaterial({color:'#272a28',metalness:.5,roughness:.44}),rubber=new THREE.MeshStandardMaterial({color:'#191b1a',roughness:.97}),chrome=new THREE.MeshStandardMaterial({color:'#9b9c93',metalness:.9,roughness:.3}),cloth=new THREE.MeshStandardMaterial({color:'#242521',roughness:.98,side:THREE.DoubleSide}),seat=new THREE.MeshStandardMaterial({color:'#322c25',roughness:.87});
  cloth.userData.surface='cloth';seat.userData.surface='cloth';paint.userData.surface='paint';
@@ -51,6 +51,7 @@ export function buildAuto(){
   const housing=box(.238,.119,.022,.032,rubber,[x,.826,z-.004]);housing.rotation.y=yaw;housing.name='C3 headlight housing '+side;
   const reflector=box(.211,.091,.011,.025,chrome,[x,.826,z-.014]);reflector.rotation.y=yaw;
   const lens=box(.205,.085,.010,.024,new THREE.MeshPhysicalMaterial({color:'#d7dfd5',roughness:.15,metalness:.05,clearcoat:.7,transparent:true,opacity:.43,depthWrite:false}),[x,.826,z-.021]);lens.rotation.y=yaw;
+  const drl=box(.185,.013,.008,.006,new THREE.MeshStandardMaterial({color:'#dce8ed',roughness:.22}),[x,.862,z-.029]);drl.rotation.y=yaw;
   for(let y=-.028;y<=.029;y+=.009)tube([[x-.083,.826+y,z-.030-side*.035],[x+.083,.826+y,z-.030+side*.035]],.0008,chrome);
 
  }

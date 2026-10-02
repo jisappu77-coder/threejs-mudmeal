@@ -54,3 +54,13 @@ Reference pages used for vehicle classes and construction cues (photographs and 
 - [Alappuzha–Erattakulangara private bus photograph](https://commons.wikimedia.org/wiki/File:Alappuzha_-_Erattakulangara_bus_-_Aradhana.jpg), reviewed for regional window/route-board construction.
 
 The resulting meshes are original stylized prototypes, not exact commercial model replicas. This revision does not establish reference-level polish or visual acceptance. The game still retains its prior fleet until the revised models are approved, as required by the user's workflow. Verified geometry, production build, Chromium views and landscape controls; physical mobile performance remains unmeasured.
+
+## Modern fleet revision
+
+Following the request for modern vehicles, the hatchback now has a wider 3.85 × 1.72 × 1.54 m body, higher shoulder line, compound bonnet, rounded nose and bumper corners, contrasting roof and rear pillars, recessed grille, projector-style lamp modules, slim daytime-light elements, open five-spoke alloy wheels, rear spoiler and integrated rear lighting/bumper. The former compact cab-over van is now a 4.45 × 1.80 × 1.72 m three-row MPV using the same formed body construction. The review selector labels it MPV; the existing `view=van` URL remains supported.
+
+The city bus uses fictional white/teal styling, a wider continuous dark window band, modern front light modules and roof-mounted equipment. Its body remains approximately 9.70 × 2.50 × 3.10 m, with roof equipment reaching 3.20 m. The scooter has a slimmer front/rear light design and open alloy wheels. The black-and-yellow auto retains its local three-wheeler construction with an added slim light element in each lamp housing.
+
+Contemporary construction references consulted: [Maruti Suzuki Swift design](https://www.marutisuzuki.com/arena/swift) and the [KSRTC-SWIFT electric-bus tender](https://www.keralartc.com/storage/downloads/Tendernotice_1%2852%29.pdf). These inform vehicle category and general detail choices; no claim is made that the fictional prototypes reproduce either vehicle. Manufacturer assets, badges and real operator liveries are not bundled.
+
+Browser iteration corrected roof material backface culling, front cap/bonnet width mismatch and grille surfaces being occluded by the rounded body. Screenshots include front/side/rear angles, individual models, the full fleet and landscape controls. Geometry checks and the production build pass. Appearance is still awaiting approval; world vehicles and their physics were not replaced in this revision.
