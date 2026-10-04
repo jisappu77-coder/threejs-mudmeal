@@ -7,7 +7,8 @@ export function createWorldLife(h){
  const roads=[h.extendedWorld.centerline];
  const lengths=roads.map(r=>r.getLength()),traffic=[];
  const forward=new THREE.Vector3(),playerLast=player.position.clone(),playerWheels=[];
- player.traverse(o=>{if(o.userData.wheelRadius)playerWheels.push(o)});
+ function refreshPlayerWheels(){playerWheels.length=0;player.traverse(o=>{if(o.userData.wheelRadius)playerWheels.push(o)});}
+ refreshPlayerWheels();
  function nearestS(g,road){let best=Infinity,s=0;for(let i=0;i<=1200;i++){const t=i/1200,p=roads[road].getPointAt(t),d=(p.x-g.position.x)**2+(p.z-g.position.z)**2;if(d<best){best=d;s=t*lengths[road];}}return s;}
  function addTraffic(g,type,road,s,direction){
   const {width,length}=g.userData.footprint;
@@ -31,7 +32,19 @@ export function createWorldLife(h){
  }
  function riderFootprint(position=player.position){return {g:{position,rotation:player.rotation},width:player.userData.footprint.width,length:player.userData.footprint.length};}
  function blocked(position,radius=.62,ignore=player){
-  if(ignore===player){if(traffic.some(v=>overlaps(riderFootprint(position),v,.1)))return true;}
+  if(ignore===player){
+   if(traffic.some(v=>overlaps(riderFootprint(position),v,.1)))return true;
+   const {x,z}=position;
+   if(x< -130||x>240||z< -180||z>170)return true;
+   const halfLength=Math.max(0,player.userData.footprint.length/2-radius),heading=player.rotation.y;
+   for(const offset of [-halfLength,0,halfLength]){
+    const px=x-Math.sin(heading)*offset,pz=z-Math.cos(heading)*offset;
+    // The canal bridge and paved crossings remain usable above the water.
+    if(waterAt(px,pz)&&h.roadClearance(px,pz)>-radius)return true;
+    if(plotBlocked(px,pz,radius)||plantings.some(p=>Math.hypot(px-p.x,pz-p.z)<radius+Math.min(.6,p.radius)))return true;
+    if(npcs.some(n=>Math.abs(n.g.position.y-position.y)<2&&Math.hypot(px-n.g.position.x,pz-n.g.position.z)<radius+.25))return true;
+   }
+  }
   else if(traffic.some(v=>v.g!==ignore&&Math.abs(v.g.position.y-position.y)<2&&rectangleDistance(position,v)<radius))return true;
   if(ignore!==player&&Math.abs(player.position.y-position.y)<2&&position.distanceTo(player.position)<radius+.65)return true;
   return false;
@@ -82,29 +95,34 @@ export function createWorldLife(h){
   }
  }
  function updateNPC(n,dt,time){
+  const previousDistance=n.distance;
   n.wait+=dt;
   const close=n.g.position.distanceTo(player.position)<9,walking=n.state==='walking';
   n.wave=THREE.MathUtils.damp(n.wave,close&&!walking&&Math.sin(time*.45+n.variant)>-.25?1:0,5,dt);
   if(n.state==='rising'){
-   const t=Math.min(1,n.wait/.9);n.g.position.copy(n.home).lerp(n.exit,t);n.standing.g.position.y=n.standing.restY+(n.sitting.animate?n.sitting.restY:-.29)*(1-t);
+   const t=THREE.MathUtils.smoothstep(n.wait,0,.9);n.g.position.copy(n.home).lerp(n.exit,t);n.standing.g.position.y=n.standing.restY+(n.sitting.animate?n.sitting.restY:-.29)*(1-t);
    if(t===1){n.state='walking';n.wait=0;n.distance=0;}
   }else if(n.state==='walking'){
-   const total=n.pathLength*2,advance=.62*dt,proposed=Math.min(total,n.distance+advance),outward=proposed<=n.pathLength;
+   const total=n.pathLength*2,outward=n.distance<n.pathLength;
+   const d=n.path[1].clone().sub(n.path[0]).multiplyScalar(outward?1:-1),angle=Math.atan2(d.x,d.z);
+   const turn=THREE.MathUtils.euclideanModulo(angle-n.g.rotation.y+Math.PI,Math.PI*2)-Math.PI;
+   n.g.rotation.y+=turn*Math.min(1,dt*5);
+   const advance=.62*dt*Math.max(0,Math.cos(turn)),proposed=Math.min(outward?n.pathLength:total,n.distance+advance);
    const p=n.path[0].clone().lerp(n.path[1],outward?proposed/n.pathLength:2-proposed/n.pathLength);p.y=h.floorAt(p.x,p.z);
    if(!npcs.some(other=>other!==n&&Math.abs(other.g.position.y-p.y)<1&&other.g.position.distanceTo(p)<.55)&&p.distanceTo(player.position)>1){
-    n.distance=proposed;n.g.position.copy(p);const d=n.path[1].clone().sub(n.path[0]).multiplyScalar(outward?1:-1),angle=Math.atan2(d.x,d.z);
-    n.g.rotation.y+=(THREE.MathUtils.euclideanModulo(angle-n.g.rotation.y+Math.PI,Math.PI*2)-Math.PI)*Math.min(1,dt*8);
+    n.distance=proposed;n.g.position.copy(p);
    }
    if(n.distance>=total){n.state=n.sitting?'sitting-down':'idle';n.wait=0;}
   }else if(n.state==='sitting-down'){
-   const t=Math.min(1,n.wait/.9);n.g.position.copy(n.exit).lerp(n.home,t);n.g.rotation.y=n.homeAngle;n.standing.g.position.y=n.standing.restY+(n.sitting.animate?n.sitting.restY:-.29)*t;
+   const t=THREE.MathUtils.smoothstep(n.wait,0,.9);n.g.position.copy(n.exit).lerp(n.home,t);n.g.rotation.y+=(mod(n.homeAngle-n.g.rotation.y+Math.PI,Math.PI*2)-Math.PI)*Math.min(1,dt*5);n.standing.g.position.y=n.standing.restY+(n.sitting.animate?n.sitting.restY:-.29)*t;
    if(t===1){n.state='sitting';n.wait=0;n.sitting.g.visible=true;n.standing.g.visible=false;}
   }else if(n.wait>12+n.variant%7&&n.pathLength){
    n.state=n.sitting?'rising':'walking';n.wait=0;n.distance=0;n.standing.g.visible=true;if(n.sitting)n.sitting.g.visible=false;
   }
   const rig=n.sitting&&n.state==='sitting'?n.sitting:n.standing;
-  const seatedBlend=n.state==='sitting'?1:n.state==='rising'?1-Math.min(1,n.wait/.9):n.state==='sitting-down'?Math.min(1,n.wait/.9):0;
-  animateRig(rig,n.distance*8,time+n.variant,n.state==='walking',n.wave,seatedBlend);
+  const seatedBlend=n.state==='sitting'?1:n.state==='rising'?1-THREE.MathUtils.smoothstep(n.wait,0,.9):n.state==='sitting-down'?THREE.MathUtils.smoothstep(n.wait,0,.9):0;
+  n.walkBlend=THREE.MathUtils.damp(n.walkBlend||0,n.state==='walking'&&n.distance>previousDistance?1:0,8,dt);
+  animateRig(rig,n.distance*8,time+n.variant,n.walkBlend,n.wave,seatedBlend);
   if(n.sitting&&n.state==='sitting'&&!rig.animate)rig.elbows[0].rotation.x=Math.sin(time*1.1+n.variant)*.12;
   if(close&&n.state==='idle'){
    const angle=Math.atan2(player.position.x-n.g.position.x,player.position.z-n.g.position.z);n.g.rotation.y+=(mod(angle-n.g.rotation.y+Math.PI,Math.PI*2)-Math.PI)*Math.min(1,dt*4);
@@ -143,18 +161,9 @@ export function createWorldLife(h){
  }
  function reset(){
   for(const v of traffic){v.s=v.initialS;v.speed=0;pose(v);for(const w of v.wheels)w.rotation.x=0;}
-  for(const n of npcs){n.g.position.copy(n.home);n.g.rotation.y=n.homeAngle;n.wait=n.variant*.63;n.distance=0;n.wave=0;n.state=n.sitting?'sitting':'idle';n.standing.g.position.y=n.standing.restY;n.standing.g.visible=!n.sitting;if(n.sitting)n.sitting.g.visible=true;animateRig(n.standing,0,0,false,0);if(n.sitting)animateRig(n.sitting,0,0,false,0);}
+  for(const n of npcs){n.g.position.copy(n.home);n.g.rotation.y=n.homeAngle;n.wait=n.variant*.63;n.distance=0;n.wave=0;n.walkBlend=0;n.state=n.sitting?'sitting':'idle';n.standing.g.position.y=n.standing.restY;n.standing.g.visible=!n.sitting;if(n.sitting)n.sitting.g.visible=true;animateRig(n.standing,0,0,false,0);if(n.sitting)animateRig(n.sitting,0,0,false,0);}
   playerLast.copy(player.position);for(const wheel of playerWheels)wheel.rotation.x=0;windTime.value=0;sun.shadow.needsUpdate=true;
  }
- function aheadDistance(position,heading,maxDistance=30){
-  const direction=new THREE.Vector3(-Math.sin(heading),0,-Math.cos(heading));let distance=maxDistance;
-  for(const v of traffic){
-   if(Math.abs(v.g.position.y-position.y)>2)continue;
-   const delta=v.g.position.clone().sub(position),ahead=delta.dot(direction),side=Math.abs(delta.x*direction.z-delta.z*direction.x);
-   if(ahead>0&&side<v.width/2+.55)distance=Math.min(distance,Math.max(0,ahead-v.length/2-player.userData.footprint.length/2));
-  }
-  return distance;
- }
  function audit(){return {plantsInRoad:plantings.filter(p=>h.roadClearance(p.x,p.z)<p.radius+.35),plantsInBuildings:plantings.filter(p=>plotBlocked(p.x,p.z,p.radius,true)),plantsInWater:plantings.filter(p=>waterAt(p.x,p.z)),pedestrians:npcs.length,walkingRoutes:npcs.filter(n=>n.pathLength>0).length,traffic:traffic.length};}
- return {update,reset,blocked,aheadDistance,traffic,npcs,audit,walkable,overlaps,riderFootprint,roads,pose};
+ return {update,reset,refreshPlayerWheels,blocked,traffic,npcs,audit,walkable,overlaps,riderFootprint,roads,pose};
 }

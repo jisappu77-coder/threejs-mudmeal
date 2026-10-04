@@ -50,7 +50,7 @@ Buildings, furniture, water, and road widths govern procedural vegetation and pe
 
 ### Road and asset rebuild
 
-The town road and district connector now form one paved closed circuit. Rider navigation and traffic lanes derive from that circuit; vehicles cross its seam continuously. The canal bridge is a separate narrow shortcut. The initial delivery marker and order text now point to a roadside home reachable on the circuit. Junction kerbs are opened, and the original rice plots and fences are clipped outside the road corridor. Automated checks cover loop position/tangent continuity, centerline self-intersection and vehicle wrap distance; Chromium captures a whole-map overhead view.
+The town road and district connector now form one paved closed circuit. The turquoise navigation guide and traffic lanes derive from that circuit; vehicles cross its seam continuously. The canal bridge is a separate narrow shortcut. The initial delivery marker and order text now point to a roadside home reachable on the circuit. Junction kerbs are opened, and the original rice plots and fences are clipped outside the road corridor. Automated checks cover loop position/tangent continuity, centerline self-intersection and vehicle wrap distance; Chromium captures a whole-map overhead view.
 
 People use a sculpted face surface, fitted facial details, swept hair and articulated clothing/limbs. Autorickshaws have a formed yellow nose, a single raked windshield, open passenger entrances, stitched canvas canopy, bench seating, a seated driver and three wheels. Dimensions and proportions are informed by [Bajaj RE specifications](https://www.bajajauto.com/three-wheelers/re/specifications). The map remains a compressed fictional Kerala-inspired world, not a surveyed or imported real-world road map; [Kochi on OpenStreetMap](https://www.openstreetmap.org/#map=13/9.966/76.260) is a geographic reference.
 
@@ -68,4 +68,8 @@ These remain procedural game assets; this revision moves them toward natural mat
 
 ## NPC wardrobe and driving
 
-The approved textured human now supplies four rigged NPC clothing/hair styles in the game. Inspect them at `crowd.html`. Driving includes gradual lane steering, hill resistance, wet braking, corner speed limits and predictive traffic braking. The default camera follows the rider. See [implementation and limitations](docs/driving-and-crowd.md).
+The approved textured human now supplies four rigged NPC clothing/hair styles in the game. Inspect them at `crowd.html`. Driving allows free steering onto side roads and open ground, with hill resistance, wet braking, corner speed limits and predictive traffic braking. The default camera follows the rider. See [implementation and limitations](docs/driving-and-crowd.md).
+
+The delivery bike offers four original, unbranded motorcycle/scooter styles under **Explore Kerala → Bike style**. Model provenance and naming are documented in [vehicle models](docs/vehicle-models.md).
+
+Real Kerala locations: **Explore Kerala → Play real maps** opens Munnar, Busy Kochi and Thekkady's forest approach, using attributed OpenStreetMap roads and footprints with detailed stylized scenery, walking pedestrians and timed meal deliveries. Use **Detail on/off** to adjust rendering on mobile. See [location details and data licensing](docs/real-maps.md).

@@ -6,6 +6,16 @@ await mkdir('artifacts', { recursive: true });
 const browser = await chromium.launch(process.env.HARDWARE_GL==='1'?{channel:'chromium',args:['--use-angle=gl']}:{});
 const page = await browser.newPage({ viewport: { width: 960, height: 540 } });
 page.setDefaultTimeout(120000);
+// Pause before the first animated draw can monopolize the software GPU.
+// The checks below render frames and advance the real simulation explicitly.
+await page.addInitScript(() => {
+  Object.defineProperty(window,'__MUD_MEALS__',{configurable:true,set(app){
+    const setAnimationLoop=app.renderer.setAnimationLoop.bind(app.renderer);
+    app.renderer.setAnimationLoop=()=>setAnimationLoop(null);
+    setAnimationLoop(null);
+    Object.defineProperty(window,'__MUD_MEALS__',{value:app,writable:true,configurable:true,enumerable:true});
+  }});
+});
 const errors = [];
 page.on('pageerror', error => errors.push(error.message));
 page.on('response',response=>{if(response.status()>=400)errors.push(`${response.status()} ${response.url()}`)});
@@ -20,8 +30,32 @@ try {
   await page.waitForFunction(() => {const a=window.__MUD_MEALS__;if(a?.ready)a.renderer.setAnimationLoop(null);return a?.ready && !document.querySelector('#loading')}, null, { timeout: 120000,polling:50 });
   assert.equal(await page.evaluate(() => window.__MUD_MEALS__.renderer.getContext().isContextLost()), false);
   assert.equal(await page.evaluate(()=>window.__MUD_MEALS__.camera.isPerspectiveCamera),true);
+  const riderContacts=await page.evaluate(()=>{
+    const a=window.__MUD_MEALS__,V=a.camera.position.constructor;
+    return a.scene.children.filter(b=>b.rider).map(bike=>{
+      const rig=bike.rider,contacts=[];
+      for(const side of ['l','r'])for(const [joint,x,y,z]of [['hand',.249,.9594,-.4536],['foot',.285,.443,.0945]]){
+        const p=bike.worldToLocal(rig.bones[joint+'_'+side].getWorldPosition(new V()));
+        contacts.push(new V(Math.abs(p.x)-x,p.y-y,p.z-z).length());
+      }
+      return {rigged:rig.g.userData.rigged,contacts};
+    });
+  });
+  assert.equal(riderContacts.length,3);
+  assert.ok(riderContacts.every(r=>r.rigged&&r.contacts.every(error=>error<.025)),'Riders must reach the bike controls');
   await mkdir('artifacts/game-update',{recursive:true});
   await checkGameUpdate(page);
+  // Every original model is selectable through the same menu used on a phone.
+  await page.locator('#tools-toggle').click();await page.locator('#world-explore').click();
+  const riderBefore=await page.evaluate(()=>window.__MUD_MEALS__.player.rider.g.uuid);
+  for(const style of ['city','heritage','daily','metro']){
+    await page.locator('#bike-model').selectOption(style);
+    const model=await page.evaluate(()=>{const a=window.__MUD_MEALS__;const wheels=[];a.player.traverse(o=>{if(o.userData.wheelRadius)wheels.push(o)});const position=a.player.position.clone();a.life.reset();a.player.position.z+=.1;a.life.update(1/60,0);const rolling=wheels.every(w=>Math.abs(w.rotation.x)>.01);a.player.position.copy(position);a.reset();return {style:a.player.userData.style,rider:a.player.rider.g.uuid,rolling}});
+    assert.equal(model.style,style);assert.equal(model.rider,riderBefore);assert.equal(model.rolling,true);
+    const png=await page.evaluate(()=>window.__MUD_MEALS__.renderAssetPreview('delivery-bike'));
+    await writeFile('artifacts/bike-'+style+'.png',Buffer.from(png.split(',')[1],'base64'));
+  }
+  await page.locator('#bike-model').selectOption('city');await page.locator('#close-world').click();
   // Capture an existing rendered frame without flooding the CI software GPU.
   await page.evaluate(() => window.__MUD_MEALS__.renderer.setAnimationLoop(null));
   const touchUI=await page.locator('#accelerate').evaluate(button=>{const menu=new MouseEvent('contextmenu',{bubbles:true,cancelable:true});button.dispatchEvent(menu);return {menuBlocked:menu.defaultPrevented,selection:getComputedStyle(button).userSelect}});
@@ -184,8 +218,11 @@ try {
     assert.equal(bounds.inlineWidth,'');
     assert.equal(bounds.inlineHeight,'');
   }
-  await page.evaluate(() => window.__MUD_MEALS__.graphics.render());
+  await page.evaluate(() => {const a=window.__MUD_MEALS__;a.resize();a.graphics.render()});
   await page.screenshot({path:'artifacts/resized-landscape.png'});
+  // Check the scene itself, excluding HUD artwork that could hide a blank canvas.
+  const resizedScene=await page.screenshot({clip:{x:320,y:180,width:320,height:180}});
+  assert.ok(resizedScene.length>2000,'The scene must remain visible after resize observers run');
 
   assert.deepEqual(errors, []);
   console.log('Browser checks passed: stable repeated frames, synchronized camera depth, WebGL, all NPC walking routes, waving, traffic spacing, wind shaders, world travel, rider-follow driving, weather, orders, camera settings, and landscape layout.');

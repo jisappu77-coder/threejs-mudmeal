@@ -6,6 +6,7 @@ const {setupGraphics}=await import('../src/graphics.js');
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import {createDriving} from '../src/driving.js';
+import {createMotorcycle,motorcycleStyles} from '../src/prototypes/vehicles.js';
 import {clone as cloneCharacter} from 'three/addons/utils/SkeletonUtils.js';
 import {mergeVertices} from 'three/addons/utils/BufferGeometryUtils.js';
 const noop=()=>{};
@@ -14,12 +15,13 @@ const els=new Map();
 function el(){return {style:{},hidden:true,tagName:'DIV',getContext:()=>ctx,getBoundingClientRect:()=>({width:Math.min(innerWidth,innerHeight*16/9),height:Math.min(innerHeight,innerWidth*9/16)}),addEventListener:noop,setAttribute:noop,setPointerCapture:noop,remove:noop,dataset:{steer:'0'}}}
 globalThis.document={querySelector:s=>{if(!els.has(s))els.set(s,el());return els.get(s)},querySelectorAll:()=>[],createElement:()=>el(),addEventListener:noop};
 globalThis.ResizeObserver=class {observe(){}};
-globalThis.window={addEventListener:noop};globalThis.innerWidth=1536;globalThis.innerHeight=864;globalThis.devicePixelRatio=1;
-let pixelRatio=1;
-const fakeRenderer={getPixelRatio:()=>pixelRatio,capabilities:{maxSamples:4},setPixelRatio:r=>pixelRatio=r,setSize:noop,shadowMap:{},setAnimationLoop:noop,render:noop,compileAsync:()=>Promise.resolve(),info:{render:{triangles:0,calls:0},memory:{geometries:0}}};
+const listeners=new Map();globalThis.window={addEventListener:(name,callback)=>listeners.set(name,callback)};globalThis.innerWidth=1536;globalThis.innerHeight=864;globalThis.devicePixelRatio=1;
+let pixelRatio=1,frameLoop,gpuReady=false,deletedFences=0,canvasResizes=0,rendererWidth=0,rendererHeight=0;
+const fakeGL={TIMEOUT_EXPIRED:0x911b,SYNC_GPU_COMMANDS_COMPLETE:0x9117,clientWaitSync:()=>gpuReady?0x911a:0x911b,deleteSync:()=>deletedFences++,fenceSync:()=>({}),flush:noop};
+const fakeRenderer={getContext:()=>fakeGL,getSize:v=>v.set(rendererWidth,rendererHeight),getPixelRatio:()=>pixelRatio,capabilities:{maxSamples:4},setPixelRatio:r=>pixelRatio=r,setSize:(w,h)=>{rendererWidth=w;rendererHeight=h;canvasResizes++},shadowMap:{},setAnimationLoop:callback=>frameLoop=callback,render:noop,compileAsync:()=>Promise.resolve(),info:{render:{triangles:0,calls:0},memory:{geometries:0}}};
 const FakeControls=class {constructor(){this.target=new THREE.Vector3()}update(){}};
 let source=fs.readFileSync('./src/scene.js','utf8').replace(/^import .*;\n/gm,'').replace(/const renderer = new THREE.WebGLRenderer\([^\n]*\);/,'const renderer = fakeRenderer;').replace('new OrbitControls(camera,canvas)','new FakeControls(camera,canvas)');
-new Function('THREE','fakeRenderer','FakeControls','setupGraphics','createExtendedWorld','mergeVertices','createWorldLife','createExtensionRoad','createDriving','installCrowd','cloneCharacter',source)(THREE,fakeRenderer,FakeControls,setupGraphics,createExtendedWorld,mergeVertices,createWorldLife,createExtensionRoad,createDriving,async()=>{},cloneCharacter);
+new Function('THREE','fakeRenderer','FakeControls','setupGraphics','createExtendedWorld','mergeVertices','createWorldLife','createExtensionRoad','createDriving','installCrowd','cloneCharacter','createMotorcycle','motorcycleStyles',source)(THREE,fakeRenderer,FakeControls,setupGraphics,createExtendedWorld,mergeVertices,createWorldLife,createExtensionRoad,createDriving,async()=>{},cloneCharacter,createMotorcycle,motorcycleStyles);
 const app=window.__MUD_MEALS__;assert.ok(app.scene.children.length>100);assert.equal(app.camera.isPerspectiveCamera,true);assert.equal(app.graphics.ao.ssaoMaterial.defines.PERSPECTIVE_CAMERA,1);assert.equal(app.graphics.composer.passes.length,3);
 let meshes=0,triangles=0,instances=0;
 app.scene.traverse(o=>{if(!o.isMesh)return;meshes++;const p=o.geometry.attributes.position;assert.ok(p);for(const n of p.array)assert.ok(Number.isFinite(n));const mult=o.isInstancedMesh?o.count:1;instances+=mult;triangles+=(o.geometry.index?o.geometry.index.count:p.count)/3*mult;if(o.isInstancedMesh)for(const n of o.instanceMatrix.array)assert.ok(Number.isFinite(n))});
@@ -52,6 +54,16 @@ els.get('#reference').onclick();assert.equal(els.get('#reference-panel').hidden,
 els.get('#pause').onclick();assert.equal(els.get('#pause').textContent,'▶');els.get('#pause').onclick();assert.equal(els.get('#pause').textContent,'Ⅱ');
 // Kerbs must sit at the road edges and paint must follow the tangent.
 for(const d of app.roadDetails){const center=app.roadFrame(d.sourceZ);assert.ok(Math.abs(d.angle-center.angle)<1e-8);if(d.kind==='kerb')assert.ok(Math.abs(Math.hypot(d.x-center.x,d.z-center.z)-4.97)<1e-7)}
+// Each selectable model keeps the current pose and refreshes its rolling wheels.
+const bikePosition=app.player.position.clone();
+for(const style of Object.keys(motorcycleStyles)){
+ assert.equal(app.setBikeModel(style),true);assert.equal(app.player.userData.style,style);app.life.reset();
+ assert.ok(app.player.position.distanceTo(bikePosition)<1e-8);
+ const wheels=[];app.player.traverse(o=>{if(o.userData.wheelRadius)wheels.push(o)});assert.equal(wheels.length,2);
+ app.player.position.z+=.1;app.life.update(1/60,0);assert.ok(wheels.every(w=>Math.abs(w.rotation.x)>.01),'Selected bike wheels must roll');app.player.position.copy(bikePosition);
+ assert.ok(app.player.userData.footprint.width<.9&&app.player.userData.footprint.length>1.8);
+}
+assert.equal(app.setBikeModel('missing'),false);app.setBikeModel('city');app.reset();
 // A closed navigation flag alone is insufficient: verify asphalt continuity and traffic wrapping.
 const circuit=app.extendedWorld.centerline;
 assert.ok(circuit.closed);assert.ok(circuit.getPointAt(0).distanceTo(circuit.getPointAt(1))<1e-8);
@@ -117,4 +129,27 @@ for(const b of app.plots.filter(p=>p.kind==='building'))for(const p of app.exten
 for(const d of app.extendedWorld.districts){app.visitDistrict(d.id);assert.ok(app.player.position.distanceTo(new THREE.Vector3(d.x,d.y,d.z))<4,`${d.id}: ${app.player.position.toArray()}`);assert.ok(app.camera.position.y>app.player.position.y+2);}
 app.extendedWorld.setWeather('rain');assert.equal(app.extendedWorld.weather,'rain');app.extendedWorld.setWeather('day');
 app.visitDistrict('hills');const start=app.player.position.clone();app.update(1/60);assert.ok(app.player.position.distanceTo(start)<.001);app.reset();
+// The guide must never determine the bike's X/Z position or limit its lane.
+function key(name,pressed){listeners.get(pressed?'keydown':'keyup')({key:name,target:{tagName:'DIV'},preventDefault:noop});}
+app.reset();key('w',true);for(let i=0;i<180;i++)app.update(1/60);key('w',false);
+assert.ok(app.player.position.distanceTo(initial)>1&&app.driving.state.throttle>.9,'Default spawn must accelerate with working traffic braking');app.reset();
+app.player.position.set(180,.025,0);app.player.rotation.y=0;key('w',true);
+for(let i=0;i<180;i++)app.update(1/60);
+assert.ok(app.player.position.z< -5);assert.ok(Math.abs(app.player.position.x-180)<1e-6,'Off-route acceleration snapped the bike to the guide');
+key('d',true);for(let i=0;i<90;i++)app.update(1/60);key('d',false);
+assert.ok(app.player.rotation.y<-.5&&app.player.position.x>181,'Steering must turn and move beyond the old lane limit');
+key('w',false);key('s',true);for(let i=0;i<180;i++)app.update(1/60);key('s',false);
+assert.equal(app.driving.state.speed,0);app.reset();
+const building=app.plots.find(p=>p.kind==='building');assert.equal(app.life.blocked(new THREE.Vector3(building.x,building.y,building.z)),true,'Buildings must block free driving');
+assert.equal(app.life.blocked(new THREE.Vector3(89,.025,-92)),true,'Lake water must block free driving');
+const bridge=app.branchPoints.find(([x])=>x>30&&x<31);assert.equal(app.life.blocked(new THREE.Vector3(bridge[0],.025,bridge[1])),false,'The bridge must remain driveable over water');
 console.log(JSON.stringify({ok:true,meshes,instances,triangles,sceneObjects:app.scene.children.length,life:audit}));
+// Simulation ticks must not enqueue another render until the previous GPU frame finishes.
+const render=app.graphics.render;let renderedFrames=0;
+app.graphics.render=()=>renderedFrames++;
+assert.equal(frameLoop,undefined,'Wait for character and shader preparation before starting animation');
+await new Promise(resolve=>setImmediate(resolve));
+frameLoop();frameLoop();assert.equal(renderedFrames,1);assert.equal(deletedFences,0);
+gpuReady=true;frameLoop();assert.equal(renderedFrames,2);assert.equal(deletedFences,1);
+app.graphics.render=render;
+const resizesBefore=canvasResizes;app.resize();app.resize();assert.equal(canvasResizes,resizesBefore,'Unchanged canvas dimensions must not clear the rendered frame');

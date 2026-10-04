@@ -9,25 +9,49 @@ export async function checkGameUpdate(page){
   const start=a.player.position.clone();
   window.dispatchEvent(new KeyboardEvent('keydown',{key:'w'}));
   // Verify connected game input and collision handling, not just the standalone model.
-  for(let i=0;i<180;i++)a.update(1/60);
-  const accelerating={speed:a.driving.state.speed,moved:a.player.position.distanceTo(start)};
+  for(let i=0;i<90;i++)a.update(1/60);
+  const accelerating={speed:a.driving.state.speed,throttle:a.driving.state.throttle,moved:a.player.position.distanceTo(start)};
+  const startHeading=a.player.rotation.y;
   window.dispatchEvent(new KeyboardEvent('keydown',{key:'d'}));
   for(let i=0;i<45;i++)a.update(1/60);
-  const offset=a.driving.state.offset;
+  const heading=a.player.rotation.y;
   window.dispatchEvent(new KeyboardEvent('keyup',{key:'d'}));window.dispatchEvent(new KeyboardEvent('keyup',{key:'w'}));
   for(let i=0;i<30;i++)a.update(1/60);
-  const releasedOffset=a.driving.state.offset;
+  const releasedHeading=a.player.rotation.y;
   window.dispatchEvent(new KeyboardEvent('keydown',{key:'s'}));for(let i=0;i<180;i++)a.update(1/60);window.dispatchEvent(new KeyboardEvent('keyup',{key:'s'}));
   const stopped=a.driving.state.speed;
-  console.log('Connected driving simulation complete',accelerating,offset,releasedOffset,stopped);
+  console.log('Connected driving simulation complete',accelerating,startHeading,heading,releasedHeading,stopped);
   a.reset();a.graphics.render();
-  return {people,accelerating,offset,releasedOffset,stopped,camera:a.cameraMode};
+  return {people,accelerating,startHeading,heading,releasedHeading,stopped,camera:a.cameraMode};
  });
  assert.equal(result.people.length,27);assert.ok(result.people.every(p=>p.rigged));assert.equal(new Set(result.people.map(p=>p.style)).size,4);
- assert.ok(result.accelerating.moved>1&&result.accelerating.speed>1);assert.ok(result.offset>0);assert.ok(result.releasedOffset>result.offset*.8);assert.equal(result.stopped,0);assert.equal(result.camera,'driving');
+ assert.ok(result.accelerating.moved>1&&result.accelerating.speed>0&&result.accelerating.throttle>.9);assert.ok(result.heading<result.startHeading-.05);assert.ok(result.releasedHeading<=result.heading&&result.releasedHeading>result.heading-.5);assert.equal(result.stopped,0);assert.equal(result.camera,'driving');
+ const freeDrive=await page.evaluate(()=>{
+  const a=window.__MUD_MEALS__;a.reset();a.player.position.set(180,.025,0);a.player.rotation.y=0;
+  window.dispatchEvent(new KeyboardEvent('keydown',{key:'w'}));for(let i=0;i<180;i++)a.update(1/60);
+  const straight=a.player.position.toArray();
+  window.dispatchEvent(new KeyboardEvent('keydown',{key:'d'}));for(let i=0;i<90;i++)a.update(1/60);
+  const turned=a.player.position.toArray(),heading=a.player.rotation.y;
+  window.dispatchEvent(new KeyboardEvent('keyup',{key:'d'}));window.dispatchEvent(new KeyboardEvent('keyup',{key:'w'}));
+  a.reset();return {straight,turned,heading};
+ });
+ assert.ok(Math.abs(freeDrive.straight[0]-180)<.001&&freeDrive.straight[2]<-5,'Bike must travel on open ground without snapping to the guide');
+ assert.ok(freeDrive.turned[0]>181&&freeDrive.heading<-.5,'Free steering must turn beyond the old lane limit');
+ // Exercise two simultaneous phone touches: accelerator and steering.
+ const touch=await page.context().newCDPSession(page);
+ await touch.send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:2});
+ await page.evaluate(()=>{const a=window.__MUD_MEALS__;a.reset();a.player.position.set(180,.025,0);a.player.rotation.y=0});
+ const pedal=await page.locator('#accelerate').boundingBox(),right=await page.locator('[data-steer="1"]').boundingBox();
+ const points=[pedal,right].map((box,i)=>({x:box.x+box.width/2,y:box.y+box.height/2,id:i+1}));
+ await touch.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:points});
+ const mobile=await page.evaluate(()=>{const a=window.__MUD_MEALS__;for(let i=0;i<180;i++)a.update(1/60);return {speed:a.driving.state.speed,heading:a.player.rotation.y,x:a.player.position.x}});
+ await touch.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});
+ await touch.send('Emulation.setTouchEmulationEnabled',{enabled:false});await touch.detach();
+ assert.ok(mobile.speed>1&&mobile.heading<-.5&&mobile.x>181,'Two-finger mobile acceleration and steering must turn freely');
+ console.log('Free driving and mobile controls passed:',JSON.stringify({freeDrive,mobile}));
  // Releasing one input source must leave the other source's pedal held.
  for(const keyboardFirst of[true,false]){
-  await page.evaluate(()=>window.__MUD_MEALS__.reset());
+  await page.evaluate(()=>{const a=window.__MUD_MEALS__;a.reset();a.player.position.set(180,.025,0);a.player.rotation.y=0});
   const box=await page.locator('#accelerate').boundingBox();await page.mouse.move(box.x+box.width/2,box.y+box.height/2);
   if(keyboardFirst){await page.keyboard.down('ArrowUp');await page.mouse.down();await page.mouse.up();}
   else{await page.mouse.down();await page.keyboard.down('ArrowUp');await page.keyboard.up('ArrowUp');}

@@ -8,7 +8,9 @@
     "check": "node scripts/check-driving.mjs && node scripts/check-scene.mjs",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0",
-    "check:browser": "node scripts/check-browser.mjs"
+    "check:browser": "node scripts/check-browser.mjs",
+    "check:maps": "node scripts/check-real-map.mjs",
+    "check:maps:browser": "node scripts/check-real-map-browser.mjs"
   },
   "dependencies": {
     "three": "0.180.0"

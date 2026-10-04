@@ -190,4 +190,85 @@ function deliveryBike(){
  root.userData={assetType:'bike-prototype',reviewOnly:true,wheelCount:2,bodyDimensions:{length:2.00,width:.75,height:1.25},seatHeight:.76,design:'Original delivery scooter, no manufacturer assets'};return root;
 }
 
+// These fictional silhouettes are authored here, rather than copied from branded assets.
+export const motorcycleStyles={
+ city:{name:'City 125',color:'#bd4338'},
+ heritage:{name:'Heritage 350',color:'#50604b'},
+ daily:{name:'Daily 110',color:'#3b6e92'},
+ metro:{name:'Metro 110',color:'#54a4a1'},
+};
+
+export function createMotorcycle(style='city',color){
+ if(!Object.hasOwn(motorcycleStyles,style))style='city';
+ const classic=style==='heritage',scooter=style==='metro',daily=style==='daily';
+ const k=kit(motorcycleStyles[style].name,color||motorcycleStyles[style].color);
+ const {root,paint,trim,alloy,rubber,seat,red,lamp,add,box,tube,surface,wheel}=k;
+ const amber=new THREE.MeshStandardMaterial({color:'#eeb23f',roughness:.35});
+ const saddle=classic?new THREE.MeshStandardMaterial({color:'#6b4936',roughness:.9}):seat;
+ const radius=scooter?.255:classic?.315:.29,front=-.709,rear=.661;
+ for(const z of [front,rear]){
+  if(classic){
+   const axle=new THREE.Group();axle.position.set(0,radius+.015,z);axle.userData.wheelRadius=radius;root.add(axle);
+   add(new THREE.TorusGeometry(radius-.055,.055,12,48),rubber,[0,0,0],[0,Math.PI/2,0],axle);
+   add(new THREE.TorusGeometry(radius-.085,.016,8,40),alloy,[0,0,0],[0,Math.PI/2,0],axle);
+   add(new THREE.CylinderGeometry(.07,.07,.14,24),alloy,[0,0,0],[0,0,Math.PI/2],axle);
+   for(let i=0;i<24;i++){
+    const a=i*Math.PI/12,start=new THREE.Vector3(i%2?.04:-.04,0,0),end=new THREE.Vector3(0,Math.cos(a)*(radius-.085),Math.sin(a)*(radius-.085)),direction=end.clone().sub(start);
+    const spoke=add(new THREE.CylinderGeometry(.003,.003,direction.length(),5),alloy,start.clone().add(end).multiplyScalar(.5).toArray(),[0,0,0],axle);
+    spoke.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),direction.normalize());
+   }
+  }else wheel(0,z,radius,scooter?.13:.11);
+  surface(8,28,(u,v)=>{const a=.08*Math.PI+u*.84*Math.PI;return [(v-.5)*(scooter?.22:.18),radius+.015+(radius+.04)*Math.sin(a),z+(radius+.04)*Math.cos(a)];},z===front?paint:trim);
+ }
+ for(const side of [-1,1]){
+  tube([[side*.105,radius+.015,front],[side*.105,.86,-.48]],classic?.028:.023,alloy);
+  tube([[side*.12,radius+.015,rear],[side*.14,.78,.36]],.027,trim);
+  tube([[side*.13,.54,.60],[side*.16,.87,.35]],.025,alloy);
+  for(let y=.60;y<.81;y+=.035)add(new THREE.TorusGeometry(.035,.005,6,16),alloy,[side*.15,y,.48],[Math.PI/2,0,0]);
+  tube([[side*.09,.86,-.47],[side*.16,.51,.07],[side*.15,.73,.53]],.026,trim);
+  tube([[side*.20,.368,.0945],[side*.30,.368,.0945]],.022,rubber);
+  tube([[side*.10,.96,-.47],[side*.249,.9594,-.4536]],.017,alloy);
+  tube([[side*.21,.9594,-.4536],[side*.285,.9594,-.4536]],.027,rubber);
+  tube([[side*.21,.97,-.47],[side*.32,1.17,-.54]],.011,alloy);
+  box(.09,.07,.02,.022,trim,[side*.32,1.20,-.54]);box(.075,.055,.006,.016,alloy,[side*.32,1.20,-.553]);
+  box(.055,.035,.03,.013,amber,[side*.21,.89,-.62]);box(.045,.03,.03,.011,amber,[side*.22,.68,.92]);
+ }
+ box(.40,.115,.66,.04,saddle,[0,.867,.26]);
+ if(classic){
+  box(.34,.075,.32,.033,saddle,[0,.907,.51]);
+  surface(22,32,(u,v)=>{const a=u*Math.PI*2,z=-.47+v*.50,w=.19*Math.sin(v*Math.PI)**.5;return [Math.sin(a)*w,.85+Math.cos(a)*w*.65,z];},paint);
+  add(new THREE.CylinderGeometry(.035,.035,.014,20),alloy,[0,.996,-.22]);
+  add(new THREE.CylinderGeometry(.135,.135,.10,32),alloy,[0,.935,-.62],[Math.PI/2,0,0]);
+  add(new THREE.CylinderGeometry(.115,.115,.008,32),lamp,[0,.935,-.675],[Math.PI/2,0,0]);
+ }else if(scooter){
+  // Open step-through space, broad leg shield, covered powertrain and a flat floor.
+  surface(18,24,(u,v)=>[(u*2-1)*(.22-.07*v),.38+.53*v,-.50-.06*Math.sin(v*Math.PI)+.055*(2*u-1)**2],paint);
+  for(const side of [-1,1])surface(14,28,(u,v)=>[side*(.19+.045*Math.sin(u*Math.PI)*Math.sin(v*Math.PI)),.40+v*.40,.08+u*.72],paint);
+  box(.64,.04,.42,.018,trim,[0,.348,.06]);
+  box(.38,.12,.14,.03,paint,[0,.955,-.55]);box(.26,.035,.01,.009,lamp,[0,.96,-.626]);
+  box(.24,.14,.44,.04,trim,[-.10,.37,.50]);
+ }else{
+  box(daily?.32:.39,daily?.18:.22,.47,.065,paint,[0,.84,-.22],[.03,0,0]);
+  for(const side of [-1,1]){
+   box(.035,daily?.14:.18,.31,.028,paint,[side*.19,.72,.25]);
+   if(!daily)box(.025,.075,.32,.018,trim,[side*.20,.76,-.29],[.18,0,0]);
+  }
+  box(daily?.21:.27,.17,.10,.03,paint,[0,.93,-.62],[.09,0,0]);
+  box(daily?.17:.21,daily?.085:.06,.012,.015,lamp,[0,.93,-.68]);
+ }
+ if(!scooter){
+  box(classic?.29:.25,.23,.25,.035,alloy,[0,.565,.015]);
+  add(new THREE.CylinderGeometry(classic?.09:.065,classic?.09:.065,.21,16),trim,[0,.69,-.015]);
+  for(let y=.61;y<.80;y+=.027)box(classic?.23:.19,.012,.15,.003,alloy,[0,y,-.015]);
+  tube([[.12,.62,-.10],[.20,.41,.13],[.22,.37,.68]],.025,alloy);
+ }
+ box(classic?.10:.075,.085,classic?.52:.39,.03,classic?alloy:trim,[.22,.385,.61]);
+ tube([[-.20,.91,.52],[-.20,.94,.72],[.20,.94,.72],[.20,.91,.52]],.016,alloy);
+ box(.17,.065,.025,.012,red,[0,.71,.91]);box(.18,.10,.008,.004,lamp,[0,.60,.93]);
+ root.userData={assetType:'original-motorcycle',style,wheelCount:2,seatHeight:.925,design:'Original fictional vehicle; no manufacturer models or logos'};
+ const size=new THREE.Box3().setFromObject(root).getSize(new THREE.Vector3());
+ root.userData.bodyDimensions={width:size.x,height:size.y,length:size.z};
+ return root;
+}
+
 export function buildVehiclePrototypes(){return {car:fourWheeler('car'),van:fourWheeler('van'),bus:fourWheeler('bus'),bike:deliveryBike()};}
