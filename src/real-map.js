@@ -16,7 +16,7 @@ import {batchRigidMeshes} from './rigid-batch.js';
 
 async function start(){
  const requested=new URLSearchParams(location.search).get('location'),id=Object.hasOwn(locations,requested)?requested:'kochi',place=locations[id];
- const response=await fetch(new URL(`maps/${id}.json`,document.baseURI));if(!response.ok)throw Error('Kochi layout could not load');
+ const response=await fetch(new URL(`maps/${id}.json`,document.baseURI),{cache:'no-cache'});if(!response.ok)throw Error('Kochi layout could not load');
  const source=await response.json(),map=prepareMap(source),bounds=map.bounds;
  const waterfrontSite=planWaterfront(map);
  document.querySelector('#place').textContent=place.name;document.querySelector('#description').textContent=place.subtitle;
