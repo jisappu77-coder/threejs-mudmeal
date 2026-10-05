@@ -52,3 +52,6 @@ body{background:#06150f}#game-stage{position:absolute;left:50%;top:50%;transform
 #reference-panel{padding:0;background:transparent}#reference-panel img{object-fit:contain}#reference-controls{position:absolute;bottom:2%;left:50%;transform:translateX(-50%);display:flex;gap:10px;align-items:center;padding:10px;border-radius:12px;font-size:12px}#reference-controls button{padding:8px;background:#36553f;border-radius:8px}#reference-controls input{accent-color:#fb902e;width:130px}#close-reference{z-index:2}
 
 .brand div{font-size:2.45cqw}.palm{width:2cqw;height:2.8cqw}.delivery p{font-size:1.12cqw;margin-top:6px}.delivery strong{font-size:1.22cqw}
+
+/* Direct map access stays visible outside the settings menu. */
+.kochi-map-link{display:inline-flex;align-items:center;justify-content:center;min-height:44px;padding:10px 14px;border-radius:12px;color:#f5f4e8;text-decoration:none;font-size:13px;font-weight:700;background:#a75c28}.kochi-map-link:hover{background:#bd7037}.kochi-map-link:focus-visible{outline:3px solid #ffcf7e;outline-offset:3px}#kochi-map{position:absolute;left:18%;bottom:2.9%;pointer-events:auto}
