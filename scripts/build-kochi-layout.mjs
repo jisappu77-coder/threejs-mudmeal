@@ -64,7 +64,7 @@ canals.push({id:6,kind:'water',points:rect(112.5,-215,145,18),holes:[]},{id:7,ki
 const data={id:'kochi',name:'Kochi Waterfront',units:'metres',bounds:[-500,-450,520,450],source:'project-authored',references:['72980.jpg','72981.jpg','72982.jpg','73038.jpg','73039.jpg','73041.jpg','73050.jpg','73049.jpg','73048.jpg','73047.jpg','73042.jpg','73043.jpg','73044.jpg','73045.jpg','73046.jpg','72849.jpg','72861.jpg','72860.jpg','72859.jpg','72858.jpg','72857.jpg','72855.jpg','72854.jpg','72851.jpg','file_00000000f10c82088d9c16691b207b83.jpg'],roads,buildings:[],areas:[{id:1,kind:'water',points:[...shore,[520,450],[520,-450]],holes:[]},...canals],coastlines:[{id:1,points:shore}],landmarks:[{id:1,kind:'fishing-nets',name:'Fishing-net promenade',point:[200,-135]},{id:2,kind:'jetty',name:'Waterfront jetty',point:[245,20]},{id:3,kind:'restaurant',name:'Restaurant frontage',point:[176,-70]}],bridges:[{x:-280,z:224,width:10,length:30},{x:-70,z:224,width:10,length:30},{x:234,z:224,width:12,length:30},{x:195,z:-215,width:16,length:26}]};
 const map=prepareMap(data);
 // Keep the restaurant frontage and chapel plaza open while packing homes around irregular streets.
-const reserved=[{x:155,z:-65,w:38,d:64},{x:153,z:-180,w:30,d:42}];
+const reserved=[{x:155,z:-65,w:38,d:64},{x:173,z:-180,w:24,d:42}];
 function add(x,z,w,d,height,extra={}){
  const points=rect(x,z,w,d);
  const samples=[...points,[x,z],...points.map((p,i)=>[(p[0]+points[(i+1)%4][0])/2,(p[1]+points[(i+1)%4][1])/2])];
@@ -72,11 +72,11 @@ function add(x,z,w,d,height,extra={}){
  if(data.buildings.some(b=>{const lo=b.points[0],hi=b.points[2];return x+w/2+1>lo[0]&&x-w/2-1<hi[0]&&z+d/2+1>lo[1]&&z-d/2-1<hi[1]}))return;
  data.buildings.push({id:data.buildings.length+1,height,points,...extra});
 }
-add(153,-180,22,24,8,{name:'Waterfront Chapel',landmark:'chapel'});
+add(173,-180,12,24,8,{name:'Waterfront Chapel',landmark:'chapel'});
 // A close, continuous café row follows the land side of the curved quay.
-for(let z=-195;z<=110;z+=15){
+for(let z=-240;z<=110;z+=15){
  const a=waterfront.findIndex(p=>p[1]>=z);if(a<1)continue;
- const p=waterfront[a-1],q=waterfront[a],x=p[0]+(q[0]-p[0])*(z-p[1])/(q[1]-p[1])-17,w=14,d=13;
+ const p=waterfront[a-1],q=waterfront[a],x=p[0]+(q[0]-p[0])*(z-p[1])/(q[1]-p[1])-18,w=12,d=11;
  if(reserved.some(r=>Math.abs(x-r.x)<(w+r.w)/2&&Math.abs(z-r.z)<(d+r.d)/2))continue;
  add(x,z,w,d,7.2,{frontage:true,name:['Quay Art Café','Spice & Tea','Harbour Books','Kerala Kitchen'][Math.abs(z)%4]});
 }
