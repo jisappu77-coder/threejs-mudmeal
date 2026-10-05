@@ -136,7 +136,7 @@ export function dressRealMap({scene,map,id,height,buildingAt,waterAt,trees,art,a
      const span=yardWidth/2-1.35,count=Math.ceil(span/.4),points=[];for(const side of [-1,1])for(let j=0;j<=count;j++)points.push(local(side*(1.35+j*span/count),yardDepth-.25));
      if(points.length&&points.every(p=>clearGround(p.x,p.z,.3))){for(const side of [-1,1]){const mid=local(side*(yardWidth/4+.675),yardDepth-.25);put(box,art.walls[b.id%art.walls.length],mid.x,base+.42,mid.z,span,.84,.23,0,angle);put(box,cream,mid.x,base+.9,mid.z,span+.04,.14,.32,0,angle);for(const u of [side*1.35,side*yardWidth/2]){const p=local(u,yardDepth-.25);put(box,cream,p.x,base+.65,p.z,.36,1.3,.36,0,angle)}}for(const p of points)obstacles.push({...p,radius:.3,kind:'compound-wall'});stats.compoundWalls++;}
     }
-    if(!shop&&b.height>=6&&b.id%5===1&&yardDepth>2.6&&yardWidth>10){
+    if(!shop&&b.height>=6&&stats.stairs<12&&yardDepth>2.6&&yardWidth>10){
      const start=yardWidth/2-3.5,steps=Array.from({length:12},(_,j)=>local(start+j*.27,.9));
      if(steps.every(p=>clearGround(p.x,p.z,.63))){for(const [j,p]of steps.entries()){put(box,cream,p.x,base+(j+1)*.125,p.z,.29,(j+1)*.25,1.12,0,angle);obstacles.push({...p,radius:.63,kind:'outside-stair'});}const a=local(start,1.5),q=local(start+2.97,1.5);bar(metal,[a.x,base+1.05,a.z],[q.x,base+3.8,q.z],.025);for(let j=0;j<12;j+=3){const p=local(start+j*.27,1.5);bar(metal,[p.x,base+(j+1)*.25,p.z],[p.x,base+(j+1)*.25+.8,p.z],.022);}const landing=local(start+2.97,.7),door=local(start+2.97,.16);put(box,cream,landing.x,base+2.95,landing.z,.9,.1,1.4,0,angle);put(box,darkWood,door.x,base+4.05,door.z,.9,2.1,.1,0,angle);stats.stairs++;}
     }

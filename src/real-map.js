@@ -125,7 +125,7 @@ async function start(){
   updateTraffic(dt);waterfront.update(elapsed);waterBump.offset.x=elapsed*.001;delivery.update(dt,driving.state.speed,surface);updateCamera(dt);cullActors(actors);mapTime+=dt;if(mapTime>.15){mapTime=0;minimap();document.querySelector('#speed').textContent=String(Math.round(driving.state.speed*3.6));const near=map.nearestRoad(player.position.x,player.position.z);document.querySelector('#street').textContent=near.segment.name||'Local road';document.querySelector('#surface').textContent=surface.name;}
  }
  document.querySelector('#location').onchange=e=>location.assign(`./real-map.html?location=${encodeURIComponent(e.target.value)}`);document.querySelector('#model').onchange=e=>setModel(e.target.value);
- document.querySelector('#view').onclick=()=>{overview=!overview;document.querySelector('#view').textContent=overview?'Follow bike':'Map view';updateCamera(1,true);graphics.render()};document.querySelector('#reset').onclick=()=>{reset();graphics.render()};
+ document.querySelector('#view').onclick=()=>{overview=!overview;camera.near=overview?10:.2;camera.updateProjectionMatrix();document.querySelector('#view').textContent=overview?'Follow bike':'Map view';updateCamera(1,true);graphics.render()};document.querySelector('#reset').onclick=()=>{reset();graphics.render()};
  function resize(){const {width,height}=size();camera.aspect=width/height;camera.updateProjectionMatrix();renderer.setSize(width,height,false);graphics.resize(width,height);updateCamera(1,true);graphics.render()}
  new ResizeObserver(resize).observe(stage);resize();
  const settings=document.querySelector('#settings'),toolsToggle=document.querySelector('#tools-toggle'),orders=document.querySelector('#orders'),orderPanel=document.querySelector('#order-panel');

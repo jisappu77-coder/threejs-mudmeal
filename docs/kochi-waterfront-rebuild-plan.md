@@ -4,7 +4,7 @@ The current direction follows only [the images shared by the user](kochi-image-r
 
 ## Current implementation
 
-- Original local metre layout with connected waterfront, market and neighbourhood streets; no imported geographic data or external photo references.
+- Original local metre layout with curved waterfront, market and neighbourhood streets with a matching curved shoreline; no imported geographic data or external photo references.
 - Restaurant, occupied shore stalls, deep verandas, tiled roofs, shutters, warm plaster, palms and layered planting inspired by `72849.jpg` and the supplied city images.
 - Fictional chapel, fishing-net promenade, jetty, boats and distant harbour silhouettes composed for a playable scene rather than actual monument positions.
 - Three connected delivery destinations, full-bike collision checks and a traversable dirt service passage.

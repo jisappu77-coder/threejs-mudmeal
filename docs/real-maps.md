@@ -6,7 +6,7 @@ Only [the images shared by the user](kochi-image-references.md) guide the compos
 
 ## Layout and gameplay
 
-The project-authored metre layout includes connected residential and market streets, a waterfront boulevard, a tiled Mud Meals restaurant, an occupied shore market, a fictional waterfront chapel, fishing nets, promenade, jetty and boats. Dense tiled houses, yards, stalls and layered planting follow the shared images. Background harbour silhouettes remain original scenery. The layout is designed for play rather than reproducing Kochi geography.
+The project-authored metre layout includes winding residential and market streets, a sweeping waterfront boulevard, a tiled Mud Meals restaurant, an occupied shore market, a fictional waterfront chapel, fishing nets, promenade, jetty and boats. Dense tiled houses, yards, stalls and layered planting follow the shared images. Background harbour silhouettes remain original scenery. The shoreline follows the waterfront bends. Every street has visible curvature, with shared junctions keeping the delivery network connected. Building lots and scenery are checked against the curved road corridors. The layout is designed for play rather than reproducing Kochi geography.
 
 **Market Street**, **Heritage Lane** and **Jetty Road** connect three delivery bays. Use WASD/arrows or hold Accelerate with a steering button on a phone. Timed orders, food condition, cash rewards, collision checks and free driving remain. Ride within 10 metres of the customer and tap **Deliver meal**; completed or expired orders offer **Next order**. Reset bike returns to the restaurant while retaining the current order and cash. Cash is session-only.
 

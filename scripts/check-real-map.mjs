@@ -1,7 +1,7 @@
 import assert from 'node:assert/strict';
 import * as THREE from 'three';
 import {readFile} from 'node:fs/promises';
-import {prepareMap,locations,pointInPolygon,segmentDistance,roadRoute} from '../src/real-map-data.js';
+import {prepareMap,locations,pointInPolygon,segmentDistance,roadRoute,reachableRoads} from '../src/real-map-data.js';
 import {createKeralaRoof,planKochiInfill} from '../src/real-map-art.js';
 import {planWaterfront} from '../src/kochi-waterfront.js';
 for(const id of Object.keys(locations)){
@@ -15,6 +15,7 @@ for(const id of Object.keys(locations)){
  }
  assert.ok(map.bounds.maxX-map.bounds.minX>900&&map.bounds.maxZ-map.bounds.minZ>=800);
  assert.deepEqual(map.roads[0].points[0],{x:data.roads[0].points[0][0],z:data.roads[0].points[0][1]});
+ for(const road of map.roads){const a=road.points[0],b=road.points.at(-1),length=Math.hypot(b.x-a.x,b.z-a.z),bow=Math.max(...road.points.map(p=>Math.abs((b.x-a.x)*(p.z-a.z)-(b.z-a.z)*(p.x-a.x))/length));assert.ok(bow>25,`${road.name} must have a visible bend rather than a straight avenue`);}
  assert.ok(map.roads.some(r=>r.name));assert.ok(map.buildings.every(b=>b.height>0));
  for(const b of map.buildings)for(const p of b.points){const near=map.nearestRoad(p.x,p.z);assert.ok(!map.waterAt(p.x,p.z)&&near.distance>near.segment.width/2+3,'Authored building footprints must leave roads and water clear');}
  for(let i=0;i<map.buildings.length;i++)for(const b of map.buildings.slice(i+1)){const a=map.buildings[i],lo=a.points[0],hi=a.points[2],blo=b.points[0],bhi=b.points[2];assert.ok(hi.x<=blo.x||lo.x>=bhi.x||hi.z<=blo.z||lo.z>=bhi.z,'Original building lots must not overlap');}
@@ -36,7 +37,7 @@ for(const id of Object.keys(locations)){
  assert.deepEqual(infill,planKochiInfill(map,clear),'Illustrative scenery must keep a stable layout');
  for(const [i,p]of infill.entries()){assert.ok(p.cells.every(q=>clear(q.x,q.z,q.radius)));for(const q of infill.slice(i+1))assert.ok(Math.hypot(p.x-q.x,p.z-q.z)>=p.radius+q.radius+1-1e-8,'Neighbourhood lots must not overlap');}
  assert.deepEqual(planKochiInfill(map,()=>false),[],'Blocked land must stay empty');console.log(`${infill.length} illustrative lots: road, footprint, water and overlap clearance passed`);
- const site=planWaterfront(map);assert.ok(!map.waterAt(site.x,site.z)&&!map.waterAt(site.spawn.x,site.spawn.z));
+ const site=planWaterfront(map);assert.equal(reachableRoads(map,site.spawn).length,map.segments.length,'Every curved street must connect to the delivery network');assert.ok(!map.waterAt(site.x,site.z)&&!map.waterAt(site.spawn.x,site.spawn.z));
  for(const [p,expected]of [[{x:150,z:95},false],[{x:300,z:0},true]])assert.equal(map.waterAt(p.x,p.z),expected,'Authored shore must separate driveable land and harbour water');
  assert.ok(map.coastlines.length&&map.landmarks.some(p=>p.kind==='fishing-nets'));
  for(const area of map.areas.filter(a=>a.kind==='water')){

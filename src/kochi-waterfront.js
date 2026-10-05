@@ -6,7 +6,9 @@ import {pointInPolygon,segmentDistance,reachableRoads} from './real-map-data.js'
 export function planWaterfront(map){
  const inWater=map.waterAt;
  const inBuilding=(x,z,r)=>map.buildings.some(b=>pointInPolygon(x,z,b.points)||b.points.some((p,i)=>segmentDistance(x,z,p,b.points[(i+1)%b.points.length])<r));
- const roads=map.segments.filter(s=>s.name==='Waterfront Road').sort((a,b)=>Math.hypot(a.a.x+a.b.x,a.a.z+a.b.z)-Math.hypot(b.a.x+b.b.x,b.a.z+b.b.z));
+ // Use a short frontage chord on each curve; individual samples are too short for a restaurant.
+ const frontages=map.roads.filter(r=>r.name==='Waterfront Road').flatMap(r=>r.points.slice(0,-2).map((a,i)=>({a,b:r.points[i+2],width:r.width,name:r.name})));
+ const roads=frontages.sort((a,b)=>Math.hypot(a.a.x+a.b.x,a.a.z+a.b.z)-Math.hypot(b.a.x+b.b.x,b.a.z+b.b.z));
  for(const s of roads){
   const length=Math.hypot(s.b.x-s.a.x,s.b.z-s.a.z),tx=(s.b.x-s.a.x)/length,tz=(s.b.z-s.a.z)/length;
   for(let d=8;d<length-8;d+=3)for(const side of [-1,1]){
