@@ -45,7 +45,10 @@ try{
   assert.deepEqual(waterfront.passageErrors,[],'The dirt service passage must fit the whole bike across its usable width');
   assert.ok(waterfront.stops.length===3&&waterfront.stops.every(p=>!p.wet&&!p.blocked)&&waterfront.solidsMissing===0);
   assert.ok(waterfront.route.length>1);assert.deepEqual(waterfront.routeErrors,[],'All named road routes must fit the bike without static scenery obstruction');
-  assert.equal(await page.locator('#fps').inputValue(),'30');await page.locator('#fps').selectOption('60');assert.equal(await page.evaluate(()=>window.__REAL_MAP__.frameLoop.gate.fps),60);await page.locator('#fps').selectOption('30');
+  assert.equal(await page.locator('#settings').isVisible(),false);
+  await page.locator('#orders').click();assert.equal(await page.locator('#order-panel').isVisible(),true);await page.locator('#close-orders').click();
+  await page.locator('#tools-toggle').click();assert.equal(await page.locator('#tools-toggle').getAttribute('aria-expanded'),'true');
+  assert.equal(await page.locator('#fps').inputValue(),'30');await page.locator('#fps').selectOption('60');assert.equal(await page.evaluate(()=>window.__REAL_MAP__.frameLoop.gate.fps),60);await page.locator('#fps').selectOption('30');await page.locator('#tools-toggle').click();
   const gameplay=await page.evaluate(()=>{
    const a=window.__REAL_MAP__,d=a.delivery,r=()=>d.state.cash;
    const cash=r(),destination={...d.state.destination};if(!destination.x&&!destination.z)throw Error('Missing delivery destination');
@@ -60,6 +63,11 @@ try{
    return {paid,completed,timer,expectedTimer,expired,art:a.scenery.stats};
   });
   assert.ok(gameplay.paid>0&&gameplay.completed===1&&gameplay.timer<gameplay.expectedTimer&&gameplay.expired);
+  const beforePayment=await page.evaluate(()=>{const a=window.__REAL_MAP__,d=a.delivery,p=d.state.destination;a.player.position.set(p.x,a.height(p.x,p.z)+.07,p.z);d.update(.01,0);return d.state.cash;});
+  assert.equal(await page.locator('#deliver').isVisible(),true);await page.locator('#deliver').click();assert.equal(await page.locator('#deliver').textContent(),'Next order');
+  assert.ok(await page.evaluate(()=>window.__REAL_MAP__.delivery.state.cash)>beforePayment);await page.locator('#deliver').click();await page.evaluate(()=>{window.__REAL_MAP__.reset();window.__REAL_MAP__.graphics.render()});
+  await page.locator('#pause').click();assert.equal(await page.locator('#pause').getAttribute('aria-label'),'Resume animation');await page.locator('#pause').click();
+
   assert.ok(gameplay.art.windows>100&&gameplay.art.plants>300&&gameplay.art.streetProps>0);
   assert.ok(gameplay.art.roofs>100&&gameplay.art.verandas>0&&gameplay.art.shutters>100,'Kerala architecture must appear in the rendered map');
   assert.ok(gameplay.art.rafters>1000&&gameplay.art.gutters>100&&gameplay.art.downpipes>10&&gameplay.art.courtyards>10&&gameplay.art.compoundWalls>0&&gameplay.art.entranceSteps>0&&gameplay.art.stairs>0&&gameplay.art.pots>0&&gameplay.art.shopDisplays>0&&gameplay.art.hangingLamps>0,'Photo references must inform roof construction, homes and shop objects');
@@ -72,11 +80,11 @@ try{
   });
   assert.ok(scenerySafety.count>0&&scenerySafety.shops>0&&scenerySafety.homes>0);assert.ok(scenerySafety.canopies.count>100&&scenerySafety.canopies.tiltErrors===0,'Veranda eaves must stay level across the frontage and slope away from the wall');assert.deepEqual(scenerySafety.inRoad,[]);assert.deepEqual(scenerySafety.missingCollision,[]);console.log(id,'photo-reference props leave roads clear',JSON.stringify(scenerySafety));
   assert.ok(scenerySafety.infill>60&&scenerySafety.infillRoadErrors===0&&scenerySafety.solidCollisionErrors===0,'Added neighbourhoods must preserve driving clearance and block solid buildings');
-  await page.locator('#quality').click();assert.equal(await page.locator('#quality').getAttribute('aria-pressed'),'false');await page.locator('#quality').click();
+  await page.locator('#tools-toggle').click();await page.locator('#quality').click();assert.equal(await page.locator('#quality').getAttribute('aria-pressed'),'false');await page.locator('#quality').click();await page.locator('#tools-toggle').click();
   console.log(id,'delivery and environmental detail',JSON.stringify(gameplay));
   assert.equal(await page.locator('footer a').first().getAttribute('href'),'https://www.openstreetmap.org/copyright');
   await page.screenshot({path:`artifacts/real-map/${id}-driving.png`,timeout:120000});
-  await page.locator('#view').click({timeout:120000});await page.screenshot({path:`artifacts/real-map/${id}-map.png`,timeout:120000});await page.locator('#view').click({timeout:120000});
+  await page.locator('#tools-toggle').click();await page.locator('#view').click({timeout:120000});await page.locator('#tools-toggle').click();await page.screenshot({path:`artifacts/real-map/${id}-map.png`,timeout:120000});await page.locator('#tools-toggle').click();await page.locator('#view').click({timeout:120000});await page.locator('#tools-toggle').click();
   // Find open ground to exercise steering independently of legitimate road obstructions.
   await page.evaluate(()=>{const a=window.__REAL_MAP__,b=a.map.bounds;for(let x=b.minX+40;x<b.maxX-40;x+=20)for(let z=b.minZ+40;z<b.maxZ-40;z+=20){let clear=true;for(let dx=-15;dx<=15;dx+=3)for(let dz=-20;dz<=10;dz+=3)if(a.blocked(x+dx,z+dz,0))clear=false;if(clear){a.player.position.set(x,a.height(x,z)+.07,z);a.player.rotation.y=0;a.driving.reset();return}}throw Error('No open driving test area')});
   const cdp=await page.context().newCDPSession(page);await cdp.send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:2});
@@ -86,6 +94,15 @@ try{
   await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await cdp.detach();
   console.log(id,'mobile',JSON.stringify(mobile));assert.ok(mobile.moved>1&&mobile.heading<-.1&&mobile.speed>0);assert.deepEqual(errors,[]);
   await page.evaluate(()=>{const a=window.__REAL_MAP__;a.reset();a.graphics.render()});await page.setViewportSize({width:390,height:844});await page.screenshot({path:`artifacts/real-map/${id}-mobile.png`,timeout:120000});
+  // The shared HUD must remain visible and tappable after rotation and letterboxing.
+  for(const viewport of [{width:390,height:844},{width:640,height:360},{width:932,height:430},{width:1536,height:691}]){
+   await page.setViewportSize(viewport);await page.evaluate(()=>new Promise(r=>requestAnimationFrame(()=>requestAnimationFrame(r))));
+   const layout=await page.evaluate(()=>{
+    const stage=document.querySelector('#game-stage').getBoundingClientRect(),canvas=document.querySelector('#real-world').getBoundingClientRect(),ids=['#go','#stop','.joystick .left','.joystick .right','#orders','#pause','#tools-toggle','#village-map'];
+    return {stage:{width:stage.width,height:stage.height},canvas:{width:canvas.width,height:canvas.height},aspect:window.__REAL_MAP__.camera.aspect,cardWidth:document.querySelector('#delivery').getBoundingClientRect().width,roundMap:getComputedStyle(document.querySelector('.map-wrap')).borderRadius,clear:ids.every(id=>{const el=document.querySelector(id),b=el.getBoundingClientRect(),hit=document.elementFromPoint(b.x+b.width/2,b.y+b.height/2);return b.width>0&&b.height>0&&(hit===el||el.contains(hit));})};
+   });
+   assert.ok(layout.clear,'HUD controls must stay tappable and not overlap');if(viewport.width===390)assert.ok(layout.cardWidth>160,'The portrait delivery card must fit its image and stats');assert.equal(layout.roundMap,'50%');assert.ok(Math.abs(layout.stage.width-layout.canvas.width)<1&&Math.abs(layout.stage.height-layout.canvas.height)<1);assert.ok(Math.abs(layout.aspect-layout.stage.width/layout.stage.height)<.01);
+  }
   await page.setViewportSize({width:1280,height:720});
   await page.evaluate(()=>new Promise(resolve=>requestAnimationFrame(()=>requestAnimationFrame(resolve))));
   await page.evaluate(()=>{const a=window.__REAL_MAP__;a.reset();a.update(1/30);a.graphics.render()});await page.screenshot({path:`artifacts/real-map/${id}-waterfront-gameplay.png`,timeout:120000});

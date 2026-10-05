@@ -2,6 +2,7 @@ import * as THREE from 'three';
 import {roadRoute} from './real-map-data.js';
 
 export function createMapDelivery({scene,map,player,spawnPoint,height,blocked,stops=[]}){
+ const cashFormat=new Intl.NumberFormat('en-IN');
  const dishes=['Malabar biriyani','Appam & stew','Kerala meals'],state={cash:1240,completed:0,remaining:180,food:100,active:false,finished:false,destination:null,reward:0};
  const marker=new THREE.Group(),ring=new THREE.Mesh(new THREE.TorusGeometry(2.2,.10,8,48),new THREE.MeshBasicMaterial({color:'#efad46',transparent:true,opacity:.85})),pin=new THREE.Mesh(new THREE.ConeGeometry(.65,1.4,16),new THREE.MeshStandardMaterial({color:'#df803a',emissive:'#402010',roughness:.5}));
  ring.rotation.x=Math.PI/2;pin.rotation.z=Math.PI;pin.position.y=3;marker.add(ring,pin);scene.add(marker);let elapsed=0;
@@ -17,10 +18,10 @@ export function createMapDelivery({scene,map,player,spawnPoint,height,blocked,st
    begin({x,z,street:s.name||'Local road'},Math.round(180+Math.hypot(x-player.position.x,z-player.position.z)*.35),180);return true;
   }message.textContent='No clear delivery stop. Try again shortly.';return false;
  }
- function begin(destination,reward,time){state.destination=destination;state.reward=reward;state.remaining=time;state.food=100;state.active=false;state.finished=false;marker.position.set(destination.x,height(destination.x,destination.z)+.18,destination.z);marker.visible=true;name.textContent=dishes[state.completed%3];message.textContent=`Deliver to ${destination.street} · ₹${reward}`;button.textContent='Deliver meal';card.dataset.state='ready';updateRoute();render()}
+ function begin(destination,reward,time){state.destination=destination;state.reward=reward;state.remaining=time;state.food=100;state.active=false;state.finished=false;marker.position.set(destination.x,height(destination.x,destination.z)+.18,destination.z);marker.visible=true;name.textContent=dishes[state.completed%3];document.querySelector('#reward').textContent=String(reward);message.textContent=`Deliver to ${destination.street} · ₹${reward}`;button.textContent='Deliver meal';card.dataset.state='ready';updateRoute();render()}
  function gap(){return state.destination?Math.hypot(player.position.x-state.destination.x,player.position.z-state.destination.z):Infinity}
  function text(el,value){if(el.textContent!==value)el.textContent=value;}
- function render(){text(cash,String(state.cash));text(timer,`${Math.floor(state.remaining/60)}:${String(Math.floor(state.remaining%60)).padStart(2,'0')}`);text(food,String(Math.round(state.food)));text(distance,state.finished?'Order complete':`${Math.round(gap())} m away`);button.disabled=!state.finished&&(gap()>10||state.remaining<=0);guide.visible=!state.finished&&route.length>1;}
+ function render(){text(cash,cashFormat.format(state.cash));text(timer,`${Math.floor(state.remaining/60)}:${String(Math.floor(state.remaining%60)).padStart(2,'0')}`);text(food,String(Math.round(state.food)));text(distance,state.finished?'Order complete':`${Math.round(gap())} m away`);button.disabled=!state.finished&&(gap()>10||state.remaining<=0);guide.visible=!state.finished&&route.length>1;}
  function deliver(){
   if(state.finished)return next();
   if(!state.destination||gap()>10||state.remaining<=0)return false;
