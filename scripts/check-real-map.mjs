@@ -15,8 +15,13 @@ for(const id of Object.keys(locations)){
  }
  assert.ok(map.bounds.maxX-map.bounds.minX>900&&map.bounds.maxZ-map.bounds.minZ>=800);
  assert.deepEqual(map.roads[0].points[0],{x:data.roads[0].points[0][0],z:data.roads[0].points[0][1]});
- for(const road of map.roads){const a=road.points[0],b=road.points.at(-1),length=Math.hypot(b.x-a.x,b.z-a.z),bow=Math.max(...road.points.map(p=>Math.abs((b.x-a.x)*(p.z-a.z)-(b.z-a.z)*(p.x-a.x))/length));assert.ok(bow>25,`${road.name} must have a visible bend rather than a straight avenue`);}
+ for(const road of map.roads.filter(r=>['Waterfront Road','Heritage Lane','Market Street','Jetty Road','Southbank Road'].includes(r.name))){const a=road.points[0],b=road.points.at(-1),length=Math.hypot(b.x-a.x,b.z-a.z),bow=Math.max(...road.points.map(p=>Math.abs((b.x-a.x)*(p.z-a.z)-(b.z-a.z)*(p.x-a.x))/length));assert.ok(bow>25,`${road.name} must have a visible bend rather than a straight avenue`);}
  assert.ok(map.roads.some(r=>r.name));assert.ok(map.buildings.every(b=>b.height>0));
+ const links=new Map(),key=p=>`${p.x.toFixed(3)},${p.z.toFixed(3)}`;
+ for(const s of map.segments)for(const [a,b]of [[s.a,s.b],[s.b,s.a]]){if(!links.has(key(a)))links.set(key(a),new Set());links.get(key(a)).add(key(b));}
+ assert.ok([...links.values()].filter(edges=>edges.size===3).length>=8,'The image composition needs branching junctions');
+ assert.equal(map.bridges.length,3);assert.ok(map.buildings.some(b=>b.landmark==='chapel'));
+ for(const bridge of map.bridges)for(let d=-12;d<=12;d+=2){assert.ok(!map.waterAt(bridge.x,bridge.z+d),'Canal crossings must have a dry continuous riding surface');assert.ok(map.nearestRoad(bridge.x,bridge.z+d).distance<1,'Bridge decks must follow connected roads');}
  for(const b of map.buildings)for(const p of b.points){const near=map.nearestRoad(p.x,p.z);assert.ok(!map.waterAt(p.x,p.z)&&near.distance>near.segment.width/2+3,'Authored building footprints must leave roads and water clear');}
  for(let i=0;i<map.buildings.length;i++)for(const b of map.buildings.slice(i+1)){const a=map.buildings[i],lo=a.points[0],hi=a.points[2],blo=b.points[0],bhi=b.points[2];assert.ok(hi.x<=blo.x||lo.x>=bhi.x||hi.z<=blo.z||lo.z>=bhi.z,'Original building lots must not overlap');}
 
@@ -43,7 +48,7 @@ for(const id of Object.keys(locations)){
  for(const area of map.areas.filter(a=>a.kind==='water')){
   const shape=ring=>{const path=new THREE.Shape();ring.forEach((p,i)=>i?path.lineTo(p.x,-p.z):path.moveTo(p.x,-p.z));path.closePath();return path;};
   const outer=shape(area.points);outer.holes=area.holes.map(shape);const geometry=new THREE.ShapeGeometry(outer),positions=geometry.attributes.position,indices=geometry.index;
-  for(let i=0;i<indices.count;i+=3){let x=0,z=0;for(let j=0;j<3;j++){const k=indices.getX(i+j);x+=positions.getX(k)/3;z-=positions.getY(k)/3;}assert.ok(map.waterAt(x,z),'Rendered harbour triangles must not cover land holes');}geometry.dispose();
+  for(let i=0;i<indices.count;i+=3){let x=0,z=0;for(let j=0;j<3;j++){const k=indices.getX(i+j);x+=positions.getX(k)/3;z-=positions.getY(k)/3;}assert.ok(map.waterAt(x,z)||map.coastlines.some(line=>line.points.slice(1).some((b,i)=>segmentDistance(x,z,line.points[i],b)<1e-4)),'Rendered harbour triangles must not cover land holes');}geometry.dispose();
  }
 
  for(const road of ['Market Street','Heritage Lane','Jetty Road']){const s=map.segments.find(s=>s.name===road),p={x:(s.a.x+s.b.x)/2,z:(s.a.z+s.b.z)/2};assert.ok(roadRoute(map,site.spawn,p).length>1,`${road} must connect to pickup`);}

@@ -8,7 +8,8 @@ export function planWaterfront(map){
  const inBuilding=(x,z,r)=>map.buildings.some(b=>pointInPolygon(x,z,b.points)||b.points.some((p,i)=>segmentDistance(x,z,p,b.points[(i+1)%b.points.length])<r));
  // Use a short frontage chord on each curve; individual samples are too short for a restaurant.
  const frontages=map.roads.filter(r=>r.name==='Waterfront Road').flatMap(r=>r.points.slice(0,-2).map((a,i)=>({a,b:r.points[i+2],width:r.width,name:r.name})));
- const roads=frontages.sort((a,b)=>Math.hypot(a.a.x+a.b.x,a.a.z+a.b.z)-Math.hypot(b.a.x+b.b.x,b.a.z+b.b.z));
+ const preferred=map.landmarks.find(p=>p.kind==='restaurant')?.point||{x:0,z:0};
+ const roads=frontages.sort((a,b)=>Math.hypot((a.a.x+a.b.x)/2-preferred.x,(a.a.z+a.b.z)/2-preferred.z)-Math.hypot((b.a.x+b.b.x)/2-preferred.x,(b.a.z+b.b.z)/2-preferred.z));
  for(const s of roads){
   const length=Math.hypot(s.b.x-s.a.x,s.b.z-s.a.z),tx=(s.b.x-s.a.x)/length,tz=(s.b.z-s.a.z)/length;
   for(let d=8;d<length-8;d+=3)for(const side of [-1,1]){
@@ -78,6 +79,19 @@ export function createWaterfront({scene,map,art,site}){
  }
  for(const u of [-8,8]){const p=local(u===-8?-6:u,-7.3);palm(p.x,p.z,8.8);}
  const groundClear=(x,z,r=0)=>!map.waterAt(x,z)&&!map.buildings.some(b=>pointInPolygon(x,z,b.points)||b.points.some((p,i)=>segmentDistance(x,z,p,b.points[(i+1)%b.points.length])<r));
+ // Low canal decks keep the riding surface level; rails leave the full road corridor clear.
+ stats.bridges=map.bridges.length;
+ for(const bridge of map.bridges){
+  const {x,z,width,length}=bridge,side=width/2+1.3;
+  cube(stone,[x,.03,z],[side*2,.06,length]);
+  for(const sign of [-1,1]){
+   bar(white,[x+sign*side,.9,z-length/2],[x+sign*side,.9,z+length/2],.08);
+   for(let d=-length/2;d<=length/2;d+=2){
+    cube(white,[x+sign*side,.45,z+d],[.18,.9,.18]);
+    obstacles.push({x:x+sign*side,z:z+d,radius:.12,kind:'bridge-rail'});
+   }
+  }
+ }
  // A checked public plaza gives the open shore a purpose without inventing a new road.
  for(let u=-45;u<=55;u+=3)for(let v=7;v<=31;v+=3){const x=site.street.x+site.tx*u+site.nx*v,z=site.street.z+site.tz*u+site.nz*v,n=map.nearestRoad(x,z);if(n.distance>n.segment.width/2+3&&[-1,1].every(a=>[-1,1].every(b=>groundClear(x+site.tx*a*1.5+site.nx*b*1.5,z+site.tz*a*1.5+site.nz*b*1.5))))cube(art.paving,[x,.04,z],[3.02,.075,3.02],site.angle);}
  for(let i=0;i<4;i++){

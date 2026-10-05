@@ -27,7 +27,7 @@ export function prepareMap(data){
  const segments=roads.flatMap(r=>r.points.slice(1).map((b,i)=>({a:r.points[i],b,width:r.width,name:r.name,id:r.id,oneway:r.oneway}))).filter(s=>Math.hypot(s.b.x-s.a.x,s.b.z-s.a.z)>.05);
  function nearestRoad(x,z){let nearest=null,distance=Infinity;for(const segment of segments){const d=segmentDistance(x,z,segment.a,segment.b);if(d<distance){distance=d;nearest=segment;}}return {segment:nearest,distance};}
  const water=areas.filter(a=>a.kind==='water'),waterAt=(x,z)=>water.some(a=>pointInArea(x,z,a));
- return {roads,buildings,areas,coastlines,landmarks,bounds,segments,nearestRoad,waterAt};
+ return {roads,buildings,areas,coastlines,landmarks,bridges:data.bridges||[],bounds,segments,nearestRoad,waterAt};
 }
 
 // Restrict delivery candidates to the connected road component containing the start.

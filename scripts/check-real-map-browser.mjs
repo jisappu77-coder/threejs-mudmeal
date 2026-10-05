@@ -38,12 +38,14 @@ try{
    }
    a.delivery.state.completed=0;a.delivery.next();
 
+   const bridgeErrors=a.map.bridges.flatMap(b=>Array.from({length:25},(_,i)=>({x:b.x,z:b.z+i-12}))).filter(p=>a.blocked(p.x,p.z,0));
    a.traffic.forEach((v,i)=>v.hidden=hidden[i]);a.people.forEach((p,i)=>p.g.position.copy(positions[i]));
-   return {stats:w.stats,passageErrors,stops,solidsMissing,routeErrors,route:a.delivery.route};
+   return {stats:w.stats,passageErrors,bridgeErrors,stops,solidsMissing,routeErrors,route:a.delivery.route};
   });
   console.log('Waterfront clearance',JSON.stringify(waterfront));
   assert.ok(waterfront.stats.restaurant===1&&waterfront.stats.fishingNets===4&&waterfront.stats.boats>=3&&waterfront.stats.marketStalls>=3&&waterfront.stats.heritageLandmarks===1);
   assert.deepEqual(waterfront.passageErrors,[],'The dirt service passage must fit the whole bike across its usable width');
+  assert.equal(waterfront.stats.bridges,3);assert.deepEqual(waterfront.bridgeErrors,[],'All canal bridges must leave the riding surface clear');
   assert.ok(waterfront.stops.length===3&&waterfront.stops.every(p=>!p.wet&&!p.blocked)&&waterfront.solidsMissing===0);
   assert.ok(waterfront.route.length>1);assert.deepEqual(waterfront.routeErrors,[],'All named road routes must fit the bike without static scenery obstruction');
   assert.equal(await page.locator('#settings').isVisible(),false);
