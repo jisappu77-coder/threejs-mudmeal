@@ -13,13 +13,13 @@ export function planWaterfront(map){
  for(const s of roads){
   const length=Math.hypot(s.b.x-s.a.x,s.b.z-s.a.z),tx=(s.b.x-s.a.x)/length,tz=(s.b.z-s.a.z)/length;
   for(let d=8;d<length-8;d+=3)for(const side of [-1,1]){
-   const nx=tz*side,nz=-tx*side,offset=s.width/2+12,x=s.a.x+tx*d+nx*offset,z=s.a.z+tz*d+nz*offset;
+   const nx=tz*side,nz=-tx*side,offset=s.width/2+15,x=s.a.x+tx*d+nx*offset,z=s.a.z+tz*d+nz*offset;
    let clear=true;
-   for(let u=-9;u<=9;u+=1.5)for(let v=-8;v<=8;v+=1.5){const px=x+tx*u+nx*v,pz=z+tz*u+nz*v,near=map.nearestRoad(px,pz);if(inWater(px,pz)||inBuilding(px,pz,1)||near.distance<near.segment.width/2+2)clear=false;}
+   for(let u=-16;u<=16;u+=1.5)for(let v=-11;v<=11;v+=1.5){const px=x+tx*u+nx*v,pz=z+tz*u+nz*v,near=map.nearestRoad(px,pz);if(inWater(px,pz)||inBuilding(px,pz,1)||near.distance<near.segment.width/2+2)clear=false;}
    if(!clear)continue;
    const street={x:s.a.x+tx*d,z:s.a.z+tz*d};
    if(![40,60,80].some(f=>inWater(street.x+nx*f,street.z+nz*f)))continue;
-   return {x,z,tx,tz,nx:-nx,nz:-nz,width:18,depth:16,angle:Math.atan2(-nx,-nz),street,segment:s,spawn:{x:street.x+tx*8-tz*s.width/4,z:street.z+tz*8+tx*s.width/4},heading:Math.atan2(tx,tz)};
+   return {x,z,tx,tz,nx:-nx,nz:-nz,width:32,depth:34,angle:Math.atan2(-nx,-nz),street,segment:s,spawn:{x:street.x+tx*8-tz*s.width/4,z:street.z+tz*8+tx*s.width/4},heading:Math.atan2(tx,tz)};
   }
  }
  throw Error('No clear authored waterfront site for the restaurant');
@@ -31,23 +31,23 @@ export function createWaterfront({scene,map,art,site}){
  const wood=art.mat('#5f3e28',art.textures.wood),stone=art.mat('#746d5e',art.textures.gravel),plaster=art.walls[0],white=art.walls[3],blue=art.mat('#56889b'),cloth=art.mat('#e8c773'),clay=art.mat('#b7653b'),brass=art.mat('#bc9655',null,.42),warm=art.mat('#ffdd85');
  warm.emissive=new THREE.Color('#f0a33a');warm.emissiveIntensity=.65;
  const green=art.mat('#2b5144',art.textures.wood),black=art.metal;
- const local=(u,v,y=0)=>new THREE.Vector3(site.x+Math.cos(site.angle)*u+Math.sin(site.angle)*v,y,site.z-Math.sin(site.angle)*u+Math.cos(site.angle)*v);
+ const local=(u,v,y=0)=>new THREE.Vector3(site.x+Math.cos(site.angle)*u*1.7+Math.sin(site.angle)*v*1.25,y*1.1,site.z-Math.sin(site.angle)*u*1.7+Math.cos(site.angle)*v*1.25);
  function put(g,m,p,s=[1,1,1],rot=[0,0,0],order='XYZ'){
   const key=g.uuid+m.uuid+Math.floor(p[0]/48)+','+Math.floor(p[2]/48);
   if(!batches.has(key))batches.set(key,{g,m,items:[]});dummy.position.set(...p);dummy.scale.set(...s);dummy.rotation.set(...rot,order);dummy.updateMatrix();batches.get(key).items.push(dummy.matrix.clone());
  }
  const cube=(m,p,s,angle=0)=>put(box,m,p,s,[0,angle,0]);
  function bar(m,a,b,r=.05){const va=new THREE.Vector3(...a),vb=new THREE.Vector3(...b),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,1,0),vb.clone().sub(va).normalize()));put(cylinder,m,va.clone().add(vb).multiplyScalar(.5).toArray(),[r,va.distanceTo(vb),r],[e.x,e.y,e.z]);}
- function at(m,u,y,v,w,h,d){cube(m,local(u,v,y).toArray(),[w,h,d],site.angle);}
+ function at(m,u,y,v,w,h,d){cube(m,local(u,v,y).toArray(),[w*1.7,h*1.1,d*1.25],site.angle);}
  function atBar(m,a,b,r){bar(m,local(a[0],a[2],a[1]).toArray(),local(b[0],b[2],b[1]).toArray(),r);}
- function solid(u,v,w,d){const p=local(u,v);solids.push({x:p.x,z:p.z,tx:Math.cos(site.angle),tz:-Math.sin(site.angle),nx:Math.sin(site.angle),nz:Math.cos(site.angle),width:w,depth:d});}
+ function solid(u,v,w,d){const p=local(u,v);solids.push({x:p.x,z:p.z,tx:Math.cos(site.angle),tz:-Math.sin(site.angle),nx:Math.sin(site.angle),nz:Math.cos(site.angle),width:w*1.7,depth:d*1.25});}
  const solidAt=(x,z,r=0)=>solids.some(s=>Math.abs((x-s.x)*s.tx+(z-s.z)*s.tz)<s.width/2+r&&Math.abs((x-s.x)*s.nx+(z-s.z)*s.nz)<s.depth/2+r);
  const reservedAt=(x,z,r=0)=>(Math.abs((x-site.x)*site.tx+(z-site.z)*site.tz)<site.width/2+r&&Math.abs((x-site.x)*site.nx+(z-site.z)*site.nz)<site.depth/2+r)||outdoorLots.some(p=>Math.abs((x-p.x)*p.tx+(z-p.z)*p.tz)<p.width/2+r&&Math.abs((x-p.x)*p.nx+(z-p.z)*p.nz)<p.depth/2+r);
  function sign(text,u,y,v,w,h,bg='#68442b'){
   const canvas=document.createElement('canvas');canvas.width=1024;canvas.height=256;const c=canvas.getContext('2d');c.fillStyle=bg;c.fillRect(0,0,1024,256);c.strokeStyle='#eccf83';c.lineWidth=7;c.strokeRect(12,12,1000,232);c.textAlign='center';c.textBaseline='middle';c.fillStyle='#ffe6a1';const lines=text.split('\n');c.font=`bold ${lines.length>1?70:100}px Arial`;lines.forEach((line,i)=>c.fillText(line,512,128+(i-(lines.length-1)/2)*90,960));const texture=new THREE.CanvasTexture(canvas);texture.colorSpace=THREE.SRGBColorSpace;
-  const mesh=new THREE.Mesh(new THREE.PlaneGeometry(w,h),new THREE.MeshStandardMaterial({map:texture,roughness:.8}));mesh.position.copy(local(u,v,y));mesh.rotation.y=site.angle;scene.add(mesh);return mesh;
+  const mesh=new THREE.Mesh(new THREE.PlaneGeometry(w*1.7,h*1.1),new THREE.MeshStandardMaterial({map:texture,roughness:.8}));mesh.position.copy(local(u,v,y));mesh.rotation.y=site.angle;scene.add(mesh);return mesh;
  }
- function roof(u,v,w,d,y){const p=[[-w/2,-d/2],[w/2,-d/2],[w/2,d/2],[-w/2,d/2]].map(([x,z])=>({x:x+u,z:z+v})),r=createKeralaRoof(p,y);const mesh=new THREE.Mesh(r.geometry,art.tile);mesh.position.set(site.x,0,site.z);mesh.rotation.y=site.angle;mesh.castShadow=mesh.receiveShadow=true;scene.add(mesh);for(const [i,a]of r.eaves.entries()){const b=r.eaves[(i+1)%4];atBar(wood,[a.x,a.y-.1,a.z],[b.x,b.y-.1,b.z],.08);const length=a.distanceTo(b);for(let t=.2;t<length;t+=.5){const q=a.clone().lerp(b,t/length);atBar(wood,[q.x,q.y-.16,q.z],[q.x*.96,q.y+.15,q.z*.96],.045);}}}
+ function roof(u,v,w,d,y){const p=[[-w/2,-d/2],[w/2,-d/2],[w/2,d/2],[-w/2,d/2]].map(([x,z])=>({x:x+u,z:z+v})),r=createKeralaRoof(p,y);const mesh=new THREE.Mesh(r.geometry,art.tile);mesh.position.set(site.x,0,site.z);mesh.rotation.y=site.angle;mesh.scale.set(1.7,1.1,1.25);mesh.castShadow=mesh.receiveShadow=true;scene.add(mesh);for(const [i,a]of r.eaves.entries()){const b=r.eaves[(i+1)%4];atBar(wood,[a.x,a.y-.1,a.z],[b.x,b.y-.1,b.z],.08);const length=a.distanceTo(b);for(let t=.2;t<length;t+=.5){const q=a.clone().lerp(b,t/length);atBar(wood,[q.x,q.y-.16,q.z],[q.x*.96,q.y+.15,q.z*.96],.045);}}}
  // Open takeaway frontage, detailed upper shutters and a deep veranda.
  at(art.paving,0,.04,0,18,.08,16);at(stone,0,.18,-2,12.4,.36,8.4);solid(0,-2,12,8);
  at(plaster,0,3.4,-5.9,12,6.4,.28);for(const u of [-5.85,5.85])at(plaster,u,3.4,-2,.3,6.4,8);
@@ -70,7 +70,7 @@ export function createWaterfront({scene,map,art,site}){
  for(const u of [7.4])for(const v of [-5.6,1,5.4]){put(cylinder,clay,local(u,v,.35).toArray(),[.42,.7,.42]);put(sphere,art.leaves[1],local(u,v,.98).toArray(),[.65,.45,.65]);solid(u,v,.65,.65);}
  for(const u of [-2.7,2.7]){const p=local(u,3.2);vendors.push({x:p.x,z:p.z,angle:site.angle});}
  // A traversable dirt service passage leads around the restaurant to the street.
- at(art.mat('#ffffff',art.textures.dirt),-7.6,.09,-.5,2.2,.05,13);const servicePath={a:local(-7.6,-7),b:local(-7.6,6),width:2.2};
+ at(art.mat('#ffffff',art.textures.dirt),-7.6,.09,-.5,2.2,.05,13);const servicePath={a:local(-7.6,-7),b:local(-7.6,6),width:3.74};
  const palmSpine=createLeafGeometry(3.5,.018,1.15),palmLeaflet=createLeafGeometry(.78,.05,.15);
  function palm(x,z,h=8){
   if(map.buildings.some(b=>pointInPolygon(x,z,b.points)))return;const near=map.nearestRoad(x,z);if(near.distance<near.segment.width/2+.8)return;
@@ -80,7 +80,7 @@ export function createWaterfront({scene,map,art,site}){
  }
  for(const u of [-8,8]){const p=local(u===-8?-6:u,-7.3);palm(p.x,p.z,8.8);}
  const groundClear=(x,z,r=0)=>!map.waterAt(x,z)&&!map.buildings.some(b=>pointInPolygon(x,z,b.points)||b.points.some((p,i)=>segmentDistance(x,z,p,b.points[(i+1)%b.points.length])<r));
- for(const u of [-65,-45,-25,0,25,45,65])for(const v of [-38,-48]){
+ for(const u of [-60,-45,-30,-15,0,15,30,45])for(const v of [-25,-28]){
   const p=local(u,v),near=map.nearestRoad(p.x,p.z);
   if(groundClear(p.x,p.z,2)&&!reservedAt(p.x,p.z,2)&&!solidAt(p.x,p.z,2)&&near.distance>near.segment.width/2+4)palm(p.x,p.z,8+Math.abs(u)%3);
  }
@@ -95,8 +95,13 @@ export function createWaterfront({scene,map,art,site}){
    put(new THREE.ConeGeometry(2,.6,8),cloth,local(u,v,3).toArray(),[1,1,1]);
   }
   for(const u of [-9,9])for(const v of [-9,-16,-23]){put(cylinder,clay,local(u,v,.35).toArray(),[.4,.7,.4]);put(sphere,art.leaves[1],local(u,v,1).toArray(),[.7,.6,.7]);solid(u,v,.8,.8);}
-  outdoorLots.push({x:terrace.x,z:terrace.z,tx:Math.cos(site.angle),tz:-Math.sin(site.angle),nx:Math.sin(site.angle),nz:Math.cos(site.angle),width:20,depth:18});
+  outdoorLots.push({x:terrace.x,z:terrace.z,tx:Math.cos(site.angle),tz:-Math.sin(site.angle),nx:Math.sin(site.angle),nz:Math.cos(site.angle),width:34,depth:22.5});
   stats.terraces=1;
+ }
+ // The shared image has a paved working quay directly behind the restaurant terrace.
+ for(let u=-30;u<=30;u+=2.5)for(let v=-22;v>=-31;v-=2.5){
+  const p=local(u,v),corners=[[-1.25,-1.25],[1.25,-1.25],[1.25,1.25],[-1.25,1.25]].map(([du,dv])=>local(u+du,v+dv));
+  if(corners.every(q=>groundClear(q.x,q.z,.1)&&map.nearestRoad(q.x,q.z).distance>7))cube(art.paving,[p.x,.055,p.z],[4.26,.08,3.14],site.angle);
  }
  // Low canal decks keep the riding surface level; rails leave the full road corridor clear.
  stats.bridges=map.bridges.length;
@@ -113,8 +118,8 @@ export function createWaterfront({scene,map,art,site}){
  }
  // A checked public plaza gives the open shore a purpose without inventing a new road.
  for(let u=-20;u<=24;u+=3)for(let v=7;v<=24;v+=3){const x=site.street.x+site.tx*u+site.nx*v,z=site.street.z+site.tz*u+site.nz*v,n=map.nearestRoad(x,z);if(n.distance>n.segment.width/2+3&&[-1,1].every(a=>[-1,1].every(b=>groundClear(x+site.tx*a*1.5+site.nx*b*1.5,z+site.tz*a*1.5+site.nz*b*1.5))))cube(art.paving,[x,.04,z],[3.02,.075,3.02],site.angle);}
- for(let i=0;i<4;i++){
-  const u=-12+i*9,x=site.street.x+site.tx*u+site.nx*16,z=site.street.z+site.tz*u+site.nz*16,n=map.nearestRoad(x,z),angle=site.angle+Math.PI,nx=-site.nx,nz=-site.nz,tx=Math.cos(angle),tz=-Math.sin(angle),p=(u,y,v)=>[x+tx*u+nx*v,y,z+tz*u+nz*v];
+ for(let i=0;i<12&&stats.marketStalls<4;i++){
+  const u=-48+i*9,x=site.street.x+site.tx*u+site.nx*16,z=site.street.z+site.tz*u+site.nz*16,n=map.nearestRoad(x,z),angle=site.angle+Math.PI,nx=-site.nx,nz=-site.nz,tx=Math.cos(angle),tz=-Math.sin(angle),p=(u,y,v)=>[x+tx*u+nx*v,y,z+tz*u+nz*v];
   if(n.distance<n.segment.width/2+4||![-2.8,0,2.8].every(u=>[-2.3,0,2.3].every(v=>groundClear(x+tx*u+nx*v,z+tz*u+nz*v,.4))))continue;
   outdoorLots.push({x,z,tx,tz,nx,nz,width:5.6,depth:4.6});cube(wood,p(0,1.1,-1.5),[4.6,2.2,.12],angle);cube(wood,p(0,.6,1.3),[4.3,1.2,.65],angle);for(const [v,width,depth]of [[-1.5,4.6,.12],[1.3,4.3,.65]]){const q=p(0,0,v);solids.push({x:q[0],z:q[2],tx,tz,nx,nz,width,depth});}
   put(box,art.tile,p(0,2.8,0),[5.2,.16,4.1],[.16,angle,0],'YXZ');for(const side of [-1,1])for(const v of [-1.6,1.6]){bar(wood,p(side*2.3,0,v),p(side*2.3,2.8,v),.07);const q=p(side*2.3,0,v);obstacles.push({x:q[0],z:q[2],radius:.12,kind:'market-post'});}
@@ -150,10 +155,19 @@ export function createWaterfront({scene,map,art,site}){
  for(const line of map.coastlines)for(let i=1;i<line.points.length;i++){
   const a=line.points[i-1],b=line.points[i],length=Math.hypot(b.x-a.x,b.z-a.z);if(length<.1)continue;
   const tx=(b.x-a.x)/length,tz=(b.z-a.z)/length;let nx=tz,nz=-tx;if(!waterAt((a.x+b.x)/2+nx*2,(a.z+b.z)/2+nz*2)){nx=-nx;nz=-nz;}const angle=Math.atan2(tx,tz);
-  for(let d=0;d<length;d+=2){const step=Math.min(2,length-d),x=a.x+tx*(d+step/2),z=a.z+tz*(d+step/2),near=map.nearestRoad(x,z);if(near.distance<near.segment.width/2+1)continue;
+  for(let d=0;d<length;d+=2){const step=Math.min(2,length-d),x=a.x+tx*(d+step/2),z=a.z+tz*(d+step/2),near=map.nearestRoad(x,z);if(near.distance<near.segment.width/2+1||waterAt(x-nx*2,z-nz*2))continue;
    cube(stone,[x,.35,z],[.65,.8,step+.05],angle);for(const y of [.95,1.5])bar(black,[x-tx*step/2,y,z-tz*step/2],[x+tx*step/2,y,z+tz*step/2],.035);bar(black,[x,.65,z],[x,1.55,z],.045);obstacles.push({x,z,radius:.55,kind:'seawall'});stats.quayMetres+=step;
    const px=x-nx*2,pz=z-nz*2,pnear=map.nearestRoad(px,pz);if(pnear.distance>pnear.segment.width/2+.2&&!map.buildings.some(b=>pointInPolygon(px,pz,b.points)))cube(art.paving,[px,.09,pz],[3,.16,step+.1],Math.atan2(nx,nz));
    shore.push({x,z,nx,nz,tx,tz});
+  }
+ }
+ // Masonry banks define the church-side waterway; the bridge road stays clear.
+ for(const canal of map.areas.filter(a=>a.id===6||a.id===7)){
+  const minX=Math.min(...canal.points.map(p=>p.x)),maxX=Math.max(...canal.points.map(p=>p.x));
+  for(const z of [-224,-206])for(let x=minX+1;x<maxX;x+=2){
+   const n=map.nearestRoad(x,z),outside=z===-224?z-2:z+2;
+   if(n.distance<n.segment.width/2+2.5||waterAt(x,outside))continue;
+   cube(stone,[x,.25,z],[2.02,.55,.45]);bar(black,[x-1,.9,z],[x+1,.9,z],.03);bar(black,[x,.55,z],[x,1.05,z],.035);obstacles.push({x,z,radius:.3,kind:'canal-bank'});
   }
  }
  const nearby=shore.filter(p=>Math.hypot(p.x-site.x,p.z-site.z)<210);
@@ -190,12 +204,16 @@ export function createWaterfront({scene,map,art,site}){
   if(house){for(const side of [-1,1]){part(box,wood,[side*1.75,1.05,0],[.07,.07,10.8]);for(let d=-5;d<=5;d+=1.25)part(cylinder,wood,[side*1.75,.75,d],[.035,.65,.035]);}group.scale.set(1.5,1.2,1.8);}
   boats.push({group,x,z,angle,moving,phase:boats.length*1.8});stats.boats++;return group;
  }
- for(let i=0;i<3;i++){const p=nearby[Math.floor(nearby.length*(.2+i*.22))];if(p)boat(i===0?site.street.x+90:p.x+p.nx*(18+i*25),i===0?site.street.z-15:p.z+p.nz*(18+i*25),Math.atan2(p.tx,p.tz),i===0,i>0);}
+ for(let i=0;i<3;i++){const p=nearby[Math.floor(nearby.length*(.2+i*.22))];if(p)boat(i===0?site.street.x+43:p.x+p.nx*(18+i*25),i===0?site.street.z+45:p.z+p.nz*(18+i*25),Math.atan2(p.tx,p.tz),i===0,i>0);}
  if(jettyShore)boat(jettyShore.x+jettyShore.nx*29,jettyShore.z+jettyShore.nz*29,Math.atan2(jettyShore.tx,jettyShore.tz));
  // Original distant harbour silhouettes, with no extra playable districts or brand assets.
  const port=site.street;for(let i=0;i<4;i++){const x=port.x-100+i*55,z=map.bounds.minZ-160;for(const side of [-1,1])bar(blue,[x+side*6,-.5,z],[x+side*2,29,z],.4);bar(blue,[x,28,z],[x+25,38,z-18],.4);bar(blue,[x+25,38,z-18],[x+25,10,z-18],.07);cube(blue,[x,24,z],[4,4,4]);}
  cube(art.ground,[port.x,.02,map.bounds.minZ-245],[820,.12,170]);
- for(let i=0;i<16;i++){const x=port.x-350+i*45,z=map.bounds.minZ-250;cube(i%3?white:blue,[x,8+(i%4)*3,z],[14+(i%3)*4,16+(i%4)*6,20]);}
+ for(let i=0;i<16;i++){
+  const x=port.x-350+i*45,z=map.bounds.minZ-250,w=14+(i%3)*4,h=16+(i%4)*6;
+  cube(i%3?white:blue,[x,h/2,z],[w,h,20]);
+  for(let floor=0;floor<h/3-1;floor++)for(let col=0;col<4;col++)cube(art.glass,[x-w/2+(col+.5)*w/4,2+floor*3,z+10.04],[w/5,1.7,.06]);
+ }
  for(const {g,m,items}of batches.values()){const mesh=new THREE.InstancedMesh(g,m,items.length);items.forEach((matrix,i)=>mesh.setMatrixAt(i,matrix));mesh.castShadow=mesh.receiveShadow=true;mesh.computeBoundingSphere();mesh.matrixAutoUpdate=false;scene.add(mesh);}
  function update(time){for(const b of boats){const t=b.moving?Math.sin(time*.016+b.phase)*20:0,dx=Math.sin(b.angle)*t,dz=Math.cos(b.angle)*t;if(waterAt(b.x+dx,b.z+dz)){b.group.position.x=b.x+dx;b.group.position.z=b.z+dz;}b.group.position.y=.1+Math.sin(time*.8+b.phase)*.035;}}
  function deliveryStops(blocked){const roads=reachableRoads(map,site.spawn),stops=[];

@@ -51,22 +51,26 @@ export function createMapArt(renderer,id){
  const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};
  function texture(kind){
   const c=document.createElement('canvas');c.width=c.height=512;const ctx=c.getContext('2d');
-  ctx.fillStyle={grass:'#587645',asphalt:'#656368',plaster:'#fff4db',tile:'#a45a3c',paving:'#d0c2a0',leaf:'#b9d47c',wood:'#887153',dirt:'#d99b55',gravel:'#baa180'}[kind]||'#b6b9ad';ctx.fillRect(0,0,512,512);
+  ctx.fillStyle={grass:'#50683b',asphalt:'#656368',plaster:'#fff4db',tile:'#914c34',paving:'#d0c2a0',leaf:'#9eb86c',canopy:'#3c5e2d',wood:'#887153',dirt:'#d99b55',gravel:'#baa180'}[kind]||'#b6b9ad';ctx.fillRect(0,0,512,512);
   for(let i=0;i<14000;i++){ctx.fillStyle=i%2?'#f8efce15':'#26352618';ctx.fillRect(random()*512,random()*512,1+random()*3,kind==='wood'?12:2)}
   if(kind==='gravel')for(let i=0;i<1200;i++){ctx.fillStyle=i%2?'#d8cfb176':'#665f5166';ctx.beginPath();ctx.ellipse(random()*512,random()*512,1+random()*3,1+random()*2,random()*3,0,Math.PI*2);ctx.fill()}
   if(kind==='grass')for(let i=0;i<1800;i++){ctx.strokeStyle=i%2?'#a0a37138':'#344d3130';const x=random()*512,y=random()*512;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+2,y-3-random()*6);ctx.stroke()}
   if(kind==='tile'||kind==='paving'){const w=kind==='tile'?32:64,h=kind==='tile'?42:32;for(let row=0;row<512/h;row++)for(let col=-1;col<512/w;col++){const x=col*w+(row%2)*w/2,y=row*h;ctx.fillStyle=col%3?'#f1d0a51c':'#311e202a';ctx.fillRect(x+2,y+2,w-4,h-4);ctx.strokeStyle='#3e312756';ctx.strokeRect(x,y,w,h);if(kind==='tile'){ctx.fillStyle='#f6c5a729';ctx.fillRect(x+3,y+3,4,h-7)}}}
+  if(kind==='canopy')for(let i=0;i<8000;i++){
+   ctx.fillStyle=['#203d24','#426b32','#6f8640','#8c9d53'][i%4];const x=random()*512,y=random()*512;
+   ctx.beginPath();ctx.ellipse(x,y,2+random()*4,1+random()*2,random()*Math.PI,0,Math.PI*2);ctx.fill();
+  }
   if(kind==='plaster'){const damp=ctx.createLinearGradient(0,370,0,512);damp.addColorStop(0,'#625d4700');damp.addColorStop(1,'#625d4755');ctx.fillStyle=damp;ctx.fillRect(0,370,512,142)}
   if(kind==='leaf'){ctx.strokeStyle='#b0bb6b';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(256,0);ctx.lineTo(256,512);ctx.stroke();ctx.lineWidth=1;for(let y=0;y<512;y+=24){ctx.beginPath();ctx.moveTo(256,y);ctx.lineTo(0,y+70);ctx.moveTo(256,y);ctx.lineTo(512,y+70);ctx.stroke()}}
   const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.wrapS=t.wrapT=THREE.RepeatWrapping;t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());return t;
  }
- const textures=Object.fromEntries(['grass','asphalt','plaster','tile','paving','leaf','wood','dirt','gravel'].map(k=>[k,texture(k)]));
+ const textures=Object.fromEntries(['grass','asphalt','plaster','tile','paving','leaf','wood','dirt','gravel','canopy'].map(k=>[k,texture(k)]));
  const mat=(color,map,roughness=.85)=>new THREE.MeshStandardMaterial({color,map,roughness});
  const ground=mat('#ffffff',textures.grass),road=mat('#ffffff',textures.asphalt),paving=mat('#ffffff',textures.paving);
  ground.map.repeat.set(180,180);road.map.repeat.set(.7,.7);paving.map.repeat.set(.6,.6);
  const walls=['#efdfc6','#dce2d2','#dfc1a7','#f2e9d8','#c7d5c9','#e4d4b4'].map(c=>mat(c,textures.plaster));
  const tile=mat('#ffffff',textures.tile),wood=mat('#8d7350',textures.wood),metal=mat('#3c4640'),cream=mat('#dfd3ae');tile.side=THREE.DoubleSide;
- const tileRelief=textures.tile.clone();tileRelief.colorSpace=THREE.NoColorSpace;tile.bumpMap=tileRelief;tile.bumpScale=.045;
+ const tileRelief=textures.tile.clone();tileRelief.colorSpace=THREE.NoColorSpace;tile.bumpMap=tileRelief;tile.bumpScale=.10;
  const glass=new THREE.MeshPhysicalMaterial({color:'#566e70',roughness:.18,metalness:.25,clearcoat:.8});
  const leaves=['#4d8228','#79ab32','#b4ce48','#619630'].map(c=>{const m=mat(c,textures.leaf);m.side=THREE.DoubleSide;return m});
  return {random,textures,ground,road,paving,walls,tile,wood,metal,cream,glass,leaves,mat};
@@ -94,6 +98,10 @@ export function dressRealMap({scene,map,id,height,buildingAt,waterAt,trees,art,a
    for(let d=.35;d<length;d+=.9){const t=d/length,x=THREE.MathUtils.lerp(a.x,q.x,t),z=THREE.MathUtils.lerp(a.z,q.z,t),wall={x:THREE.MathUtils.lerp(p[i].x,p[(i+1)%p.length].x,t),z:THREE.MathUtils.lerp(p[i].z,p[(i+1)%p.length].z,t)};bar(darkWood,[x,a.y-.18,z],[wall.x,base+b.height+.03,wall.z],.045);stats.rafters++;}
   }if(b.keralaRoof.ridge[0].distanceTo(b.keralaRoof.ridge[1])>.01)bar(tile,b.keralaRoof.ridge[0].toArray(),b.keralaRoof.ridge[1].toArray(),.09)}}
   if(!close)continue;
+  // Compact paved compounds sit under the neighbourhood, instead of uninterrupted lawn.
+  const minX=Math.min(...p.map(q=>q.x))-1.6,maxX=Math.max(...p.map(q=>q.x))+1.6,minZ=Math.min(...p.map(q=>q.z))-1.6,maxZ=Math.max(...p.map(q=>q.z))+1.6;
+  const compound=[{x:minX,z:minZ},{x:maxX,z:minZ},{x:maxX,z:maxZ},{x:minX,z:maxZ}];
+  if(compound.every(q=>{const n=map.nearestRoad(q.x,q.z);return n.distance>n.segment.width/2+1.8&&!waterNear(q.x,q.z,.2)&&!reservedAt(q.x,q.z);}))put(box,yard,(minX+maxX)/2,base+.021,(minZ+maxZ)/2,maxX-minX,.04,maxZ-minZ);
   const front=p.reduce((best,a,i)=>{const q=p[(i+1)%p.length],distance=map.nearestRoad((a.x+q.x)/2,(a.z+q.z)/2).distance;return distance<best.distance?{index:i,distance}:best},{index:0,distance:Infinity});
   for(let i=0;i<p.length;i++){
    const a=p[i],q=p[(i+1)%p.length],dx=q.x-a.x,dz=q.z-a.z,l=Math.hypot(dx,dz);if(l<2.4)continue;
@@ -160,18 +168,18 @@ export function dressRealMap({scene,map,id,height,buildingAt,waterAt,trees,art,a
  }
  for(const t of trees){obstacles.push({x:t.x,z:t.z,radius:t.kind==='shade'?.35:.55});if(t.kind!=='shade'){palm(t);stats.plants++;}}
  const infill=planKochiInfill(map,(x,z,r)=>clearGround(x,z,r)&&!frontages.some(f=>{const u=(x-f.x)*f.nz-(z-f.z)*f.nx,v=(x-f.x)*f.nx+(z-f.z)*f.nz;return Math.abs(u)<f.width/2+r&&v>-r&&v<f.depth+r;}),anchor);
- const homeRoof=createKeralaRoof([{x:-3.3,z:-3.25},{x:3.3,z:-3.25},{x:3.3,z:3.25},{x:-3.3,z:3.25}],0).geometry,bananaLeaf=createLeafGeometry(2.1,.38,.35),crown=new THREE.IcosahedronGeometry(1,1),fruit=mat('#f3b449'),bananaStem=mat('#8b9c48');
+ const homeRoof=createKeralaRoof([{x:-3.3,z:-3.25},{x:3.3,z:-3.25},{x:3.3,z:3.25},{x:-3.3,z:3.25}],0).geometry,bananaLeaf=createLeafGeometry(2.1,.38,.35),crown=new THREE.IcosahedronGeometry(1,2),fruit=mat('#f3b449'),bananaStem=mat('#8b9c48');
  function banana(x,z,y){put(cylinder,bananaStem,x,y+.8,z,.08,1.6,.08);for(let j=0;j<7;j++)put(bananaLeaf,leaves[j%4],x,y+1.55,z,1,1,1,.15,j*Math.PI*2/7);obstacles.push({x,z,radius:.18,kind:'banana-stem'});stats.bananaPlants++;stats.plants++;}
- const canopyLeaf=createLeafGeometry(.8,.23,.10),canopyCore=mat('#42672e'),canopyLeaves=['#416b30','#70973b','#97b550','#568034'].map(c=>{const m=mat(c,art.textures.leaf);m.side=THREE.DoubleSide;return m;});
+ const canopyLeaf=createLeafGeometry(.36,.10,.08),canopyCore=mat('#79945d',art.textures.canopy),canopyLeaves=['#31572b','#66853e','#8f9d55','#436732'].map(c=>{const m=mat(c,art.textures.leaf);m.side=THREE.DoubleSide;return m;});
  function shadeTree(x,z,y,register=true,size=1){
   put(cylinder,wood,x,y+2.4*size,z,.19*size,4.8*size,.19*size);
-  for(let j=0;j<7;j++){
-   const a=j*2.4,dx=Math.sin(a)*1.1*size,dz=Math.cos(a)*1.1*size,cy=y+(5.1+(j%3)*.3)*size;
+  for(let j=0;j<9;j++){
+   const a=j*2.4,dx=Math.sin(a)*1.2*size,dz=Math.cos(a)*1.2*size,cy=y+(4.7+(j%3)*.6)*size;
    bar(wood,[x,y+3.5*size,z],[x+dx,cy,z+dz],.07*size);
-   put(crown,canopyCore,x+dx,cy,z+dz,.8*size,.75*size,.9*size,.1,a);
-   for(let k=0;k<24;k++){
+   put(crown,canopyCore,x+dx,cy,z+dz,(1.05+j%2*.25)*size,1.1*size,1.2*size,.1,a);
+   for(let k=0;k<16;k++){
     const angle=k*2.4+j,layer=(k%5)/4;
-    put(canopyLeaf,canopyLeaves[(j+k)%4],x+dx+Math.sin(angle)*(.5+layer*.6)*size,cy+(-.45+layer*.9)*size,z+dz+Math.cos(angle)*(.5+layer*.6)*size,size,size,size,-.5+layer,angle,(k%3-.8)*.3);
+    put(canopyLeaf,canopyLeaves[(j+k)%4],x+dx+Math.sin(angle)*(.8+layer*.7)*size,cy+(-.8+layer*1.6)*size,z+dz+Math.cos(angle)*(.8+layer*.7)*size,size,size,size,-.5+layer,angle,(k%3-.8)*.3);
    }
   }
   if(register)obstacles.push({x,z,radius:.3*size,kind:'shade-tree'});stats.streetTrees++;stats.plants++;

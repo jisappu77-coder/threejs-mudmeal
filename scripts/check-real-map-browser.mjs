@@ -46,7 +46,7 @@ try{
   assert.ok(waterfront.stats.restaurant===1&&waterfront.stats.fishingNets===4&&waterfront.stats.boats>=3&&waterfront.stats.marketStalls>=3&&waterfront.stats.heritageLandmarks===1);
   assert.equal(waterfront.stats.terraces,1);assert.ok(waterfront.stats.palms>=16,'The shared waterfront composition needs planted gardens beside the restaurant');
   assert.deepEqual(waterfront.passageErrors,[],'The dirt service passage must fit the whole bike across its usable width');
-  assert.equal(waterfront.stats.bridges,3);assert.deepEqual(waterfront.bridgeErrors,[],'All canal bridges must leave the riding surface clear');
+  assert.equal(waterfront.stats.bridges,4);assert.deepEqual(waterfront.bridgeErrors,[],'All canal bridges must leave the riding surface clear');
   assert.ok(waterfront.stops.length===3&&waterfront.stops.every(p=>!p.wet&&!p.blocked)&&waterfront.solidsMissing===0);
   assert.ok(waterfront.route.length>1);assert.deepEqual(waterfront.routeErrors,[],'All named road routes must fit the bike without static scenery obstruction');
   assert.equal(await page.locator('#settings').isVisible(),false);

@@ -20,8 +20,8 @@ for(const id of Object.keys(locations)){
  const links=new Map(),key=p=>`${p.x.toFixed(3)},${p.z.toFixed(3)}`;
  for(const s of map.segments)for(const [a,b]of [[s.a,s.b],[s.b,s.a]]){if(!links.has(key(a)))links.set(key(a),new Set());links.get(key(a)).add(key(b));}
  assert.ok([...links.values()].filter(edges=>edges.size===3).length>=8,'The image composition needs branching junctions');
- assert.equal(map.bridges.length,3);assert.ok(map.buildings.some(b=>b.landmark==='chapel'));
- for(const bridge of map.bridges)for(let d=-12;d<=12;d+=2){assert.ok(!map.waterAt(bridge.x,bridge.z+d),'Canal crossings must have a dry continuous riding surface');assert.ok(map.nearestRoad(bridge.x,bridge.z+d).distance<1,'Bridge decks must follow connected roads');}
+ assert.equal(map.bridges.length,4);assert.ok(map.buildings.some(b=>b.landmark==='chapel'));
+ for(const bridge of map.bridges)for(let d=-12;d<=12;d+=2){assert.ok(!map.waterAt(bridge.x,bridge.z+d),'Canal crossings must have a dry continuous riding surface');const near=map.nearestRoad(bridge.x,bridge.z+d);assert.ok(near.distance<near.segment.width/2-.9,'The full bike must fit inside the connected road across every bridge');}
  for(const b of map.buildings)for(const p of b.points){const near=map.nearestRoad(p.x,p.z);assert.ok(!map.waterAt(p.x,p.z)&&near.distance>near.segment.width/2+3,'Authored building footprints must leave roads and water clear');}
  for(let i=0;i<map.buildings.length;i++)for(const b of map.buildings.slice(i+1)){const a=map.buildings[i],lo=a.points[0],hi=a.points[2],blo=b.points[0],bhi=b.points[2];assert.ok(hi.x<=blo.x||lo.x>=bhi.x||hi.z<=blo.z||lo.z>=bhi.z,'Original building lots must not overlap');}
 
