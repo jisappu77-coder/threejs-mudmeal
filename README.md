@@ -62,7 +62,7 @@ Reference specifications: [Bajaj RE](https://www.bajajauto.com/three-wheelers/re
 
 ### Object realism revision
 
-The object review identified uniformly bright foliage, flat teal glass, rounded toy-like cabins and smooth skin/cloth. The revised art direction uses muted vegetation and clay, neutral daylight, reflective glass, separate paint/rubber/canvas finishes, woven clothing, fine skin variation and weathered plaster. Car and van cabins now use matching lofted body/window surfaces; wheel openings are cut into the metal body profile. Scene checks verify every window sits outside its opaque cabin and preserve the metre-scale dimensions and circular rolling wheels. Chromium produces isolated studio renders of every vehicle and both person poses, plus the world and scale lineup.
+The object review identified flat teal glass, rounded toy-like cabins and smooth skin/cloth. Materials now combine the original reference's vibrant greens, terracotta roofs, golden daylight and turquoise water with reflective glass, separate paint/rubber/canvas finishes, woven clothing, fine skin variation and weathered plaster. The main game and geographic maps use Three.js Neutral tone mapping to preserve material colours. Car and van cabins use matching lofted body/window surfaces; wheel openings are cut into the metal body profile. Scene checks verify every window sits outside its opaque cabin and preserve the metre-scale dimensions and circular rolling wheels. Chromium produces isolated studio renders of every vehicle and both person poses, plus the world and scale lineup.
 
 These remain procedural game assets; this revision moves them toward natural materials and forms but does not make them photorealistic scanned models. The generated photographic sheet is an art-direction reference, not the rendered game.
 
@@ -72,4 +72,12 @@ The approved textured human now supplies four rigged NPC clothing/hair styles in
 
 The delivery bike offers four original, unbranded motorcycle/scooter styles under **Explore Kerala → Bike style**. Model provenance and naming are documented in [vehicle models](docs/vehicle-models.md).
 
-Real Kerala locations: **Explore Kerala → Play real maps** opens Munnar, Busy Kochi and Thekkady's forest approach, using attributed OpenStreetMap roads and footprints with detailed stylized scenery, walking pedestrians and timed meal deliveries. Use **Detail on/off** to adjust rendering on mobile. See [location details and data licensing](docs/real-maps.md).
+Real Kerala locations: **Explore Kerala → Play real maps** opens the Fort Kochi waterfront, using attributed OpenStreetMap roads and footprints with detailed stylized scenery, walking pedestrians and timed meal deliveries. The waterfront adds the original Mud Meals restaurant, an occupied shore market, Chinese fishing nets, a jetty, boats and three connected delivery bays. Use **30 FPS** (default) for less GPU work or select **60 FPS**. **Detail on/off** still controls contact shading and resolution. See [location details and data licensing](docs/real-maps.md).
+
+## Rendering load
+
+Both game modes now cap rendering at 30 FPS by default, retain a 60 FPS option, stop rendering in hidden tabs and avoid continuous redraws while paused. GPU backpressure prevents queued frames. Rigid vehicle batching, shared materials, spatial scenery batches and camera-aware actor culling retain the visible models, texture detail, contact shading and shadow quality. Off-screen NPC movement continues while unnecessary rig animation stops. Sharp graphics uses native display resolution up to 2× pixel density, without forcing supersampling on 1× screens.
+
+See [rendering measurements and limitations](docs/rendering-performance.md). Browser measurements cannot certify phone temperature or sustained hardware performance.
+
+For the geographic waterfront checks, run `npm run check:maps` and, with the built preview running, `npm run check:maps:browser`.

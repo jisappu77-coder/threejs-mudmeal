@@ -152,7 +152,7 @@ export function createExtendedWorld(h) {
  const headlight=new THREE.SpotLight('#fff0c6',0,42,.6,.5,1);scene.add(headlight,headlight.target);
  let weather='day';
  const hemisphere=scene.children.find(o=>o.isHemisphereLight);
- function setWeather(value){weather=['day','sunset','rain'].includes(value)?value:'day';const night=weather==='rain',sunset=weather==='sunset';scene.background.set(night?'#111e30':sunset?'#d5b197':'#a8cbd6');scene.fog.color.copy(scene.background);h.sun.color.set(sunset?'#ffbc77':'#fff8ee');h.sun.intensity=night?.35:sunset?2.1:2.5;hemisphere.intensity=night?.7:.95;scene.environmentIntensity=night?.17:.55;M.road.roughness=night?.22:.83;M.glass.emissive.set(night?'#df9a40':'#000000');M.glass.emissiveIntensity=night?.45:0;rain.visible=night;headlight.intensity=night?45:0;h.renderer.toneMappingExposure=night?1.25:1.02;document.querySelector('#weather-label').textContent=night?'RAIN · NIGHT':sunset?'GOLDEN HOUR':'CLEAR · DAY'}
+ function setWeather(value){weather=['day','sunset','rain'].includes(value)?value:'day';const night=weather==='rain',sunset=weather==='sunset';scene.background.set(night?'#111e30':sunset?'#d5b197':'#b8dcd8');scene.fog.color.copy(scene.background);h.sun.color.set(sunset?'#ffbc77':'#ffe6b5');h.sun.intensity=night?.35:sunset?2.1:3.2;hemisphere.intensity=night?.7:.9;scene.environmentIntensity=night?.17:.45;M.road.roughness=night?.22:.83;M.glass.emissive.set(night?'#df9a40':'#000000');M.glass.emissiveIntensity=night?.45:0;rain.visible=night;headlight.intensity=night?45:0;h.renderer.toneMappingExposure=night?1.25:1.05;document.querySelector('#weather-label').textContent=night?'RAIN · NIGHT':sunset?'GOLDEN HOUR':'CLEAR · DAY'}
  function update(elapsed,player){
   // A cached shadow map must use the same light pose as the visible frame.
   if(h.sun.target.position.distanceToSquared(player.position)>1e-10)h.sun.shadow.needsUpdate=true;
@@ -164,4 +164,3 @@ export function createExtendedWorld(h) {
  setWeather('day');
  return {districts,footprints,route,centerline,roadPoints,groundHeight:hillHeight,setWeather,update,get weather(){return weather},nearest(position){return districts.reduce((a,b)=>Math.hypot(a.x-position.x,a.z-position.z)<Math.hypot(b.x-position.x,b.z-position.z)?a:b)}};
 }
-

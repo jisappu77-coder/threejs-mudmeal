@@ -1,0 +1,66 @@
+[
+  {
+    "path": "real-map.html",
+    "samples": [
+      {
+        "ms": 43.5,
+        "calls": 8821,
+        "triangles": 27190104,
+        "textures": 110,
+        "geometries": 1420,
+        "pixelRatio": 1.25,
+        "shadows": true
+      },
+      {
+        "ms": 43.5,
+        "calls": 8821,
+        "triangles": 27190104,
+        "textures": 110,
+        "geometries": 1420,
+        "pixelRatio": 1.25,
+        "shadows": true
+      },
+      {
+        "ms": 36.70000001788139,
+        "calls": 8821,
+        "triangles": 27190104,
+        "textures": 110,
+        "geometries": 1420,
+        "pixelRatio": 1.25,
+        "shadows": true
+      }
+    ]
+  },
+  {
+    "path": "index.html",
+    "samples": [
+      {
+        "ms": 64.89999997615814,
+        "calls": 9056,
+        "triangles": 12277058,
+        "textures": 202,
+        "geometries": 1420,
+        "pixelRatio": 1.25,
+        "shadows": true
+      },
+      {
+        "ms": 50.10000002384186,
+        "calls": 9056,
+        "triangles": 12277058,
+        "textures": 202,
+        "geometries": 1420,
+        "pixelRatio": 1.25,
+        "shadows": true
+      },
+      {
+        "ms": 82.39999997615814,
+        "calls": 9056,
+        "triangles": 12277058,
+        "textures": 202,
+        "geometries": 1420,
+        "pixelRatio": 1.25,
+        "shadows": true
+      }
+    ]
+  }
+]

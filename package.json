@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "check": "node scripts/check-driving.mjs && node scripts/check-scene.mjs",
+    "check": "node scripts/check-driving.mjs && node scripts/check-scene.mjs && node scripts/check-frame-loop.mjs && node scripts/check-rigid-batch.mjs",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0",
     "check:browser": "node scripts/check-browser.mjs",

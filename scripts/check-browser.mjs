@@ -130,7 +130,7 @@ try {
   assert.equal(await page.evaluate(() => window.__MUD_MEALS__.renderer.getPixelRatio()),1);
   await page.locator('#quality').click();
   const density=await page.evaluate(() => ({renderer:window.__MUD_MEALS__.renderer.getPixelRatio(),composer:window.__MUD_MEALS__.graphics.composer._pixelRatio}));
-  assert.ok(density.renderer>=1.25);
+  assert.equal(density.renderer,await page.evaluate(()=>Math.min(devicePixelRatio,2)),'Sharp rendering must preserve native pixel density without forced desktop supersampling');
   assert.equal(density.renderer,density.composer);
   await page.locator('#camera-settings').click();
   await page.locator('#camera-panel').waitFor({state:'visible'});

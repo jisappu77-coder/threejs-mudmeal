@@ -1,8 +1,10 @@
 import * as THREE from 'three';
+import {createActorCuller} from './graphics.js';
 
 // Traffic stays on authored roads; pedestrians use short, checked routes on solid ground.
 export function createWorldLife(h){
  const {npcs,vehicles,bikes,player,plots,plantings,roadDistance,waterAt,plotBlocked,windTime,windStrength,sun}=h;
+ const cull=createActorCuller(h.camera,player);
  const mod=(n,m)=>(n%m+m)%m;
  const roads=[h.extendedWorld.centerline];
  const lengths=roads.map(r=>r.getLength()),traffic=[];
@@ -122,7 +124,7 @@ export function createWorldLife(h){
   const rig=n.sitting&&n.state==='sitting'?n.sitting:n.standing;
   const seatedBlend=n.state==='sitting'?1:n.state==='rising'?1-THREE.MathUtils.smoothstep(n.wait,0,.9):n.state==='sitting-down'?THREE.MathUtils.smoothstep(n.wait,0,.9):0;
   n.walkBlend=THREE.MathUtils.damp(n.walkBlend||0,n.state==='walking'&&n.distance>previousDistance?1:0,8,dt);
-  animateRig(rig,n.distance*8,time+n.variant,n.walkBlend,n.wave,seatedBlend);
+  if(n.g.visible)animateRig(rig,n.distance*8,time+n.variant,n.walkBlend,n.wave,seatedBlend);
   if(n.sitting&&n.state==='sitting'&&!rig.animate)rig.elbows[0].rotation.x=Math.sin(time*1.1+n.variant)*.12;
   if(close&&n.state==='idle'){
    const angle=Math.atan2(player.position.x-n.g.position.x,player.position.z-n.g.position.z);n.g.rotation.y+=(mod(angle-n.g.rotation.y+Math.PI,Math.PI*2)-Math.PI)*Math.min(1,dt*4);
@@ -131,6 +133,7 @@ export function createWorldLife(h){
  }
  let shadowTime=0;
  function update(dt,time){
+  cull([...npcs,...traffic]);
   windTime.value=time;windStrength.value=h.extendedWorld.weather==='rain'?1.8:1;
   const playerStep=player.position.distanceTo(playerLast);if(playerStep<3)for(const wheel of playerWheels)wheel.rotation.x-=playerStep/(wheel.userData.rollingRadius||wheel.userData.wheelRadius);playerLast.copy(player.position);
   for(const n of npcs)updateNPC(n,dt,time);

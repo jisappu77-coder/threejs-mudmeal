@@ -4,6 +4,11 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { SSAOPass } from 'three/addons/postprocessing/SSAOPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 
+export function createActorCuller(camera,player){
+ const frustum=new THREE.Frustum(),matrix=new THREE.Matrix4(),sphere=new THREE.Sphere(new THREE.Vector3(),5);
+ return actors=>{camera.updateMatrixWorld();frustum.setFromProjectionMatrix(matrix.multiplyMatrices(camera.projectionMatrix,camera.matrixWorldInverse));for(const actor of actors){const g=actor.g||actor; sphere.center.copy(g.position);sphere.center.y+=1;g.visible=!actor.hidden&&(g.position.distanceToSquared(player.position)<900||frustum.intersectsSphere(sphere));}};
+}
+
 // Use the official Three.js passes; no duplicate custom postprocessing pipeline.
 export function setupGraphics(renderer,scene,camera){
  const target=new THREE.WebGLRenderTarget(innerWidth,innerHeight,{type:THREE.HalfFloatType,samples:Math.min(4,renderer.capabilities.maxSamples)});
@@ -14,6 +19,9 @@ export function setupGraphics(renderer,scene,camera){
  ao.ssaoMaterial.defines.PERSPECTIVE_CAMERA=camera.isPerspectiveCamera?1:0;
  ao.depthRenderMaterial.defines.PERSPECTIVE_CAMERA=camera.isPerspectiveCamera?1:0;
  ao.kernelRadius=.65;ao.minDistance=.00025;ao.maxDistance=.015;
- composer.addPass(new RenderPass(scene,camera));composer.addPass(ao);composer.addPass(new OutputPass());
- return {composer,setQuality:sharp=>{ao.enabled=sharp;const ratio=sharp?Math.min(Math.max(devicePixelRatio,1.25),2):Math.min(devicePixelRatio,1);renderer.setPixelRatio(ratio);composer.setPixelRatio(ratio)},render:()=>{for(const material of [ao.ssaoMaterial,ao.depthRenderMaterial]){material.uniforms.cameraNear.value=camera.near;material.uniforms.cameraFar.value=camera.far}ao.ssaoMaterial.uniforms.cameraProjectionMatrix.value.copy(camera.projectionMatrix);ao.ssaoMaterial.uniforms.cameraInverseProjectionMatrix.value.copy(camera.projectionMatrixInverse);composer.render()},resize:(w,h)=>composer.setSize(w,h),ao};
+ let cullActors=()=>{};
+ const beauty=new RenderPass(scene,camera);composer.addPass(beauty);composer.addPass(ao);composer.addPass(new OutputPass());
+ // Refresh shadows in the colour pass once; the AO normal pass reuses those maps.
+ renderer.shadowMap.autoUpdate=false;
+ return {composer,setActors(actors,player){const cull=createActorCuller(camera,player);cullActors=()=>cull(actors);},setQuality:sharp=>{ao.enabled=sharp;const ratio=sharp?Math.min(devicePixelRatio,2):Math.min(devicePixelRatio,1);renderer.setPixelRatio(ratio);composer.setPixelRatio(ratio)},render:()=>{cullActors();renderer.shadowMap.needsUpdate=true;for(const material of [ao.ssaoMaterial,ao.depthRenderMaterial]){material.uniforms.cameraNear.value=camera.near;material.uniforms.cameraFar.value=camera.far}ao.ssaoMaterial.uniforms.cameraProjectionMatrix.value.copy(camera.projectionMatrix);ao.ssaoMaterial.uniforms.cameraInverseProjectionMatrix.value.copy(camera.projectionMatrixInverse);composer.render()},resize:(w,h)=>composer.setSize(w,h),ao};
 }
