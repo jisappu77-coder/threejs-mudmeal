@@ -141,7 +141,9 @@ assert.ok(app.player.position.z< -5);assert.ok(Math.abs(app.player.position.x-18
 key('d',true);for(let i=0;i<90;i++)app.update(1/60);key('d',false);
 assert.ok(app.player.rotation.y<-.5&&app.player.position.x>181,'Steering must turn and move beyond the old lane limit');
 key('w',false);key('s',true);for(let i=0;i<180;i++)app.update(1/60);key('s',false);
-assert.equal(app.driving.state.speed,0);app.reset();
+assert.ok(app.driving.state.speed<0&&app.driving.state.speed>=-2.2,'Holding brake must reverse after stopping');app.reset();
+app.player.position.set(180,.025,0);app.player.rotation.y=0;key('s',true);for(let i=0;i<90;i++)app.update(1/60);key('s',false);
+assert.ok(app.player.position.z>1&&app.driving.state.speed<0,'Reverse must move the game bike backwards on open ground');app.reset();
 const building=app.plots.find(p=>p.kind==='building');assert.equal(app.life.blocked(new THREE.Vector3(building.x,building.y,building.z)),true,'Buildings must block free driving');
 assert.equal(app.life.blocked(new THREE.Vector3(89,.025,-92)),true,'Lake water must block free driving');
 const bridge=app.branchPoints.find(([x])=>x>30&&x<31);assert.equal(app.life.blocked(new THREE.Vector3(bridge[0],.025,bridge[1])),false,'The bridge must remain driveable over water');

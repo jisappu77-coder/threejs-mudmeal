@@ -821,10 +821,10 @@ function update(dt){if(!paused){elapsed+=dt;waterTime.value=elapsed;waterBump.of
  const forwardX=-Math.sin(oldHeading),forwardZ=-Math.cos(oldHeading);
  const grade=(ridingFloor(player.position.x+forwardX*.4,player.position.z+forwardZ*.4)-ridingFloor(player.position.x-forwardX*.4,player.position.z-forwardZ*.4))/.8;
  driving.state.heading=oldHeading;
- const distance=driving.step(dt,{throttle,brake,steering:turn,grade,wet:extendedWorld.weather==='rain'});
+ const distance=driving.step(dt,{throttle,brake,reverse:brake&&!throttle,steering:turn,grade,wet:extendedWorld.weather==='rain'});
  speed=driving.state.speed;
- if(distance>.00001){
-  const pieces=Math.max(1,Math.ceil(distance/.2)),nextHeading=driving.state.heading;
+ if(Math.abs(distance)>.00001){
+  const pieces=Math.max(1,Math.ceil(Math.abs(distance)/.2)),nextHeading=driving.state.heading;
   for(let i=1;i<=pieces;i++){
    const heading=THREE.MathUtils.lerp(oldHeading,nextHeading,(i-.5)/pieces),next=player.position.clone();
    next.x-=Math.sin(heading)*distance/pieces;next.z-=Math.cos(heading)*distance/pieces;next.y=ridingFloor(next.x,next.z);
@@ -833,7 +833,7 @@ function update(dt){if(!paused){elapsed+=dt;waterTime.value=elapsed;waterBump.of
     player.rotation.y=savedHeading;driving.state.heading=savedHeading;driving.state.speed=speed=0;driving.state.yawRate=0;
     if(oldSpeed>2)notify('Path blocked — brake and steer around');break;
    }
-   player.position.copy(next);travel+=distance/pieces;
+   player.position.copy(next);travel+=Math.abs(distance)/pieces;
   }
  }
  player.rotation.z=driving.state.lean;
@@ -843,7 +843,7 @@ function update(dt){if(!paused){elapsed+=dt;waterTime.value=elapsed;waterBump.of
  life.update(dt,elapsed);
  const left=Math.max(0,165-Math.floor(elapsed));document.querySelector('#timer').textContent=`${String(Math.floor(left/60)).padStart(2,'0')}:${String(left%60).padStart(2,'0')}`;
  }
- extendedWorld.update(elapsed,player);if(freeCamera){controls.update();camera.near=Math.max(.5,Math.min(10,camera.position.distanceTo(controls.target)*.1));camera.updateProjectionMatrix()}else updateFollowCamera(dt);mapTime+=dt;if(mapTime>.10){minimap();document.querySelector('#location').textContent=extendedWorld.nearest(player.position).name.toUpperCase();document.querySelector('#speed').textContent=Math.round(speed*3.6);document.querySelector('#rival').hidden=Math.min(player.position.distanceTo(rival1.position),player.position.distanceTo(rival2.position))>18;mapTime=0}}
+ extendedWorld.update(elapsed,player);if(freeCamera){controls.update();camera.near=Math.max(.5,Math.min(10,camera.position.distanceTo(controls.target)*.1));camera.updateProjectionMatrix()}else updateFollowCamera(dt);mapTime+=dt;if(mapTime>.10){minimap();document.querySelector('#location').textContent=extendedWorld.nearest(player.position).name.toUpperCase();document.querySelector('#speed').textContent=`${speed<0?'R ':''}${Math.round(Math.abs(speed)*3.6)}`;document.querySelector('#rival').hidden=Math.min(player.position.distanceTo(rival1.position),player.position.distanceTo(rival2.position))>18;mapTime=0}}
 function resize(){const stage=document.querySelector('#game-stage').getBoundingClientRect();const w=Math.max(1,Math.round(stage.width)),h=Math.max(1,Math.round(stage.height));const size=renderer.getSize(new THREE.Vector2());if(size.x===w&&size.y===h)return;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false);graphics.resize(w,h)}
 const graphics=setupGraphics(renderer,scene,camera);graphics.setActors([...npcs,...life.traffic],player);
 let sharpGraphics=true;

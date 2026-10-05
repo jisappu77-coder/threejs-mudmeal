@@ -18,7 +18,7 @@ export function planWaterfront(map){
    for(let u=-9;u<=9;u+=1.5)for(let v=-8;v<=8;v+=1.5){const px=x+tx*u+nx*v,pz=z+tz*u+nz*v,near=map.nearestRoad(px,pz);if(inWater(px,pz)||inBuilding(px,pz,1)||near.distance<near.segment.width/2+2)clear=false;}
    if(!clear)continue;
    const street={x:s.a.x+tx*d,z:s.a.z+tz*d};
-   if(![20,30,40].some(f=>inWater(street.x-nx*f,street.z-nz*f)))continue;
+   if(![40,60,80].some(f=>inWater(street.x+nx*f,street.z+nz*f)))continue;
    return {x,z,tx,tz,nx:-nx,nz:-nz,width:18,depth:16,angle:Math.atan2(-nx,-nz),street,segment:s,spawn:{x:street.x+tx*8-tz*s.width/4,z:street.z+tz*8+tx*s.width/4},heading:Math.atan2(tx,tz)};
   }
  }
@@ -66,6 +66,7 @@ export function createWaterfront({scene,map,art,site}){
  for(const u of [-4.5,0,4.5]){atBar(black,[u,3.3,3.8],[u,2.75,3.8],.02);put(sphere,warm,local(u,3.8,2.65).toArray(),[.13,.19,.13]);put(cylinder,brass,local(u,3.8,2.85).toArray(),[.28,.08,.28]);}
  at(white,0,.09,6.0,11.5,.18,1.0);at(white,0,.04,6.6,11.8,.08,.4);
  sign('PICKUP · TAKEAWAY',3.4,1.15,6.9,2.7,.65,'#244d3c');sign('CHAYA\nSNACKS · MEALS',6.7,1.7,4.2,1.65,2.35,'#254438');
+ for(let u=23;u<=28;u+=1)cube(white,[site.street.x+site.tx*u,.097,site.street.z+site.tz*u],[8.5,.015,.5],Math.atan2(site.tx,site.tz));
  for(const u of [7.4])for(const v of [-5.6,1,5.4]){put(cylinder,clay,local(u,v,.35).toArray(),[.42,.7,.42]);put(sphere,art.leaves[1],local(u,v,.98).toArray(),[.65,.45,.65]);solid(u,v,.65,.65);}
  for(const u of [-2.7,2.7]){const p=local(u,3.2);vendors.push({x:p.x,z:p.z,angle:site.angle});}
  // A traversable dirt service passage leads around the restaurant to the street.
@@ -79,6 +80,24 @@ export function createWaterfront({scene,map,art,site}){
  }
  for(const u of [-8,8]){const p=local(u===-8?-6:u,-7.3);palm(p.x,p.z,8.8);}
  const groundClear=(x,z,r=0)=>!map.waterAt(x,z)&&!map.buildings.some(b=>pointInPolygon(x,z,b.points)||b.points.some((p,i)=>segmentDistance(x,z,p,b.points[(i+1)%b.points.length])<r));
+ for(const u of [-65,-45,-25,0,25,45,65])for(const v of [-38,-48]){
+  const p=local(u,v),near=map.nearestRoad(p.x,p.z);
+  if(groundClear(p.x,p.z,2)&&!reservedAt(p.x,p.z,2)&&!solidAt(p.x,p.z,2)&&near.distance>near.segment.width/2+4)palm(p.x,p.z,8+Math.abs(u)%3);
+ }
+ // The shared restaurant image has a waterside terrace behind the tiled frontage.
+ const terrace=local(0,-16);
+ if(groundClear(terrace.x,terrace.z,9)){
+  at(art.paving,0,.06,-16,18,.1,16);
+  for(const u of [-5,5])for(const v of [-12,-20]){
+   at(wood,u,.75,v,1.5,.12,1.5);at(black,u,.38,v,.15,.75,.15);solid(u,v,1.5,1.5);
+   for(const side of [-1,1]){at(wood,u+side*1.3,.48,v,.55,.12,.65);at(wood,u+side*1.3,.8,v+.28,.55,.6,.08);solid(u+side*1.3,v,.6,.7);}
+   atBar(black,[u,0,v],[u,3,v],.035);
+   put(new THREE.ConeGeometry(2,.6,8),cloth,local(u,v,3).toArray(),[1,1,1]);
+  }
+  for(const u of [-9,9])for(const v of [-9,-16,-23]){put(cylinder,clay,local(u,v,.35).toArray(),[.4,.7,.4]);put(sphere,art.leaves[1],local(u,v,1).toArray(),[.7,.6,.7]);solid(u,v,.8,.8);}
+  outdoorLots.push({x:terrace.x,z:terrace.z,tx:Math.cos(site.angle),tz:-Math.sin(site.angle),nx:Math.sin(site.angle),nz:Math.cos(site.angle),width:20,depth:18});
+  stats.terraces=1;
+ }
  // Low canal decks keep the riding surface level; rails leave the full road corridor clear.
  stats.bridges=map.bridges.length;
  for(const bridge of map.bridges){
@@ -93,7 +112,7 @@ export function createWaterfront({scene,map,art,site}){
   }
  }
  // A checked public plaza gives the open shore a purpose without inventing a new road.
- for(let u=-45;u<=55;u+=3)for(let v=7;v<=31;v+=3){const x=site.street.x+site.tx*u+site.nx*v,z=site.street.z+site.tz*u+site.nz*v,n=map.nearestRoad(x,z);if(n.distance>n.segment.width/2+3&&[-1,1].every(a=>[-1,1].every(b=>groundClear(x+site.tx*a*1.5+site.nx*b*1.5,z+site.tz*a*1.5+site.nz*b*1.5))))cube(art.paving,[x,.04,z],[3.02,.075,3.02],site.angle);}
+ for(let u=-20;u<=24;u+=3)for(let v=7;v<=24;v+=3){const x=site.street.x+site.tx*u+site.nx*v,z=site.street.z+site.tz*u+site.nz*v,n=map.nearestRoad(x,z);if(n.distance>n.segment.width/2+3&&[-1,1].every(a=>[-1,1].every(b=>groundClear(x+site.tx*a*1.5+site.nx*b*1.5,z+site.tz*a*1.5+site.nz*b*1.5))))cube(art.paving,[x,.04,z],[3.02,.075,3.02],site.angle);}
  for(let i=0;i<4;i++){
   const u=-12+i*9,x=site.street.x+site.tx*u+site.nx*16,z=site.street.z+site.tz*u+site.nz*16,n=map.nearestRoad(x,z),angle=site.angle+Math.PI,nx=-site.nx,nz=-site.nz,tx=Math.cos(angle),tz=-Math.sin(angle),p=(u,y,v)=>[x+tx*u+nx*v,y,z+tz*u+nz*v];
   if(n.distance<n.segment.width/2+4||![-2.8,0,2.8].every(u=>[-2.3,0,2.3].every(v=>groundClear(x+tx*u+nx*v,z+tz*u+nz*v,.4))))continue;
@@ -110,6 +129,17 @@ export function createWaterfront({scene,map,art,site}){
   let nx=face.b.z-face.a.z,nz=face.a.x-face.b.x;const length=Math.hypot(nx,nz);nx/=length;nz/=length;if(pointInPolygon(face.x+nx,face.z+nz,church.points)){nx=-nx;nz=-nz;}const angle=Math.atan2(nx,nz),pos=(u,y,v)=>[face.x+Math.cos(angle)*u+nx*v,y,face.z-Math.sin(angle)*u+nz*v];
   cube(white,pos(0,church.height/2,.13),[length,church.height,.22],angle);
   for(const u of [-length*.4,0,length*.4]){cube(white,pos(u,church.height/2,.28),[.5,church.height,.35],angle);cube(wood,pos(u,1.7,.4),[u?1.2:1.8,3.2,.12],angle);cube(white,pos(u,3.4,.4),[u?1.6:2.2,.24,.25],angle);}
+  for(const u of [-length*.4,0,length*.4]){
+   const radius=u?.6:.9,arch=new THREE.Shape();arch.moveTo(-radius,0);arch.lineTo(-radius,2.7);arch.absarc(0,2.7,radius,Math.PI,0,true);arch.lineTo(radius,0);arch.closePath();
+   const mesh=new THREE.Mesh(new THREE.ShapeGeometry(arch),wood);mesh.position.set(...pos(u,.1,.48));mesh.rotation.y=angle;scene.add(mesh);
+  }
+  // White bell tower and tiled cap form the tall silhouette behind the restaurant.
+  const tower=pos(-length*.38,0,-8);
+  cube(white,[tower[0],7.5,tower[2]],[3.4,15,3.4],angle);
+  cube(white,[tower[0],12.4,tower[2]],[3.8,.35,3.8],angle);
+  for(const side of [-1,1])cube(wood,[tower[0]+Math.cos(angle)*side*1.72,13.5,tower[2]-Math.sin(angle)*side*1.72],[.08,1.4,1],angle);
+  put(new THREE.ConeGeometry(2.7,2.6,4),art.tile,[tower[0],16.3,tower[2]],[1,1,1],[0,angle+Math.PI/4,0]);
+  bar(black,[tower[0],17.4,tower[2]],[tower[0],18.5,tower[2]],.045);bar(black,[tower[0]-.3,18.15,tower[2]],[tower[0]+.3,18.15,tower[2]],.045);
   const gable=new THREE.BufferGeometry();gable.setAttribute('position',new THREE.Float32BufferAttribute([ -length/2,church.height,0,length/2,church.height,0,0,church.height+2.8,0],3));gable.setIndex([0,1,2]);gable.computeVertexNormals();const gableMesh=new THREE.Mesh(gable,new THREE.MeshStandardMaterial({color:'#fff0d2',roughness:.9,side:THREE.DoubleSide}));gableMesh.position.set(face.x+nx*.3,0,face.z+nz*.3);gableMesh.rotation.y=angle;gableMesh.castShadow=true;scene.add(gableMesh);
   bar(black,pos(0,church.height+2.6,.4),pos(0,church.height+4,.4),.045);bar(black,pos(-.4,church.height+3.5,.4),pos(.4,church.height+3.5,.4),.045);
   cube(white,pos(0,.12,1.1),[3,.24,1.8],angle);stats.heritageLandmarks=1;stats.churchPosition=center;
@@ -154,15 +184,17 @@ export function createWaterfront({scene,map,art,site}){
  function boat(x,z,angle,house=false,moving=false){
   if(!waterAt(x,z))return;const group=new THREE.Group();group.position.set(x,.10,z);group.rotation.y=angle;scene.add(group);
   function part(g,m,p,s){const mesh=new THREE.Mesh(g,m);mesh.position.set(...p);mesh.scale.set(...s);mesh.castShadow=false;mesh.receiveShadow=true;group.add(mesh);return mesh;}
-  part(sphere,wood,[0,.08,0],[house?2:1.8,.55,house?7:5.5]);part(box,white,[0,.45,0],[house?3.7:3.4,.18,house?12:9.4]);part(box,house?cloth:white,[0,1.45,-.3],[3,1.9,house?8:6]);
+  part(sphere,wood,[0,.08,0],[house?2:1.8,.55,house?7:5.5]);part(box,house?wood:white,[0,.45,0],[house?3.7:3.4,.18,house?12:9.4]);part(box,house?wood:white,[0,1.45,-.3],[3,1.9,house?8:6]);
   for(const side of [-1,1])for(let d=-3;d<=3;d+=1.3){part(box,art.glass,[side*1.51,1.7,d],[.025,.85,.88]);part(box,wood,[side*1.53,1.7,d-.48],[.04,1,.06]);}
   if(house){const canopy=new THREE.CylinderGeometry(2.1,2.1,9.8,20,1,true,0,Math.PI);canopy.rotateZ(Math.PI/2);canopy.rotateY(Math.PI/2);part(canopy,art.mat('#a38b54',art.textures.wood),[0,2.1,-.3],[1,1,1]);}else{part(box,blue,[0,2.6,-.3],[3.6,.16,7.3]);part(box,blue,[0,.7,0],[3.8,.24,10]);part(box,white,[0,3,-2],[2.4,.7,2.5]);part(box,art.glass,[0,3.1,-.7],[1.9,.45,.02]);}
+  if(house){for(const side of [-1,1]){part(box,wood,[side*1.75,1.05,0],[.07,.07,10.8]);for(let d=-5;d<=5;d+=1.25)part(cylinder,wood,[side*1.75,.75,d],[.035,.65,.035]);}group.scale.set(1.5,1.2,1.8);}
   boats.push({group,x,z,angle,moving,phase:boats.length*1.8});stats.boats++;return group;
  }
- for(let i=0;i<3;i++){const p=nearby[Math.floor(nearby.length*(.2+i*.22))];if(p)boat(p.x+p.nx*(18+i*25),p.z+p.nz*(18+i*25),Math.atan2(p.tx,p.tz),i===0,i>0);}
+ for(let i=0;i<3;i++){const p=nearby[Math.floor(nearby.length*(.2+i*.22))];if(p)boat(i===0?site.street.x+90:p.x+p.nx*(18+i*25),i===0?site.street.z-15:p.z+p.nz*(18+i*25),Math.atan2(p.tx,p.tz),i===0,i>0);}
  if(jettyShore)boat(jettyShore.x+jettyShore.nx*29,jettyShore.z+jettyShore.nz*29,Math.atan2(jettyShore.tx,jettyShore.tz));
  // Original distant harbour silhouettes, with no extra playable districts or brand assets.
  const port=site.street;for(let i=0;i<4;i++){const x=port.x-100+i*55,z=map.bounds.minZ-160;for(const side of [-1,1])bar(blue,[x+side*6,-.5,z],[x+side*2,29,z],.4);bar(blue,[x,28,z],[x+25,38,z-18],.4);bar(blue,[x+25,38,z-18],[x+25,10,z-18],.07);cube(blue,[x,24,z],[4,4,4]);}
+ cube(art.ground,[port.x,.02,map.bounds.minZ-245],[820,.12,170]);
  for(let i=0;i<16;i++){const x=port.x-350+i*45,z=map.bounds.minZ-250;cube(i%3?white:blue,[x,8+(i%4)*3,z],[14+(i%3)*4,16+(i%4)*6,20]);}
  for(const {g,m,items}of batches.values()){const mesh=new THREE.InstancedMesh(g,m,items.length);items.forEach((matrix,i)=>mesh.setMatrixAt(i,matrix));mesh.castShadow=mesh.receiveShadow=true;mesh.computeBoundingSphere();mesh.matrixAutoUpdate=false;scene.add(mesh);}
  function update(time){for(const b of boats){const t=b.moving?Math.sin(time*.016+b.phase)*20:0,dx=Math.sin(b.angle)*t,dz=Math.cos(b.angle)*t;if(waterAt(b.x+dx,b.z+dz)){b.group.position.x=b.x+dx;b.group.position.z=b.z+dz;}b.group.position.y=.1+Math.sin(time*.8+b.phase)*.035;}}

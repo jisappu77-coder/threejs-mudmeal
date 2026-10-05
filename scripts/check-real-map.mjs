@@ -43,6 +43,8 @@ for(const id of Object.keys(locations)){
  for(const [i,p]of infill.entries()){assert.ok(p.cells.every(q=>clear(q.x,q.z,q.radius)));for(const q of infill.slice(i+1))assert.ok(Math.hypot(p.x-q.x,p.z-q.z)>=p.radius+q.radius+1-1e-8,'Neighbourhood lots must not overlap');}
  assert.deepEqual(planKochiInfill(map,()=>false),[],'Blocked land must stay empty');console.log(`${infill.length} illustrative lots: road, footprint, water and overlap clearance passed`);
  const site=planWaterfront(map);assert.equal(reachableRoads(map,site.spawn).length,map.segments.length,'Every curved street must connect to the delivery network');assert.ok(!map.waterAt(site.x,site.z)&&!map.waterAt(site.spawn.x,site.spawn.z));
+ assert.ok(site.x>site.street.x&&map.waterAt(site.x-site.nx*80,site.z-site.nz*80),'The restaurant must sit between the street and harbour, as in the shared waterfront image');
+ const chapel=map.buildings.find(b=>b.landmark==='chapel');assert.ok(chapel.points.every(p=>p.z<site.z-80),'The chapel belongs farther along the quay behind the restaurant');
  for(const [p,expected]of [[{x:150,z:95},false],[{x:300,z:0},true]])assert.equal(map.waterAt(p.x,p.z),expected,'Authored shore must separate driveable land and harbour water');
  assert.ok(map.coastlines.length&&map.landmarks.some(p=>p.kind==='fishing-nets'));
  for(const area of map.areas.filter(a=>a.kind==='water')){

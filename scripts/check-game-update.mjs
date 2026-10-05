@@ -25,7 +25,7 @@ export async function checkGameUpdate(page){
   return {people,accelerating,startHeading,heading,releasedHeading,stopped,camera:a.cameraMode};
  });
  assert.equal(result.people.length,27);assert.ok(result.people.every(p=>p.rigged));assert.equal(new Set(result.people.map(p=>p.style)).size,4);
- assert.ok(result.accelerating.moved>1&&result.accelerating.speed>0&&result.accelerating.throttle>.9);assert.ok(result.heading<result.startHeading-.05);assert.ok(result.releasedHeading<=result.heading&&result.releasedHeading>result.heading-.5);assert.equal(result.stopped,0);assert.equal(result.camera,'driving');
+ assert.ok(result.accelerating.moved>1&&result.accelerating.speed>0&&result.accelerating.throttle>.9);assert.ok(result.heading<result.startHeading-.05);assert.ok(result.releasedHeading<=result.heading&&result.releasedHeading>result.heading-.5);assert.ok(result.stopped<=0&&result.stopped>=-2.2);assert.equal(result.camera,'driving');
  const freeDrive=await page.evaluate(()=>{
   const a=window.__MUD_MEALS__;a.reset();a.player.position.set(180,.025,0);a.player.rotation.y=0;
   window.dispatchEvent(new KeyboardEvent('keydown',{key:'w'}));for(let i=0;i<180;i++)a.update(1/60);

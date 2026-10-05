@@ -19,5 +19,13 @@ const straightHeading=steer.state.heading;for(let i=0;i<60;i++)steer.step(1/60,{
 assert.ok(Math.abs(steer.state.heading-straightHeading)<.002,'Released steering must hold the chosen direction');
 steer.reset(Math.PI/2);steer.step(1,{steering:1});assert.equal(steer.state.heading,Math.PI/2,'Stationary steering must not rotate the scooter');
 const idle=createDriving(),before={...idle.state};for(const dt of[0,-.1,NaN,Infinity])assert.equal(idle.step(dt,{throttle:1}),0);assert.deepEqual(idle.state,before,'Invalid or zero time must not corrupt physics');
+const backing=run(60,{brake:1,reverse:true,steering:1},3);
+assert.ok(backing.distance<-2&&backing.d.state.speed<0&&backing.d.state.speed>=-2.2,'Reverse must travel backwards at a safe speed');
+assert.ok(backing.d.state.heading>0,'Reverse steering must turn in the opposite direction');
+const releasedReverse=run(60,{brake:1,reverse:true},3).d;for(let i=0;i<90;i++)releasedReverse.step(1/60);assert.equal(releasedReverse.state.speed,0,'Releasing reverse must bring the bike to rest');
+assert.ok(Math.abs(run(30,{brake:1,reverse:true},3).distance-run(120,{brake:1,reverse:true},3).distance)<.04,'Reverse must be independent of frame rate');
+for(let i=0;i<120;i++)backing.d.step(1/60,{throttle:1});assert.ok(backing.d.state.speed>0,'Accelerate must return from reverse to forward driving');
+const brakingToReverse=run(60,{throttle:1},2).d;
+for(let i=0;i<120;i++)brakingToReverse.step(1/60,{brake:1,reverse:true});assert.ok(brakingToReverse.state.speed<0,'Holding brake must stop before reversing');
 const stationary=createDriving();stationary.state.yawRate=2;stationary.step(1/60);assert.equal(stationary.state.heading,0,'Stopped vehicle must not accumulate invisible turning');assert.equal(stationary.state.yawRate,0);
 console.log('Driving checks passed: frame rate, hills, dry/wet braking, corners, free steering.');

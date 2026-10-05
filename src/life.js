@@ -135,7 +135,7 @@ export function createWorldLife(h){
  function update(dt,time){
   cull([...npcs,...traffic]);
   windTime.value=time;windStrength.value=h.extendedWorld.weather==='rain'?1.8:1;
-  const playerStep=player.position.distanceTo(playerLast);if(playerStep<3)for(const wheel of playerWheels)wheel.rotation.x-=playerStep/(wheel.userData.rollingRadius||wheel.userData.wheelRadius);playerLast.copy(player.position);
+  const playerStep=player.position.distanceTo(playerLast),direction=Math.sign((player.position.x-playerLast.x)*-Math.sin(player.rotation.y)+(player.position.z-playerLast.z)*-Math.cos(player.rotation.y));if(playerStep<3)for(const wheel of playerWheels)wheel.rotation.x-=direction*playerStep/(wheel.userData.rollingRadius||wheel.userData.wheelRadius);playerLast.copy(player.position);
   for(const n of npcs)updateNPC(n,dt,time);
   for(const v of traffic){
    const length=lengths[v.road];let gap=Infinity;

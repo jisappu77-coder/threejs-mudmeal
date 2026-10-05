@@ -44,6 +44,7 @@ try{
   });
   console.log('Waterfront clearance',JSON.stringify(waterfront));
   assert.ok(waterfront.stats.restaurant===1&&waterfront.stats.fishingNets===4&&waterfront.stats.boats>=3&&waterfront.stats.marketStalls>=3&&waterfront.stats.heritageLandmarks===1);
+  assert.equal(waterfront.stats.terraces,1);assert.ok(waterfront.stats.palms>=16,'The shared waterfront composition needs planted gardens beside the restaurant');
   assert.deepEqual(waterfront.passageErrors,[],'The dirt service passage must fit the whole bike across its usable width');
   assert.equal(waterfront.stats.bridges,3);assert.deepEqual(waterfront.bridgeErrors,[],'All canal bridges must leave the riding surface clear');
   assert.ok(waterfront.stops.length===3&&waterfront.stops.every(p=>!p.wet&&!p.blocked)&&waterfront.solidsMissing===0);
@@ -90,8 +91,12 @@ try{
   await page.locator('#tools-toggle').click();await page.locator('#view').click({timeout:120000});assert.equal(await page.evaluate(()=>window.__REAL_MAP__.camera.near),10,'Overhead view needs enough depth precision to separate water from terrain');await page.locator('#tools-toggle').click();await page.screenshot({path:`artifacts/real-map/${id}-map.png`,timeout:120000});await page.locator('#tools-toggle').click();await page.locator('#view').click({timeout:120000});assert.equal(await page.evaluate(()=>window.__REAL_MAP__.camera.near),.2,'Follow view must restore its close clipping plane');await page.locator('#tools-toggle').click();
   // Find open ground to exercise steering independently of legitimate road obstructions.
   await page.evaluate(()=>{const a=window.__REAL_MAP__,b=a.map.bounds;for(let x=b.minX+40;x<b.maxX-40;x+=20)for(let z=b.minZ+40;z<b.maxZ-40;z+=20){let clear=true;for(let dx=-15;dx<=15;dx+=3)for(let dz=-20;dz<=10;dz+=3)if(a.blocked(x+dx,z+dz,0))clear=false;if(clear){a.player.position.set(x,a.height(x,z)+.07,z);a.player.rotation.y=0;a.driving.reset();return}}throw Error('No open driving test area')});
+  await page.locator('#stop').focus();await page.keyboard.down('s');
+  const reverse=await page.evaluate(()=>{const a=window.__REAL_MAP__,start=a.player.position.clone();for(let i=0;i<90;i++)a.update(1/60);const result={distance:a.player.position.z-start.z,speed:a.driving.state.speed};a.player.position.copy(start);a.player.rotation.y=0;a.driving.reset();return result;});await page.keyboard.up('s');assert.ok(reverse.distance>1&&reverse.speed<0,'Down must move the actual bike backwards even after focusing a pedal');
   const cdp=await page.context().newCDPSession(page);await cdp.send('Emulation.setTouchEmulationEnabled',{enabled:true,maxTouchPoints:2});
   const boxes=await Promise.all([page.locator('#go').boundingBox(),page.locator('[data-key="d"]').boundingBox()]);
+  const brakeBox=await page.locator('#stop').boundingBox();await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:[{x:brakeBox.x+brakeBox.width/2,y:brakeBox.y+brakeBox.height/2,id:1}]});
+  const phoneReverse=await page.evaluate(()=>{const a=window.__REAL_MAP__,start=a.player.position.clone();for(let i=0;i<90;i++)a.update(1/60);const result={distance:a.player.position.z-start.z,speed:a.driving.state.speed};a.player.position.copy(start);a.player.rotation.y=0;a.driving.reset();return result});await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});assert.ok(phoneReverse.distance>1&&phoneReverse.speed<0,'Holding the phone brake pedal must reverse the bike');
   await cdp.send('Input.dispatchTouchEvent',{type:'touchStart',touchPoints:boxes.map((b,i)=>({x:b.x+b.width/2,y:b.y+b.height/2,id:i+1}))});
   const mobile=await page.evaluate(()=>{const a=window.__REAL_MAP__,p=a.player.position.clone();for(let i=0;i<120;i++)a.update(1/60);return {moved:a.player.position.distanceTo(p),heading:a.player.rotation.y,speed:a.driving.state.speed}});
   await cdp.send('Input.dispatchTouchEvent',{type:'touchEnd',touchPoints:[]});await cdp.detach();

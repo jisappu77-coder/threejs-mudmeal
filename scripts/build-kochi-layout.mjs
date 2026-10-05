@@ -56,20 +56,20 @@ for(let i=0;i<spans.length;i++)for(let j=i+1;j<spans.length;j++){
 }
 for(const road of roads)road.points=[...spans.filter(s=>s.road===road).flatMap(s=>[s.a,...s.cuts.sort((a,b)=>a.t-b.t).map(c=>c.point)]),road.points.at(-1)];
 // The quay is offset from the actual waterfront curve, with a narrow canal behind the southern district.
-const waterfront=roads[0].points,shore=[[145,-450],...waterfront.map(([x,z])=>[x+32,z]),[222,450]];
+const waterfront=roads[0].points,shore=[[145,-450],...waterfront.map(([x,z])=>[x+38+24*Math.exp(-(((z+90)/210)**2)),z]),[222,450]];
 const rect=(x,z,w,d)=>[[x-w/2,z-d/2],[x+w/2,z-d/2],[x+w/2,z+d/2],[x-w/2,z+d/2]];
 const canals=[[-500,-287],[-273,-77],[-63,222],[246,280]].map(([a,b],i)=>({id:i+2,kind:'water',points:rect((a+b)/2,224,b-a,24),holes:[]}));
-const data={id:'kochi',name:'Kochi Waterfront',units:'metres',bounds:[-500,-450,520,450],source:'project-authored',references:['72849.jpg','72861.jpg','72860.jpg','72859.jpg','72858.jpg','72857.jpg','72855.jpg','72854.jpg','72851.jpg','file_00000000f10c82088d9c16691b207b83.jpg'],roads,buildings:[],areas:[{id:1,kind:'water',points:[...shore,[520,450],[520,-450]],holes:[]},...canals],coastlines:[{id:1,points:shore}],landmarks:[{id:1,kind:'fishing-nets',name:'Fishing-net promenade',point:[212,-120]},{id:2,kind:'jetty',name:'Waterfront jetty',point:[237,85]},{id:3,kind:'restaurant',name:'Restaurant frontage',point:[176,-70]}],bridges:[{x:-280,z:224,width:10,length:30},{x:-70,z:224,width:10,length:30},{x:234,z:224,width:12,length:30}]};
+const data={id:'kochi',name:'Kochi Waterfront',units:'metres',bounds:[-500,-450,520,450],source:'project-authored',references:['72849.jpg','72861.jpg','72860.jpg','72859.jpg','72858.jpg','72857.jpg','72855.jpg','72854.jpg','72851.jpg','file_00000000f10c82088d9c16691b207b83.jpg'],roads,buildings:[],areas:[{id:1,kind:'water',points:[...shore,[520,450],[520,-450]],holes:[]},...canals],coastlines:[{id:1,points:shore}],landmarks:[{id:1,kind:'fishing-nets',name:'Fishing-net promenade',point:[250,-245]},{id:2,kind:'jetty',name:'Waterfront jetty',point:[245,20]},{id:3,kind:'restaurant',name:'Restaurant frontage',point:[176,-70]}],bridges:[{x:-280,z:224,width:10,length:30},{x:-70,z:224,width:10,length:30},{x:234,z:224,width:12,length:30}]};
 const map=prepareMap(data);
 // Keep the restaurant frontage and chapel plaza open while packing homes around irregular streets.
-const reserved=[{x:155,z:-70,w:48,d:95},{x:195,z:-70,w:24,d:80},{x:135,z:65,w:44,d:50}];
+const reserved=[{x:155,z:-70,w:48,d:95},{x:196,z:-65,w:42,d:160},{x:221,z:-185,w:44,d:50}];
 function add(x,z,w,d,height,extra={}){
  const points=rect(x,z,w,d);
  if(points.some(([x,z])=>{const r=map.nearestRoad(x,z);return x<-480||x>480||z<-425||z>425||r.distance<r.segment.width/2+3.5||map.waterAt(x,z)}))return;
  if(data.buildings.some(b=>{const lo=b.points[0],hi=b.points[2];return x+w/2+1>lo[0]&&x-w/2-1<hi[0]&&z+d/2+1>lo[1]&&z-d/2-1<hi[1]}))return;
  data.buildings.push({id:data.buildings.length+1,height,points,...extra});
 }
-add(135,65,22,24,7,{name:'Waterfront Chapel',landmark:'chapel'});
+add(221,-185,22,24,7,{name:'Waterfront Chapel',landmark:'chapel'});
 for(const road of roads)for(let i=1;i<road.points.length;i++){
  if(i%5===0)continue;
  const a=road.points[i-1],b=road.points[i],length=Math.hypot(b[0]-a[0],b[1]-a[1]);

@@ -51,7 +51,7 @@ export function createMapArt(renderer,id){
  const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};
  function texture(kind){
   const c=document.createElement('canvas');c.width=c.height=512;const ctx=c.getContext('2d');
-  ctx.fillStyle={grass:'#7a9e3e',asphalt:'#656368',plaster:'#fff4db',tile:'#c45032',paving:'#d0c2a0',leaf:'#b9d47c',wood:'#887153',dirt:'#d99b55',gravel:'#baa180'}[kind]||'#b6b9ad';ctx.fillRect(0,0,512,512);
+  ctx.fillStyle={grass:'#587645',asphalt:'#656368',plaster:'#fff4db',tile:'#a45a3c',paving:'#d0c2a0',leaf:'#b9d47c',wood:'#887153',dirt:'#d99b55',gravel:'#baa180'}[kind]||'#b6b9ad';ctx.fillRect(0,0,512,512);
   for(let i=0;i<14000;i++){ctx.fillStyle=i%2?'#f8efce15':'#26352618';ctx.fillRect(random()*512,random()*512,1+random()*3,kind==='wood'?12:2)}
   if(kind==='gravel')for(let i=0;i<1200;i++){ctx.fillStyle=i%2?'#d8cfb176':'#665f5166';ctx.beginPath();ctx.ellipse(random()*512,random()*512,1+random()*3,1+random()*2,random()*3,0,Math.PI*2);ctx.fill()}
   if(kind==='grass')for(let i=0;i<1800;i++){ctx.strokeStyle=i%2?'#a0a37138':'#344d3130';const x=random()*512,y=random()*512;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+2,y-3-random()*6);ctx.stroke()}
@@ -64,7 +64,7 @@ export function createMapArt(renderer,id){
  const mat=(color,map,roughness=.85)=>new THREE.MeshStandardMaterial({color,map,roughness});
  const ground=mat('#ffffff',textures.grass),road=mat('#ffffff',textures.asphalt),paving=mat('#ffffff',textures.paving);
  ground.map.repeat.set(180,180);road.map.repeat.set(.7,.7);paving.map.repeat.set(.6,.6);
- const walls=['#ffe1a0','#e2eedb','#e8c19d','#fff0d2','#bdd8c3','#f2d99c'].map(c=>mat(c,textures.plaster));
+ const walls=['#efdfc6','#dce2d2','#dfc1a7','#f2e9d8','#c7d5c9','#e4d4b4'].map(c=>mat(c,textures.plaster));
  const tile=mat('#ffffff',textures.tile),wood=mat('#8d7350',textures.wood),metal=mat('#3c4640'),cream=mat('#dfd3ae');tile.side=THREE.DoubleSide;
  const tileRelief=textures.tile.clone();tileRelief.colorSpace=THREE.NoColorSpace;tile.bumpMap=tileRelief;tile.bumpScale=.045;
  const glass=new THREE.MeshPhysicalMaterial({color:'#566e70',roughness:.18,metalness:.25,clearcoat:.8});
@@ -158,12 +158,25 @@ export function dressRealMap({scene,map,id,height,buildingAt,waterAt,trees,art,a
    for(let j=1;j<15;j++){const f=j/16,length=Math.sin(f*Math.PI)**.6*.9,px=x+.5+Math.sin(angle)*f*4.3,pz=z+Math.cos(angle)*f*4.3,py=y+h+Math.sin(f*Math.PI)*.9-f*f*1.8;for(const side of [-1,1]){const delta=new THREE.Vector3(Math.cos(angle)*side*length+Math.sin(angle)*.2,-.2,-Math.sin(angle)*side*length+Math.cos(angle)*.2),e=new THREE.Euler().setFromQuaternion(new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0,0,1),delta.clone().normalize()));put(leaflet,leaves[(i+j)%4],px,py,pz,1,1,delta.length(),e.x,e.y,e.z)}}
   }
  }
- for(const t of trees){obstacles.push({x:t.x,z:t.z,radius:.55});palm(t);stats.plants++;}
+ for(const t of trees){obstacles.push({x:t.x,z:t.z,radius:t.kind==='shade'?.35:.55});if(t.kind!=='shade'){palm(t);stats.plants++;}}
  const infill=planKochiInfill(map,(x,z,r)=>clearGround(x,z,r)&&!frontages.some(f=>{const u=(x-f.x)*f.nz-(z-f.z)*f.nx,v=(x-f.x)*f.nx+(z-f.z)*f.nz;return Math.abs(u)<f.width/2+r&&v>-r&&v<f.depth+r;}),anchor);
  const homeRoof=createKeralaRoof([{x:-3.3,z:-3.25},{x:3.3,z:-3.25},{x:3.3,z:3.25},{x:-3.3,z:3.25}],0).geometry,bananaLeaf=createLeafGeometry(2.1,.38,.35),crown=new THREE.IcosahedronGeometry(1,1),fruit=mat('#f3b449'),bananaStem=mat('#8b9c48');
  function banana(x,z,y){put(cylinder,bananaStem,x,y+.8,z,.08,1.6,.08);for(let j=0;j<7;j++)put(bananaLeaf,leaves[j%4],x,y+1.55,z,1,1,1,.15,j*Math.PI*2/7);obstacles.push({x,z,radius:.18,kind:'banana-stem'});stats.bananaPlants++;stats.plants++;}
  const canopyLeaf=createLeafGeometry(.8,.23,.10),canopyCore=mat('#42672e'),canopyLeaves=['#416b30','#70973b','#97b550','#568034'].map(c=>{const m=mat(c,art.textures.leaf);m.side=THREE.DoubleSide;return m;});
- function shadeTree(x,z,y){put(cylinder,wood,x,y+2.4,z,.19,4.8,.19);for(let j=0;j<7;j++){const a=j*2.4,dx=Math.sin(a)*1.1,dz=Math.cos(a)*1.1,cy=y+5.1+(j%3)*.3;bar(wood,[x,y+3.5,z],[x+dx,cy,z+dz],.07);put(crown,canopyCore,x+dx,cy,z+dz,.8,.75,.9,.1,a);for(let k=0;k<24;k++){const angle=k*2.4+j,layer=(k%5)/4;put(canopyLeaf,canopyLeaves[(j+k)%4],x+dx+Math.sin(angle)*(.5+layer*.6),cy-.45+layer*.9,z+dz+Math.cos(angle)*(.5+layer*.6),1,1,1,-.5+layer,angle,(k%3-.8)*.3);}}obstacles.push({x,z,radius:.3,kind:'shade-tree'});stats.streetTrees++;stats.plants++;}
+ function shadeTree(x,z,y,register=true,size=1){
+  put(cylinder,wood,x,y+2.4*size,z,.19*size,4.8*size,.19*size);
+  for(let j=0;j<7;j++){
+   const a=j*2.4,dx=Math.sin(a)*1.1*size,dz=Math.cos(a)*1.1*size,cy=y+(5.1+(j%3)*.3)*size;
+   bar(wood,[x,y+3.5*size,z],[x+dx,cy,z+dz],.07*size);
+   put(crown,canopyCore,x+dx,cy,z+dz,.8*size,.75*size,.9*size,.1,a);
+   for(let k=0;k<24;k++){
+    const angle=k*2.4+j,layer=(k%5)/4;
+    put(canopyLeaf,canopyLeaves[(j+k)%4],x+dx+Math.sin(angle)*(.5+layer*.6)*size,cy+(-.45+layer*.9)*size,z+dz+Math.cos(angle)*(.5+layer*.6)*size,size,size,size,-.5+layer,angle,(k%3-.8)*.3);
+   }
+  }
+  if(register)obstacles.push({x,z,radius:.3*size,kind:'shade-tree'});stats.streetTrees++;stats.plants++;
+ }
+ for(const t of trees.filter(t=>t.kind==='shade'))shadeTree(t.x,t.z,t.y,false,1.7);
  for(const [index,p]of infill.entries()){
   const local=(u,v)=>({x:p.x+p.tx*u+p.nx*v,z:p.z+p.tz*u+p.nz*v}),angle=Math.atan2(-p.nx,-p.nz),base=height(p.x,p.z);
   if(p.type==='garden'){
