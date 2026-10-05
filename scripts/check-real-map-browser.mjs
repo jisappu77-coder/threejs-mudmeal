@@ -88,6 +88,13 @@ try{
   console.log(id,'delivery and environmental detail',JSON.stringify(gameplay));
   assert.equal(await page.locator('a[href*="openstreetmap"]').count(),0);assert.equal(await page.evaluate(()=>window.__REAL_MAP__.source.source),'project-authored');assert.deepEqual(externalRequests,[],'The image-inspired world must not fetch external maps or photographs');
   await page.screenshot({path:`artifacts/real-map/${id}-driving.png`,timeout:120000});
+  await page.locator('#tools-toggle').click();
+  assert.equal(await page.locator('#camera-mode').inputValue(),'street');
+  const streetDistance=await page.evaluate(()=>{const a=window.__REAL_MAP__;a.reset();return a.camera.position.distanceTo(a.player.position)});
+  assert.ok(streetDistance<8,'The reference ride camera must stay close to the rider');
+  await page.locator('#camera-mode').selectOption('elevated');
+  assert.ok(await page.evaluate(()=>{const a=window.__REAL_MAP__;return a.camera.position.distanceTo(a.player.position)>35}),'Elevated ride must show the surrounding quay');
+  await page.locator('#camera-mode').selectOption('street');await page.locator('#tools-toggle').click();
   await page.locator('#tools-toggle').click();await page.locator('#view').click({timeout:120000});assert.equal(await page.evaluate(()=>window.__REAL_MAP__.camera.near),10,'Overhead view needs enough depth precision to separate water from terrain');await page.locator('#tools-toggle').click();await page.screenshot({path:`artifacts/real-map/${id}-map.png`,timeout:120000});await page.locator('#tools-toggle').click();await page.locator('#view').click({timeout:120000});assert.equal(await page.evaluate(()=>window.__REAL_MAP__.camera.near),.2,'Follow view must restore its close clipping plane');await page.locator('#tools-toggle').click();
   // Find open ground to exercise steering independently of legitimate road obstructions.
   await page.evaluate(()=>{const a=window.__REAL_MAP__,b=a.map.bounds;for(let x=b.minX+40;x<b.maxX-40;x+=20)for(let z=b.minZ+40;z<b.maxZ-40;z+=20){let clear=true;for(let dx=-15;dx<=15;dx+=3)for(let dz=-20;dz<=10;dz+=3)if(a.blocked(x+dx,z+dz,0))clear=false;if(clear){a.player.position.set(x,a.height(x,z)+.07,z);a.player.rotation.y=0;a.driving.reset();return}}throw Error('No open driving test area')});

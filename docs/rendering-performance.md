@@ -44,3 +44,9 @@ The output is `artifacts/performance/after.json`. The session's comparison files
 Frame-loop checks cover 30/60 FPS pacing on 60/90/120/144 Hz displays, elapsed simulation time, hidden-tab resume, paused redraws and GPU backpressure. Geographic/browser checks cover coast holes, full-bike road and service-passage clearance, three delivery bays, timed orders, model switching and simultaneous mobile acceleration/steering. The original village browser suite covers rendering, people, traffic, weather, cameras and responsive layout.
 
 Physical-phone temperature and sustained frame times cannot be measured in this cloud environment. The map still contains substantial geometry; a real device may remain GPU-limited in Sharp mode. No automatic quality reduction was added. On a 60 Hz display capable of keeping up, the 30 FPS cap schedules half as many renders as 60 FPS, but actual battery and thermal savings depend on the device.
+
+## October 5 street refinement
+
+Kochi shade-tree crowns now use spatially batched alpha-tested leaf clusters instead of opaque icosahedra with small individual mesh leaves. For each tree, the crown falls from 9 × (320 + 16 × 48) = 9,792 source triangles to 9 × 24 × 2 = 432 triangles, while adding visible gaps and individual leaf texture detail. Trunks and branches remain. Alpha-tested foliage can still cost fill rate on phones, so this geometry reduction is not a measured temperature guarantee.
+
+The static daylight sky and water colour textures add no reflection camera or dynamic render pass. Existing 30 FPS scheduling, paused/hidden-tab suspension, actor culling, GPU backpressure, spatial batching and selectable detail settings remain.

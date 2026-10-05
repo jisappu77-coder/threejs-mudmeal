@@ -51,7 +51,7 @@ export function createMapArt(renderer,id){
  const random=()=>{seed=(seed*1664525+1013904223)>>>0;return seed/4294967296};
  function texture(kind){
   const c=document.createElement('canvas');c.width=c.height=512;const ctx=c.getContext('2d');
-  ctx.fillStyle={grass:'#50683b',asphalt:'#656368',plaster:'#fff4db',tile:'#914c34',paving:'#d0c2a0',leaf:'#9eb86c',canopy:'#3c5e2d',wood:'#887153',dirt:'#d99b55',gravel:'#baa180'}[kind]||'#b6b9ad';ctx.fillRect(0,0,512,512);
+  ctx.fillStyle={grass:'#50683b',asphalt:'#56565a',plaster:'#fff4db',tile:'#914c34',paving:'#d0c2a0',leaf:'#9eb86c',canopy:'#3c5e2d',wood:'#887153',dirt:'#d99b55',gravel:'#baa180'}[kind]||'#b6b9ad';ctx.fillRect(0,0,512,512);
   for(let i=0;i<14000;i++){ctx.fillStyle=i%2?'#f8efce15':'#26352618';ctx.fillRect(random()*512,random()*512,1+random()*3,kind==='wood'?12:2)}
   if(kind==='gravel')for(let i=0;i<1200;i++){ctx.fillStyle=i%2?'#d8cfb176':'#665f5166';ctx.beginPath();ctx.ellipse(random()*512,random()*512,1+random()*3,1+random()*2,random()*3,0,Math.PI*2);ctx.fill()}
   if(kind==='grass')for(let i=0;i<1800;i++){ctx.strokeStyle=i%2?'#a0a37138':'#344d3130';const x=random()*512,y=random()*512;ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+2,y-3-random()*6);ctx.stroke()}
@@ -106,7 +106,7 @@ export function dressRealMap({scene,map,id,height,buildingAt,waterAt,trees,art,a
   for(let i=0;i<p.length;i++){
    const a=p[i],q=p[(i+1)%p.length],dx=q.x-a.x,dz=q.z-a.z,l=Math.hypot(dx,dz);if(l<2.4)continue;
    let nx=dz/l,nz=-dx/l;const mx=(a.x+q.x)/2,mz=(a.z+q.z)/2;if(pointInPolygon(mx+nx*.1,mz+nz*.1,p)){nx=-nx;nz=-nz}const angle=Math.atan2(nx,nz);
-   const near=map.nearestRoad(mx,mz),streetFacing=i===front.index&&near.distance<near.segment.width/2+12,shop=b.id%3===0;
+   const near=map.nearestRoad(mx,mz),streetFacing=(i===front.index||(b.frontage&&nx>=0))&&near.distance<near.segment.width/2+20,shop=b.frontage||b.id%3===0;
    const local=(u,d)=>({x:mx+dx/l*u+nx*d,z:mz+dz/l*u+nz*d});
    put(box,cream,mx+nx*.06,base+.25,mz+nz*.06,l,.45,.16,0,angle);
    put(box,cream,mx+nx*.07,base+b.height-.2,mz+nz*.07,l,.17,.22,0,angle);
@@ -126,7 +126,7 @@ export function dressRealMap({scene,map,id,height,buildingAt,waterAt,trees,art,a
     bar(metal,[cable.x,base+.8,cable.z],[cable.x,base+2.4,cable.z],.018);put(box,cream,cable.x,base+1.6,cable.z,.26,.34,.09,0,angle);
     if(shop){
     const names=['കേരള സ്റ്റോർ · KERALA STORES','ചായ · CHAYA & SNACKS','പലചരക്ക് · LOCAL MARKET'];
-    const low=b.height<4,offset=low?1.8:.28;sign(names[Math.floor(b.id/3)%3],mx+nx*offset,base+(low?2.2:3.45),mz+nz*offset,Math.min(l-.6,5),.58,angle,b.id%2?'#7b4030':'#2f5146');}
+    const low=b.height<4,offset=low?1.8:.28;sign(b.name||names[Math.floor(b.id/3)%3],mx+nx*offset,base+(low?2.2:3.45),mz+nz*offset,Math.min(l-.6,5),.58,angle,b.id%2?'#7b4030':'#2f5146');}
     put(box,tile,mx+nx*.7,base+2.65,mz+nz*.7,Math.min(l-.5,shop?5:2.8),.14,1.3,.24,angle,0,'YXZ');
     const depth=Math.min(1.5,near.distance-near.segment.width/2-1.75),width=Math.min(l-.8,6.5);
     const posts=[-1,1].map(side=>({x:mx+dx/l*side*(width/2-.12)+nx*depth,z:mz+dz/l*side*(width/2-.12)+nz*depth}));
@@ -153,6 +153,18 @@ export function dressRealMap({scene,map,id,height,buildingAt,waterAt,trees,art,a
      if(points.every(p=>clearGround(p.x,p.z,.28))){for(const h of [.65,1.3]){put(box,darkWood,shelf.x,base+h,shelf.z,1.4,.08,.42,0,angle);for(const offset of [-.42,0,.42]){const p=local(u+offset,.62);put(vessel,brass,p.x,base+h+.04,p.z,.7,.7,.7);}}for(const offset of [-.64,.64]){const p=local(u+offset,.62);put(box,wood,p.x,base+.72,p.z,.07,1.5,.4,0,angle);}for(const p of points)obstacles.push({...p,radius:.28,kind:'shop-display'});stats.shopDisplays++;const lamp=local(u,.7);bar(metal,[lamp.x,base+2.62,lamp.z],[lamp.x,base+2.27,lamp.z],.012);put(lampDish,brass,lamp.x,base+2.18,lamp.z);put(sphere,brass,lamp.x,base+2.24,lamp.z,.04,.09,.04);stats.hangingLamps++;}
     }
     for(const side of [-1,1]){const p=local(side*Math.min(l/2-1.2,3.8),shop?1.25:1.6);if(!clearGround(p.x,p.z,.4))continue;put(pot,clay,p.x,base,p.z);put(cylinder,soil,p.x,base+.43,p.z,.24,.025,.24);for(let j=0;j<9;j++){const a=j*2.4;put(smallLeaf,leaves[j%4],p.x+Math.sin(a)*.12,base+.48+(j%3)*.12,p.z+Math.cos(a)*.12,.6,.8,.6,.35,a)}obstacles.push({...p,radius:.4,kind:'garden-pot'});stats.pots++;}
+    if(b.frontage){
+     const balcony=local(0,.65);put(box,darkWood,balcony.x,base+3.45,balcony.z,l-.6,.15,1.3,0,angle);
+     for(let u=-l/2+.5;u<l/2;u+=.38){const p=local(u,1.25);put(box,darkWood,p.x,base+4,p.z,.045,1.05,.045,0,angle);}
+     const rail=local(0,1.25);put(box,darkWood,rail.x,base+4.5,rail.z,l-.8,.07,.07,0,angle);
+     for(let u=-l/2+.5;u<l/2-.4;u+=.55){const p=local(u,.95);put(box,Math.round(u/.55)%2?cream:art.walls[2],p.x,base+2.95,p.z,.56,.07,1.8,.15,angle,0,'YXZ');}
+     const flower=mat(b.id%2?'#c63076':'#e74e99');
+     for(const side of [-1,1])for(let j=0;j<65;j++){
+      const u=side*(l/2-.6)+Math.sin(j*2.4)*.5,v=.4+Math.cos(j*1.9)*.3,y=base+2.5+(j%12)*.24,p=local(u,v);
+      put(smallLeaf,leaves[j%4],p.x,y,p.z,1.5,1.5,1.5,j*.5,j*2.4);
+      if(j%2===0)put(sphere,flower,p.x,y+.05,p.z,.10,.07,.12);
+     }
+    }
     frontages.push({buildingId:b.id,x:mx,z:mz,nx,nz,width:yardWidth,depth:yardDepth,shop});
    }
   }
@@ -168,18 +180,25 @@ export function dressRealMap({scene,map,id,height,buildingAt,waterAt,trees,art,a
  }
  for(const t of trees){obstacles.push({x:t.x,z:t.z,radius:t.kind==='shade'?.35:.55});if(t.kind!=='shade'){palm(t);stats.plants++;}}
  const infill=planKochiInfill(map,(x,z,r)=>clearGround(x,z,r)&&!frontages.some(f=>{const u=(x-f.x)*f.nz-(z-f.z)*f.nx,v=(x-f.x)*f.nx+(z-f.z)*f.nz;return Math.abs(u)<f.width/2+r&&v>-r&&v<f.depth+r;}),anchor);
- const homeRoof=createKeralaRoof([{x:-3.3,z:-3.25},{x:3.3,z:-3.25},{x:3.3,z:3.25},{x:-3.3,z:3.25}],0).geometry,bananaLeaf=createLeafGeometry(2.1,.38,.35),crown=new THREE.IcosahedronGeometry(1,2),fruit=mat('#f3b449'),bananaStem=mat('#8b9c48');
+ const homeRoof=createKeralaRoof([{x:-3.3,z:-3.25},{x:3.3,z:-3.25},{x:3.3,z:3.25},{x:-3.3,z:3.25}],0).geometry,bananaLeaf=createLeafGeometry(2.1,.38,.35),fruit=mat('#f3b449'),bananaStem=mat('#8b9c48');
  function banana(x,z,y){put(cylinder,bananaStem,x,y+.8,z,.08,1.6,.08);for(let j=0;j<7;j++)put(bananaLeaf,leaves[j%4],x,y+1.55,z,1,1,1,.15,j*Math.PI*2/7);obstacles.push({x,z,radius:.18,kind:'banana-stem'});stats.bananaPlants++;stats.plants++;}
- const canopyLeaf=createLeafGeometry(.36,.10,.08),canopyCore=mat('#79945d',art.textures.canopy),canopyLeaves=['#31572b','#66853e','#8f9d55','#436732'].map(c=>{const m=mat(c,art.textures.leaf);m.side=THREE.DoubleSide;return m;});
+ // Transparent leaf clusters retain gaps and an irregular silhouette with fewer triangles.
+ const foliageCanvas=document.createElement('canvas');foliageCanvas.width=foliageCanvas.height=256;
+ const fc=foliageCanvas.getContext('2d');
+ for(let i=0;i<110;i++){
+  const a=random()*Math.PI*2,r=Math.sqrt(random())*105,x=128+Math.cos(a)*r,y=128+Math.sin(a)*r;
+  fc.save();fc.translate(x,y);fc.rotate(a);fc.fillStyle=['#355a27','#537b34','#879748','#b1b769'][i%4];fc.beginPath();fc.ellipse(0,0,9+random()*5,3+random()*3,0,0,Math.PI*2);fc.fill();fc.strokeStyle='#c3bd7850';fc.lineWidth=.7;fc.beginPath();fc.moveTo(-9,0);fc.lineTo(9,0);fc.stroke();fc.restore();
+ }
+ const foliageTexture=new THREE.CanvasTexture(foliageCanvas);foliageTexture.colorSpace=THREE.SRGBColorSpace;
+ const canopyLeaf=new THREE.PlaneGeometry(1,1),canopyLeaves=['#ffffff','#cbd9b8','#aebd97'].map(color=>new THREE.MeshStandardMaterial({color,map:foliageTexture,alphaTest:.4,side:THREE.DoubleSide,roughness:.95}));
  function shadeTree(x,z,y,register=true,size=1){
   put(cylinder,wood,x,y+2.4*size,z,.19*size,4.8*size,.19*size);
   for(let j=0;j<9;j++){
    const a=j*2.4,dx=Math.sin(a)*1.2*size,dz=Math.cos(a)*1.2*size,cy=y+(4.7+(j%3)*.6)*size;
    bar(wood,[x,y+3.5*size,z],[x+dx,cy,z+dz],.07*size);
-   put(crown,canopyCore,x+dx,cy,z+dz,(1.05+j%2*.25)*size,1.1*size,1.2*size,.1,a);
-   for(let k=0;k<16;k++){
-    const angle=k*2.4+j,layer=(k%5)/4;
-    put(canopyLeaf,canopyLeaves[(j+k)%4],x+dx+Math.sin(angle)*(.8+layer*.7)*size,cy+(-.8+layer*1.6)*size,z+dz+Math.cos(angle)*(.8+layer*.7)*size,size,size,size,-.5+layer,angle,(k%3-.8)*.3);
+   for(let k=0;k<24;k++){
+    const angle=k*2.4+j,layer=(k+.5)/24,vertical=layer*2-1,radial=Math.sqrt(1-vertical*vertical);
+    put(canopyLeaf,canopyLeaves[(j+k)%3],x+dx+Math.sin(angle)*radial*1.5*size,cy+vertical*1.4*size,z+dz+Math.cos(angle)*radial*1.5*size,(1.2+layer)*size,(1.2+layer)*size,1,-.9+layer*1.8,angle,(k%3-.8)*.6);
    }
   }
   if(register)obstacles.push({x,z,radius:.3*size,kind:'shade-tree'});stats.streetTrees++;stats.plants++;
@@ -213,7 +232,7 @@ export function dressRealMap({scene,map,id,height,buildingAt,waterAt,trees,art,a
  for(const s of livelyRoads){const length=Math.hypot(s.b.x-s.a.x,s.b.z-s.a.z);for(let d=4;d<length;d+=10)for(const side of [-1,1]){
   const tx=(s.b.x-s.a.x)/length,tz=(s.b.z-s.a.z)/length,x=s.a.x+tx*d+tz*side*(s.width/2+4.5),z=s.a.z+tz*d-tx*side*(s.width/2+4.5);
   if(Math.hypot(x,z)>650)continue;
-  if(stats.streetTrees<260&&clearGround(x,z,1.4)&&!infill.some(p=>Math.hypot(x-p.x,z-p.z)<p.radius+2)&&!entranceNear(x,z,1.4)){put(box,yard,x,height(x,z)+.025,z,2.8,.04,2.8);shadeTree(x,z,height(x,z));}
+  if(!(s.name==='Waterfront Road'&&(side===1||(z>-205&&z<-90)))&&stats.streetTrees<260&&clearGround(x,z,1.4)&&!infill.some(p=>Math.hypot(x-p.x,z-p.z)<p.radius+2)&&!entranceNear(x,z,1.4)){put(box,yard,x,height(x,z)+.025,z,2.8,.04,2.8);shadeTree(x,z,height(x,z));}
   const bx=s.a.x+tx*d+tz*side*(s.width/2+2.7),bz=s.a.z+tz*d-tx*side*(s.width/2+2.7);
   if(stats.bananaPlants<600&&clearGround(bx,bz,.4)&&!infill.some(p=>Math.hypot(bx-p.x,bz-p.z)<p.radius+1)&&!entranceNear(bx,bz,.4)){put(box,yard,bx,height(bx,bz)+.025,bz,1,.04,1);banana(bx,bz,height(bx,bz));}
  }}

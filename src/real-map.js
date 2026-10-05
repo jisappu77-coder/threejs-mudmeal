@@ -25,8 +25,14 @@ async function start(){
  const renderer=new THREE.WebGLRenderer({canvas:document.querySelector('#real-world'),antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(initialSize.width,initialSize.height,false);
  renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.NeutralToneMapping;renderer.toneMappingExposure=1.05;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
  const scene=new THREE.Scene();scene.background=new THREE.Color('#bdd4dd');const fog=new THREE.Fog(scene.background,220,1100);scene.fog=fog;
- scene.add(new THREE.HemisphereLight('#edf5df','#84683e',.9));const sun=new THREE.DirectionalLight('#ffe6b5',3.2);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-65,right:65,top:65,bottom:-65,near:1,far:250});sun.shadow.normalBias=.025;sun.shadow.bias=-.00012;scene.add(sun,sun.target);
- const camera=new THREE.PerspectiveCamera(42,initialSize.width/initialSize.height,.2,6000),graphics=setupGraphics(renderer,scene,camera);let detailed=devicePixelRatio<=1.5;graphics.setQuality(detailed);const quality=document.querySelector('#quality');quality.textContent=detailed?'Detail on':'Detail off';quality.setAttribute('aria-pressed',String(detailed));quality.onclick=()=>{detailed=!detailed;graphics.setQuality(detailed);quality.textContent=detailed?'Detail on':'Detail off';quality.setAttribute('aria-pressed',String(detailed));graphics.render()};
+ // A static sky dome costs one draw call; it follows the same daylight as the street.
+ const skyCanvas=document.createElement('canvas');skyCanvas.width=1024;skyCanvas.height=512;const skyCtx=skyCanvas.getContext('2d'),skyGradient=skyCtx.createLinearGradient(0,0,0,512);
+ skyGradient.addColorStop(0,'#3882bd');skyGradient.addColorStop(.48,'#89bee1');skyGradient.addColorStop(.72,'#d7e5e8');skyGradient.addColorStop(1,'#d7e5e8');skyCtx.fillStyle=skyGradient;skyCtx.fillRect(0,0,1024,512);
+ for(let i=0;i<26;i++){const x=(i*157)%1024,y=150+(i*37)%115;skyCtx.fillStyle='#ffffff35';for(let j=0;j<5;j++){skyCtx.beginPath();skyCtx.ellipse(x+j*16,y-Math.sin(j)*7,35,10+j%2*5,0,0,Math.PI*2);skyCtx.fill();}}
+ const skyTexture=new THREE.CanvasTexture(skyCanvas);skyTexture.colorSpace=THREE.SRGBColorSpace;
+ const sky=new THREE.Mesh(new THREE.SphereGeometry(2800,24,12),new THREE.MeshBasicMaterial({map:skyTexture,side:THREE.BackSide,depthWrite:false,fog:false}));sky.userData.scenicBackdrop=true;scene.add(sky);
+ scene.add(new THREE.HemisphereLight('#d8eafb','#626870',1.2));const sun=new THREE.DirectionalLight('#fff3df',2.8);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-65,right:65,top:65,bottom:-65,near:1,far:250});sun.shadow.normalBias=.025;sun.shadow.bias=-.00012;scene.add(sun,sun.target);
+ const camera=new THREE.PerspectiveCamera(58,initialSize.width/initialSize.height,.2,6000),graphics=setupGraphics(renderer,scene,camera);let detailed=devicePixelRatio<=1.5;graphics.setQuality(detailed);const quality=document.querySelector('#quality');quality.textContent=detailed?'Detail on':'Detail off';quality.setAttribute('aria-pressed',String(detailed));quality.onclick=()=>{detailed=!detailed;graphics.setQuality(detailed);quality.textContent=detailed?'Detail on':'Detail off';quality.setAttribute('aria-pressed',String(detailed));graphics.render()};
  // Heights and scenic planting are deliberately illustrative; the street layout is project-authored.
  const height=()=>0;
  const material=(color)=>new THREE.MeshStandardMaterial({color,roughness:.85});
@@ -45,6 +51,16 @@ async function start(){
  batch(map.roads.map(r=>ribbon(r.points,r.width+.35,.065)),art.cream);
  batch(map.roads.map(r=>ribbon(r.points,r.width,.085)),roadMaterial);
  const paint=[];for(const segment of map.segments.filter(s=>s.width>=6)){const length=Math.hypot(segment.b.x-segment.a.x,segment.b.z-segment.a.z);for(let d=2;d<length-2;d+=6){const a={x:THREE.MathUtils.lerp(segment.a.x,segment.b.x,d/length),z:THREE.MathUtils.lerp(segment.a.z,segment.b.z,d/length)},b={x:THREE.MathUtils.lerp(segment.a.x,segment.b.x,Math.min(d+2.6,length)/length),z:THREE.MathUtils.lerp(segment.a.z,segment.b.z,Math.min(d+2.6,length)/length)};paint.push(ribbon([a,b],.13,.11))}}batch(paint,material('#e4ddc7'));
+ const curbs=[],darkCurbs=[],edges=[];
+ for(const segment of map.segments.filter(s=>s.name==='Waterfront Road')){
+  const dx=segment.b.x-segment.a.x,dz=segment.b.z-segment.a.z,l=Math.hypot(dx,dz),nx=dz/l,nz=-dx/l;
+  for(const side of [-1,1]){
+   const shift=(p,offset)=>({x:p.x+nx*side*offset,z:p.z+nz*side*offset});
+   edges.push(ribbon([shift(segment.a,segment.width/2-.22),shift(segment.b,segment.width/2-.22)],.10,.115));
+   for(let d=0;d<l;d+=1){const a=shift({x:segment.a.x+dx*d/l,z:segment.a.z+dz*d/l},segment.width/2+.13),b=shift({x:segment.a.x+dx*Math.min(l,d+1)/l,z:segment.a.z+dz*Math.min(l,d+1)/l},segment.width/2+.13);(Math.floor(d)%2?curbs:darkCurbs).push(ribbon([a,b],.27,.14));}
+  }
+ }
+ batch(curbs,art.cream);batch(darkCurbs,art.metal);batch(edges,material('#cfb356'));
  function polygonShape(points){const s=new THREE.Shape();points.forEach((p,i)=>i?s.lineTo(p.x,-p.z):s.moveTo(p.x,-p.z));s.closePath();return s;}
  const buildingMeshes=roofMaterials.map(()=>[]),roofs=roofMaterials.map(()=>[]);
  for(const b of map.buildings){
@@ -55,8 +71,11 @@ async function start(){
   b.bounds={minX:Math.min(...b.points.map(p=>p.x)),maxX:Math.max(...b.points.map(p=>p.x)),minZ:Math.min(...b.points.map(p=>p.z)),maxZ:Math.max(...b.points.map(p=>p.z))};
  }
  buildingMeshes.forEach((g,i)=>batch(g,art.walls[i]));roofs.forEach((g,i)=>batch(g,roofMaterials[i]));
- const waveCanvas=document.createElement('canvas');waveCanvas.width=waveCanvas.height=128;const waveCtx=waveCanvas.getContext('2d');waveCtx.fillStyle='#808080';waveCtx.fillRect(0,0,128,128);for(let row=0;row<128;row+=6){waveCtx.strokeStyle=row%12?'#b1b1b1':'#626262';waveCtx.beginPath();for(let x=0;x<=128;x+=4){const y=row+Math.sin(x*.08+row)*2;x?waveCtx.lineTo(x,y):waveCtx.moveTo(x,y);}waveCtx.stroke();}const waterBump=new THREE.CanvasTexture(waveCanvas);waterBump.wrapS=waterBump.wrapT=THREE.RepeatWrapping;waterBump.repeat.set(6,6);const waterMaterial=new THREE.MeshPhysicalMaterial({color:'#246e8b',roughness:.23,metalness:.18,clearcoat:.8,clearcoatRoughness:.16,bumpMap:waterBump,bumpScale:.12,envMapIntensity:.8});
+ const waveCanvas=document.createElement('canvas');waveCanvas.width=waveCanvas.height=128;const waveCtx=waveCanvas.getContext('2d');waveCtx.fillStyle='#808080';waveCtx.fillRect(0,0,128,128);for(let row=0;row<128;row+=6){waveCtx.strokeStyle=row%12?'#b1b1b1':'#626262';waveCtx.beginPath();for(let x=0;x<=128;x+=4){const y=row+Math.sin(x*.08+row)*2;x?waveCtx.lineTo(x,y):waveCtx.moveTo(x,y);}waveCtx.stroke();}const waterBump=new THREE.CanvasTexture(waveCanvas);waterBump.wrapS=waterBump.wrapT=THREE.RepeatWrapping;waterBump.repeat.set(6,6);const waterMaterial=new THREE.MeshPhysicalMaterial({color:'#246e8b',roughness:.28,metalness:.08,clearcoat:.8,clearcoatRoughness:.16,bumpMap:waterBump,bumpScale:.12,envMapIntensity:.8});
  for(const area of map.areas.filter(a=>a.kind==='water')){const shape=polygonShape(area.points);shape.holes=(area.holes||[]).map(polygonShape);const g=new THREE.ShapeGeometry(shape);g.rotateX(-Math.PI/2);const vertices=g.attributes.position,uv=g.attributes.uv;for(let i=0;i<vertices.count;i++){vertices.setY(i,height(vertices.getX(i),vertices.getZ(i))+.035);uv.setXY(i,vertices.getX(i)*.01,vertices.getZ(i)*.01);}g.computeVertexNormals();const mesh=new THREE.Mesh(g,waterMaterial);mesh.receiveShadow=true;scene.add(mesh);}
+ const waterCanvas=document.createElement('canvas');waterCanvas.width=waterCanvas.height=512;const wc=waterCanvas.getContext('2d');wc.fillStyle='#397b94';wc.fillRect(0,0,512,512);
+ for(let i=0;i<4500;i++){const x=(i*73.37)%512,y=(i*29.93)%512;wc.strokeStyle=['#b6d9dd38','#1b5e792b','#71afc738'][i%3];wc.lineWidth=.6+(i%3)*.4;wc.beginPath();wc.moveTo(x,y);wc.bezierCurveTo(x+3,y-1,x+7,y+1,x+11+i%7,y);wc.stroke();}
+ const waterColour=new THREE.CanvasTexture(waterCanvas);waterColour.colorSpace=THREE.SRGBColorSpace;waterColour.wrapS=waterColour.wrapT=THREE.RepeatWrapping;waterColour.repeat.set(6,6);waterMaterial.map=waterColour;waterMaterial.color.set('#ffffff');
  const oceanGeometry=new THREE.PlaneGeometry(4000,4000),oceanUV=oceanGeometry.attributes.uv,oceanVertices=oceanGeometry.attributes.position;for(let i=0;i<oceanVertices.count;i++)oceanUV.setXY(i,oceanVertices.getX(i)*.01,-oceanVertices.getY(i)*.01);const ocean=new THREE.Mesh(oceanGeometry,waterMaterial);ocean.rotation.x=-Math.PI/2;ocean.position.y=-.08;scene.add(ocean);
  function buildingAt(x,z,radius=0){return map.buildings.some(b=>x>b.bounds.minX-radius&&x<b.bounds.maxX+radius&&z>b.bounds.minZ-radius&&z<b.bounds.maxZ+radius&&(pointInPolygon(x,z,b.points)||b.points.some((p,i)=>segmentDistance(x,z,p,b.points[(i+1)%b.points.length])<radius)));}
  const waterAt=map.waterAt,waterfront=createWaterfront({scene,map,art,site:waterfrontSite});
@@ -70,7 +89,7 @@ async function start(){
  // Dense shade-tree groups fill the gardens visible in the shared waterfront image.
  for(let attempt=0,added=0;added<70&&attempt<5000;attempt++){
   const x=waterfrontSite.street.x-180+random()*240,z=waterfrontSite.street.z-170+random()*300,near=map.nearestRoad(x,z);
-  if(near.distance<near.segment.width/2+6||buildingAt(x,z,4)||waterAt(x,z)||waterfront.reservedAt(x,z,3)||waterfront.solidAt(x,z,3)||trees.some(t=>Math.hypot(x-t.x,z-t.z)<7))continue;
+  if((near.segment.name==='Waterfront Road'&&near.distance<35)||near.distance<near.segment.width/2+6||buildingAt(x,z,4)||waterAt(x,z)||waterfront.reservedAt(x,z,3)||waterfront.solidAt(x,z,3)||trees.some(t=>Math.hypot(x-t.x,z-t.z)<7))continue;
   trees.push({x,z,y:height(x,z),scale:1,kind:'shade'});added++;
  }
  const spawnSegments=map.segments.filter(s=>s.width>=4),spawnPoint={...waterfrontSite.spawn},initialHeading=waterfrontSite.heading;
@@ -122,7 +141,20 @@ async function start(){
  }}
  const actors=[...people,...traffic],cullActors=createActorCuller(camera,player);graphics.setActors(actors,player);
  const mini=document.querySelector('#minimap'),ctx=mini.getContext('2d');function minimap(){ctx.fillStyle='#78936b';ctx.fillRect(0,0,mini.width,mini.height);const scale=(mini.width-20)/Math.max(bounds.maxX-bounds.minX,bounds.maxZ-bounds.minZ),project=p=>[mini.width/2+p.x*scale,mini.height/2+p.z*scale];for(const area of map.areas.filter(a=>a.kind==='water')){ctx.beginPath();for(const ring of [area.points,...area.holes]){ring.forEach((p,i)=>{const a=project(p);i?ctx.lineTo(...a):ctx.moveTo(...a)});ctx.closePath();}ctx.fillStyle='#299fae';ctx.fill('evenodd');}ctx.strokeStyle='#e2dfce';ctx.lineWidth=2;for(const road of map.roads){ctx.beginPath();road.points.forEach((p,i)=>{const a=project(p);i?ctx.lineTo(...a):ctx.moveTo(...a)});ctx.stroke();}if(delivery?.route.length&&!delivery.state.finished){ctx.strokeStyle='#41d9d1';ctx.lineWidth=2;ctx.beginPath();delivery.route.forEach((p,i)=>i?ctx.lineTo(...project(p)):ctx.moveTo(...project(p)));ctx.stroke();}if(delivery?.state.destination&&!delivery.state.finished){const d=project(delivery.state.destination);ctx.fillStyle='#ffd178';ctx.fillRect(d[0]-3,d[1]-3,6,6)}const p=project(player.position);ctx.fillStyle='#ff9e34';ctx.save();ctx.translate(...p);ctx.rotate(-player.rotation.y);ctx.beginPath();ctx.moveTo(0,-8);ctx.lineTo(6,6);ctx.lineTo(0,3);ctx.lineTo(-6,6);ctx.closePath();ctx.fill();ctx.strokeStyle='#122d22';ctx.lineWidth=2;ctx.stroke();ctx.restore();}
- function updateCamera(dt=1,snap=false){scene.fog=overview?null:fog;for(const child of scene.children)if(child.userData.scenicBackdrop)child.visible=!overview;if(overview){const h=Math.max(bounds.maxZ-bounds.minZ,(bounds.maxX-bounds.minX)/camera.aspect)*1.3;camera.position.set(0,h,.01);camera.lookAt(0,0,0);}else{const forward=new THREE.Vector3(-Math.sin(player.rotation.y),0,-Math.cos(player.rotation.y)),target=player.position.clone().addScaledVector(forward,-56-Math.abs(driving.state.speed)*.15).add(new THREE.Vector3(forward.z*42,42,-forward.x*42));if(snap)camera.position.copy(target);else camera.position.lerp(target,1-Math.exp(-6*dt));camera.lookAt(player.position.clone().add(new THREE.Vector3(0,1.05,0)).addScaledVector(forward,20).add(new THREE.Vector3(-forward.z*28,0,forward.x*28)));}sun.position.set(player.position.x-40,player.position.y+90,player.position.z+35);sun.target.position.copy(player.position);}
+ let cameraMode='street';
+ function updateCamera(dt=1,snap=false){
+  scene.fog=overview?null:fog;for(const child of scene.children)if(child.userData.scenicBackdrop)child.visible=!overview;
+  if(overview){const h=Math.max(bounds.maxZ-bounds.minZ,(bounds.maxX-bounds.minX)/camera.aspect)*1.3;camera.position.set(0,h,.01);camera.lookAt(0,0,0);}
+  else {
+   const forward=new THREE.Vector3(-Math.sin(player.rotation.y),0,-Math.cos(player.rotation.y)),street=cameraMode==='street';
+   const target=player.position.clone().addScaledVector(forward,street?-5.3:-38).add(new THREE.Vector3(street?0:forward.z*22,street?2.7:28,street?0:-forward.x*22));
+   if(snap)camera.position.copy(target);else camera.position.lerp(target,1-Math.exp(-6*dt));
+   camera.lookAt(player.position.clone().add(new THREE.Vector3(0,street?1.8:1.05,0)).addScaledVector(forward,street?13:16));
+  }
+  sun.position.set(player.position.x-40,player.position.y+50,player.position.z+35);sun.target.position.copy(player.position);
+ }
+ document.querySelector('#camera-mode').onchange=e=>{cameraMode=e.target.value;camera.fov=cameraMode==='street'?58:42;camera.updateProjectionMatrix();updateCamera(1,true);graphics.render()};
+
  function reset(){clear();player.position.set(spawnPoint.x,height(spawnPoint.x,spawnPoint.z)+.07,spawnPoint.z);player.rotation.set(0,initialHeading,0,'YXZ');driving.reset(initialHeading);elapsed=0;updateCamera(1,true);minimap();document.querySelector('#speed').textContent='0';document.querySelector('#street').textContent=waterfrontSite.segment.name;document.querySelector('#surface').textContent='Asphalt';}
  function update(dt){if(!Number.isFinite(dt)||dt<=0)return;dt=Math.min(dt,.1);elapsed+=dt;const throttle=held('w')||held('arrowup')?1:0,brake=held('s')||held('arrowdown')?1:0,steering=Number(held('d')||held('arrowright'))-Number(held('a')||held('arrowleft')),oldHeading=player.rotation.y,fx=-Math.sin(oldHeading),fz=-Math.cos(oldHeading),grade=(height(player.position.x+fx*.4,player.position.z+fz*.4)-height(player.position.x-fx*.4,player.position.z-fz*.4))/.8;
   const surface={name:'Asphalt',speedLimit:14,wet:false,damage:0};driving.state.heading=oldHeading;const distance=driving.step(dt,{throttle,brake,reverse:brake&&!throttle,steering,grade,wet:surface.wet,speedLimit:surface.speedLimit}),newHeading=driving.state.heading,pieces=Math.max(1,Math.ceil(Math.abs(distance)/.2));let moved=0;
