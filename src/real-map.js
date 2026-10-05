@@ -9,25 +9,25 @@ import {buildAuto} from './prototypes/auto.js';
 import {installCrowd} from './characters.js';
 import {createMapDelivery} from './real-map-delivery.js';
 import {createMapArt,dressRealMap,createKeralaRoof} from './real-map-art.js';
-import {realLocations,prepareRealMap,pointInPolygon,segmentDistance} from './real-map-data.js';
+import {locations,prepareMap,pointInPolygon,segmentDistance} from './real-map-data.js';
 import {planWaterfront,createWaterfront} from './kochi-waterfront.js';
 import {startFrameLoop} from './frame-loop.js';
 import {batchRigidMeshes} from './rigid-batch.js';
 
 async function start(){
- const requested=new URLSearchParams(location.search).get('location'),id=Object.hasOwn(realLocations,requested)?requested:'kochi',place=realLocations[id];
- const response=await fetch(new URL(`maps/${id}.json`,document.baseURI));if(!response.ok)throw Error('Map snapshot could not load');
- const source=await response.json(),map=prepareRealMap(source),bounds=map.bounds;
+ const requested=new URLSearchParams(location.search).get('location'),id=Object.hasOwn(locations,requested)?requested:'kochi',place=locations[id];
+ const response=await fetch(new URL(`maps/${id}.json`,document.baseURI));if(!response.ok)throw Error('Kochi layout could not load');
+ const source=await response.json(),map=prepareMap(source),bounds=map.bounds;
  const waterfrontSite=planWaterfront(map);
  document.querySelector('#place').textContent=place.name;document.querySelector('#description').textContent=place.subtitle;
- document.querySelector('#location').value=id;document.querySelector('#data-link').href=`./maps/${id}.json`;
+ document.querySelector('#location').value=id;
  const stage=document.querySelector('#game-stage'),size=()=>stage.getBoundingClientRect(),initialSize=size();
  const renderer=new THREE.WebGLRenderer({canvas:document.querySelector('#real-world'),antialias:true});renderer.setPixelRatio(Math.min(devicePixelRatio,1.5));renderer.setSize(initialSize.width,initialSize.height,false);
  renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.NeutralToneMapping;renderer.toneMappingExposure=1.05;renderer.shadowMap.enabled=true;renderer.shadowMap.type=THREE.PCFSoftShadowMap;
  const scene=new THREE.Scene();scene.background=new THREE.Color('#bdd4dd');const fog=new THREE.Fog(scene.background,220,1100);scene.fog=fog;
  scene.add(new THREE.HemisphereLight('#edf5df','#84683e',.9));const sun=new THREE.DirectionalLight('#ffe6b5',3.2);sun.castShadow=true;sun.shadow.mapSize.set(2048,2048);Object.assign(sun.shadow.camera,{left:-65,right:65,top:65,bottom:-65,near:1,far:250});sun.shadow.normalBias=.025;sun.shadow.bias=-.00012;scene.add(sun,sun.target);
  const camera=new THREE.PerspectiveCamera(60,initialSize.width/initialSize.height,.2,6000),graphics=setupGraphics(renderer,scene,camera);let detailed=devicePixelRatio<=1.5;graphics.setQuality(detailed);const quality=document.querySelector('#quality');quality.textContent=detailed?'Detail on':'Detail off';quality.setAttribute('aria-pressed',String(detailed));quality.onclick=()=>{detailed=!detailed;graphics.setQuality(detailed);quality.textContent=detailed?'Detail on':'Detail off';quality.setAttribute('aria-pressed',String(detailed));graphics.render()};
- // Heights and scenic planting are deliberately illustrative; OSM X/Z positions stay unchanged.
+ // Heights and scenic planting are deliberately illustrative; the street layout is project-authored.
  const height=()=>0;
  const material=(color)=>new THREE.MeshStandardMaterial({color,roughness:.85});
  const art=createMapArt(renderer,id),groundMaterial=art.ground,roadMaterial=art.road,roofMaterials=[art.tile,art.cream,art.tile];
@@ -88,7 +88,7 @@ async function start(){
  scenery.stats.vendors=stalls.length;
  for(const p of waterfront.vendors){const g=new THREE.Group(),placeholder=new THREE.Group();g.position.set(p.x,.03,p.z);g.rotation.y=p.angle;g.add(placeholder);scene.add(g);g.userData.vendor=true;people.push({g,standing:{g:placeholder},sitting:null,variant:people.length,home:{x:p.x,z:p.z},route:null,progress:0,direction:1,wait:0,distance:0,walk:0});}
  await installCrowd(people,[player]);
- // Small directed graph keeps traffic on the actual OSM roads and respects one-way tags.
+ // Small directed graph keeps traffic on the authored streets and respects one-way tags.
  const graph=new Map(),key=p=>p.x.toFixed(3)+','+p.z.toFixed(3);
  for(const s of spawnSegments){for(const p of [s.a,s.b])if(!graph.has(key(p)))graph.set(key(p),{point:p,edges:[]});graph.get(key(s.a)).edges.push({to:key(s.b),width:s.width});if(!s.oneway)graph.get(key(s.b)).edges.push({to:key(s.a),width:s.width});}
  const allStarts=[...graph.keys()].filter(k=>graph.get(k).edges.length),nearStarts=allStarts.filter(k=>{const p=graph.get(k).point;return Math.hypot(p.x-spawnPoint.x,p.z-spawnPoint.z)<220}),starts=id==='kochi'&&nearStarts.length>10?nearStarts:allStarts,prototypes=buildVehiclePrototypes(),auto=buildAuto(),traffic=[];for(const prototype of [...Object.values(prototypes),auto])batchRigidMeshes(prototype);
@@ -137,4 +137,4 @@ async function start(){
  const app={ready:true,id,source,map,scene,camera,renderer,graphics,player,traffic,people,driving,height,blocked,update,reset,setModel,scenery,waterfront,delivery,stops,stats:()=>({roads:map.roads.length,buildings:map.buildings.length,traffic:traffic.length,people:people.length,trees:trees.length,art:scenery.stats})};window.__REAL_MAP__=app;
  document.querySelector('#loading').remove();const frameLoop=startFrameLoop(renderer,update,()=>graphics.render(),{paused:()=>paused,onSuspend:clear});app.frameLoop=frameLoop;document.querySelector('#fps').onchange=e=>frameLoop.setFPS(Number(e.target.value));document.querySelector('#pause').onclick=()=>{paused=!paused;if(paused)clear();document.querySelector('#pause').textContent=paused?'▶':'Ⅱ';document.querySelector('#pause').setAttribute('aria-label',paused?'Resume animation':'Pause animation');document.querySelector('#pause').setAttribute('aria-pressed',String(paused));frameLoop.invalidate();};
 }
-start().catch(error=>{console.error('Real map startup failed:',error);window.__REAL_MAP_ERROR__=error.message;const loading=document.querySelector('#loading');loading.classList.add('error');loading.replaceChildren();const title=document.createElement('strong');title.textContent='This location could not load';const detail=document.createElement('p');detail.textContent=error.message;const retry=document.createElement('button');retry.textContent='Retry';retry.onclick=()=>location.reload();const back=document.createElement('a');back.href='./index.html';back.textContent='Return to the village game';loading.append(title,detail,retry,back);});
+start().catch(error=>{console.error('Kochi startup failed:',error);window.__REAL_MAP_ERROR__=error.message;const loading=document.querySelector('#loading');loading.classList.add('error');loading.replaceChildren();const title=document.createElement('strong');title.textContent='This location could not load';const detail=document.createElement('p');detail.textContent=error.message;const retry=document.createElement('button');retry.textContent='Retry';retry.onclick=()=>location.reload();const back=document.createElement('a');back.href='./index.html';back.textContent='Return to the village game';loading.append(title,detail,retry,back);});

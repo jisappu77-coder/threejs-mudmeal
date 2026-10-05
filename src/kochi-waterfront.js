@@ -2,11 +2,11 @@ import * as THREE from 'three';
 import {createKeralaRoof,createLeafGeometry} from './real-map-art.js';
 import {pointInPolygon,segmentDistance,reachableRoads} from './real-map-data.js';
 
-// The restaurant is original scenery on clear land, while shore and streets stay mapped.
+// The restaurant is original scenery on clear land, with an original shore and street layout.
 export function planWaterfront(map){
  const inWater=map.waterAt;
  const inBuilding=(x,z,r)=>map.buildings.some(b=>pointInPolygon(x,z,b.points)||b.points.some((p,i)=>segmentDistance(x,z,p,b.points[(i+1)%b.points.length])<r));
- const roads=map.segments.filter(s=>s.name==='River Road').sort((a,b)=>Math.max(b.a.x,b.b.x)-Math.max(a.a.x,a.b.x));
+ const roads=map.segments.filter(s=>s.name==='Waterfront Road').sort((a,b)=>Math.hypot(a.a.x+a.b.x,a.a.z+a.b.z)-Math.hypot(b.a.x+b.b.x,b.a.z+b.b.z));
  for(const s of roads){
   const length=Math.hypot(s.b.x-s.a.x,s.b.z-s.a.z),tx=(s.b.x-s.a.x)/length,tz=(s.b.z-s.a.z)/length;
   for(let d=8;d<length-8;d+=3)for(const side of [-1,1]){
@@ -19,7 +19,7 @@ export function planWaterfront(map){
    return {x,z,tx,tz,nx:-nx,nz:-nz,width:18,depth:16,angle:Math.atan2(-nx,-nz),street,segment:s,spawn:{x:street.x+tx*8-tz*s.width/4,z:street.z+tz*8+tx*s.width/4},heading:Math.atan2(tx,tz)};
   }
  }
- throw Error('No clear mapped waterfront site for the restaurant');
+ throw Error('No clear authored waterfront site for the restaurant');
 }
 
 export function createWaterfront({scene,map,art,site}){
@@ -87,7 +87,7 @@ export function createWaterfront({scene,map,art,site}){
   for(let j=0;j<3;j++){cube(clay,p(-1.4+j*1.4,1.24,1.3),[1.15,.15,.65],angle);for(let k=0;k<8;k++)put(sphere,i%2?cloth:art.leaves[1],p(-1.7+j*1.4+(k%4)*.2,1.4,1.1+Math.floor(k/4)*.2),[.10,.11,.10]);}
   const q=p(0,.03,.1);vendors.push({x:q[0],z:q[2],angle});stats.marketStalls++;
  }
- const church=map.buildings.find(b=>b.name==='St Francis Church');
+ const church=map.buildings.find(b=>b.landmark==='chapel');
  if(church){
   const center=church.points.reduce((p,q)=>({x:p.x+q.x/church.points.length,z:p.z+q.z/church.points.length}),{x:0,z:0});
   const face=church.points.map((a,i)=>{const b=church.points[(i+1)%church.points.length],x=(a.x+b.x)/2,z=(a.z+b.z)/2;return {a,b,x,z,d:map.nearestRoad(x,z).distance};}).sort((a,b)=>a.d-b.d)[0];
@@ -98,7 +98,7 @@ export function createWaterfront({scene,map,art,site}){
   bar(black,pos(0,church.height+2.6,.4),pos(0,church.height+4,.4),.045);bar(black,pos(-.4,church.height+3.5,.4),pos(.4,church.height+3.5,.4),.045);
   cube(white,pos(0,.12,1.1),[3,.24,1.8],angle);stats.heritageLandmarks=1;stats.churchPosition=center;
  }
- // Follow the imported coastline with paving, walls, rails and promenade furniture.
+ // Follow the authored shoreline with paving, walls, rails and promenade furniture.
  const waterAt=map.waterAt;
  const shore=[];
  for(const line of map.coastlines)for(let i=1;i<line.points.length;i++){
@@ -115,8 +115,8 @@ export function createWaterfront({scene,map,art,site}){
   bar(black,[x,0,z],[x,3.8,z],.065);put(cylinder,black,[x,3.9,z],[.30,.12,.30]);put(cylinder,warm,[x,4.12,z],[.14,.4,.14]);put(new THREE.ConeGeometry(.32,.24,8),black,[x,4.46,z]);obstacles.push({x,z,radius:.18,kind:'promenade-lamp'});
   if(i%2){palm(x-p.nx*2,z-p.nz*2,7+(i%3));}else{const yaw=Math.atan2(p.nx,p.nz);cube(wood,[x,.5,z],[1.8,.10,.5],yaw);cube(wood,[x-p.nx*.23,.9,z-p.nz*.23],[1.8,.7,.09],yaw);obstacles.push({x,z,radius:.9,kind:'bench'});}
  }
- // Net platforms are scenery at the mapped fishing-net landmark, outside the driving road.
- const netLandmark=map.landmarks.find(p=>/Chinese Fishing/i.test(p.name));
+ // Net platforms are scenery at the authored fishing-net position, outside the driving road.
+ const netLandmark=map.landmarks.find(p=>p.kind==='fishing-nets');
  const netShore=netLandmark?shore.slice().sort((a,b)=>Math.hypot(a.x-netLandmark.point.x,a.z-netLandmark.point.z)-Math.hypot(b.x-netLandmark.point.x,b.z-netLandmark.point.z))[0]:nearby[0];
  function fishingNet(p){
   const center=new THREE.Vector3(p.x+p.nx*5,0,p.z+p.nz*5),up=new THREE.Vector3(0,1,0),out=new THREE.Vector3(p.nx,0,p.nz),right=new THREE.Vector3(p.tx,0,p.tz),v=(u,y,d)=>center.clone().addScaledVector(right,u).addScaledVector(out,d).addScaledVector(up,y).toArray();
@@ -132,7 +132,7 @@ export function createWaterfront({scene,map,art,site}){
  }
  if(netShore)for(let i=-1;i<=2;i++)fishingNet({...netShore,x:netShore.x+netShore.tx*i*22,z:netShore.z+netShore.tz*i*22});
  // Shore-side jetty; its service bay remains on land and boats never enter driveable ground.
- const ferry=map.landmarks.find(p=>/Junkar Jetty/i.test(p.name));
+ const ferry=map.landmarks.find(p=>p.kind==='jetty');
  const jettyShore=ferry?shore.slice().sort((a,b)=>Math.hypot(a.x-ferry.point.x,a.z-ferry.point.z)-Math.hypot(b.x-ferry.point.x,b.z-ferry.point.z))[0]:nearby.at(-1);
  if(jettyShore){const p=jettyShore;for(let d=0;d<24;d+=1){const x=p.x+p.nx*d,z=p.z+p.nz*d;cube(wood,[x,.6,z],[4.2,.16,1.04],Math.atan2(p.nx,p.nz));if(d%3===0)for(const side of [-1,1])bar(wood,[x+p.tx*side*1.8,-1,z+p.tz*side*1.8],[x+p.tx*side*1.8,1.4,z+p.tz*side*1.8],.09);}}
  function boat(x,z,angle,house=false,moving=false){
@@ -151,7 +151,7 @@ export function createWaterfront({scene,map,art,site}){
  for(const {g,m,items}of batches.values()){const mesh=new THREE.InstancedMesh(g,m,items.length);items.forEach((matrix,i)=>mesh.setMatrixAt(i,matrix));mesh.castShadow=mesh.receiveShadow=true;mesh.computeBoundingSphere();mesh.matrixAutoUpdate=false;scene.add(mesh);}
  function update(time){for(const b of boats){const t=b.moving?Math.sin(time*.016+b.phase)*20:0,dx=Math.sin(b.angle)*t,dz=Math.cos(b.angle)*t;if(waterAt(b.x+dx,b.z+dz)){b.group.position.x=b.x+dx;b.group.position.z=b.z+dz;}b.group.position.y=.1+Math.sin(time*.8+b.phase)*.035;}}
  function deliveryStops(blocked){const roads=reachableRoads(map,site.spawn),stops=[];
-  for(const [name,street]of [['Market customer','Tower Road'],['Heritage home','Bastian Street'],['Jetty service bay','Bellar Road']]){
+  for(const [name,street]of [['Market customer','Market Street'],['Heritage home','Heritage Lane'],['Jetty service bay','Jetty Road']]){
    const candidates=roads.filter(s=>s.name===street).sort((a,b)=>Math.hypot(a.a.x-site.x,a.a.z-site.z)-Math.hypot(b.a.x-site.x,b.a.z-site.z));
    outer:for(const s of candidates){const length=Math.hypot(s.b.x-s.a.x,s.b.z-s.a.z),tx=(s.b.x-s.a.x)/length,tz=(s.b.z-s.a.z)/length;for(const t of [.5,.3,.7,.2,.8])for(const side of [-1,1]){const x=THREE.MathUtils.lerp(s.a.x,s.b.x,t)+tz*side*(s.width/2+1.1),z=THREE.MathUtils.lerp(s.a.z,s.b.z,t)-tx*side*(s.width/2+1.1);if(!waterAt(x,z)&&[0,Math.PI/2,Math.PI,Math.PI*1.5].every(angle=>!blocked(x,z,angle))){stops.push({x,z,street:name,road:street});break outer;}}}
   }return stops;

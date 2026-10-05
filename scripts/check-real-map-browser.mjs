@@ -1,14 +1,15 @@
 import {chromium} from 'playwright';
 import assert from 'node:assert/strict';
 import {mkdir} from 'node:fs/promises';
-import {realLocations} from '../src/real-map-data.js';
+import {locations} from '../src/real-map-data.js';
 await mkdir('artifacts/real-map',{recursive:true});
 const base=process.env.PREVIEW_URL||'http://localhost:4173/';
 const browser=await chromium.launch({headless:true,args:['--no-sandbox']});
 try{
- for(const id of Object.keys(realLocations)){
+ for(const id of Object.keys(locations)){
   const page=await browser.newPage({viewport:{width:932,height:430}}),errors=[];
   page.on('pageerror',e=>errors.push(e.message));
+  const externalRequests=[];page.on('request',r=>{const url=new URL(r.url());if(/^https?:$/.test(url.protocol)&&url.origin!==new URL(base).origin)externalRequests.push(url.href)});
   await page.addInitScript(()=>Object.defineProperty(window,'__REAL_MAP__',{configurable:true,set(app){app.renderer.setAnimationLoop=()=>{};Object.defineProperty(window,'__REAL_MAP__',{value:app,configurable:true})}}));
   await page.goto(new URL(`real-map.html?location=${id}`,base).href);
   await page.waitForFunction(()=>window.__REAL_MAP__?.ready||window.__REAL_MAP_ERROR__,{},{timeout:240000});
@@ -70,7 +71,7 @@ try{
 
   assert.ok(gameplay.art.windows>100&&gameplay.art.plants>300&&gameplay.art.streetProps>0);
   assert.ok(gameplay.art.roofs>100&&gameplay.art.verandas>0&&gameplay.art.shutters>100,'Kerala architecture must appear in the rendered map');
-  assert.ok(gameplay.art.rafters>1000&&gameplay.art.gutters>100&&gameplay.art.downpipes>10&&gameplay.art.courtyards>10&&gameplay.art.compoundWalls>0&&gameplay.art.entranceSteps>0&&gameplay.art.stairs>0&&gameplay.art.pots>0&&gameplay.art.shopDisplays>0&&gameplay.art.hangingLamps>0,'Photo references must inform roof construction, homes and shop objects');
+  assert.ok(gameplay.art.rafters>1000&&gameplay.art.gutters>100&&gameplay.art.downpipes>10&&gameplay.art.courtyards>10&&gameplay.art.compoundWalls>0&&gameplay.art.entranceSteps>0&&gameplay.art.stairs>0&&gameplay.art.pots>0&&gameplay.art.shopDisplays>0&&gameplay.art.hangingLamps>0,'Shared images must inform roof construction, homes and shop objects');
   assert.ok(gameplay.art.infillHomes>30&&gameplay.art.teaStalls>5&&gameplay.art.gardenLots>10&&gameplay.art.streetTrees>40&&gameplay.art.bananaPlants>80,'Empty urban land must contain homes, stalls and layered planting');
   const vendorSafety=await page.evaluate(()=>{const a=window.__REAL_MAP__,vendors=a.people.filter(p=>p.g.userData.vendor);return {count:vendors.length,blocked:vendors.filter(p=>a.scenery.solidAt(p.g.position.x,p.g.position.z,.4)||a.waterfront.solidAt(p.g.position.x,p.g.position.z,.4)).length,rigged:vendors.every(p=>p.g.userData.rigged)};});assert.ok(vendorSafety.count>=8&&vendorSafety.blocked===0&&vendorSafety.rigged,'Occupied stalls need rigged vendors with clear standing space');
   const scenerySafety=await page.evaluate(()=>{
@@ -78,11 +79,11 @@ try{
    a.scene.traverse(mesh=>{if(!mesh.isInstancedMesh||mesh.geometry.type!=='BoxGeometry'||!mesh.material.bumpMap)return;const m=mesh.matrix.clone();for(let i=0;i<mesh.count;i++){mesh.getMatrixAt(i,m);canopies.count++;if(Math.abs(m.elements[1])>1e-6||m.elements[9]>=0)canopies.tiltErrors++;}});
    return {count:props.length,inRoad:props.filter(p=>{const r=a.map.nearestRoad(p.x,p.z);return r.distance<r.segment.width/2+1.8+p.radius-1e-6}),missingCollision:props.filter(p=>!a.blocked(p.x,p.z,0)),infill:a.scenery.infill.length,infillRoadErrors:a.scenery.infill.flatMap(p=>p.cells).filter(p=>{const r=a.map.nearestRoad(p.x,p.z);return r.distance<r.segment.width/2+1.8+p.radius-1e-6}).length,solidCollisionErrors:a.scenery.solids.filter(p=>!a.blocked(p.x,p.z,0)).length,shops:a.scenery.frontages.filter(f=>f.shop).length,homes:a.scenery.frontages.filter(f=>!f.shop).length,canopies};
   });
-  assert.ok(scenerySafety.count>0&&scenerySafety.shops>0&&scenerySafety.homes>0);assert.ok(scenerySafety.canopies.count>100&&scenerySafety.canopies.tiltErrors===0,'Veranda eaves must stay level across the frontage and slope away from the wall');assert.deepEqual(scenerySafety.inRoad,[]);assert.deepEqual(scenerySafety.missingCollision,[]);console.log(id,'photo-reference props leave roads clear',JSON.stringify(scenerySafety));
+  assert.ok(scenerySafety.count>0&&scenerySafety.shops>0&&scenerySafety.homes>0);assert.ok(scenerySafety.canopies.count>100&&scenerySafety.canopies.tiltErrors===0,'Veranda eaves must stay level across the frontage and slope away from the wall');assert.deepEqual(scenerySafety.inRoad,[]);assert.deepEqual(scenerySafety.missingCollision,[]);console.log(id,'image-inspired props leave roads clear',JSON.stringify(scenerySafety));
   assert.ok(scenerySafety.infill>60&&scenerySafety.infillRoadErrors===0&&scenerySafety.solidCollisionErrors===0,'Added neighbourhoods must preserve driving clearance and block solid buildings');
   await page.locator('#tools-toggle').click();await page.locator('#quality').click();assert.equal(await page.locator('#quality').getAttribute('aria-pressed'),'false');await page.locator('#quality').click();await page.locator('#tools-toggle').click();
   console.log(id,'delivery and environmental detail',JSON.stringify(gameplay));
-  assert.equal(await page.locator('footer a').first().getAttribute('href'),'https://www.openstreetmap.org/copyright');
+  assert.equal(await page.locator('a[href*="openstreetmap"]').count(),0);assert.equal(await page.evaluate(()=>window.__REAL_MAP__.source.source),'project-authored');assert.deepEqual(externalRequests,[],'The image-inspired world must not fetch external maps or photographs');
   await page.screenshot({path:`artifacts/real-map/${id}-driving.png`,timeout:120000});
   await page.locator('#tools-toggle').click();await page.locator('#view').click({timeout:120000});await page.locator('#tools-toggle').click();await page.screenshot({path:`artifacts/real-map/${id}-map.png`,timeout:120000});await page.locator('#tools-toggle').click();await page.locator('#view').click({timeout:120000});await page.locator('#tools-toggle').click();
   // Find open ground to exercise steering independently of legitimate road obstructions.
@@ -109,10 +110,10 @@ try{
   await page.evaluate(()=>{const a=window.__REAL_MAP__,p=a.player.position,h=a.player.rotation.y,f={x:-Math.sin(h),z:-Math.cos(h)};a.camera.position.set(p.x-f.x*23+f.z*14,23,p.z-f.z*23-f.x*14);a.camera.lookAt(p.x+f.x*10,3,p.z+f.z*10);a.graphics.render()});
   await page.screenshot({path:`artifacts/real-map/${id}-photo-art.png`,timeout:120000});
   for(const [name,kind,shop]of [['house','outside-stair',false],['shop','shop-display',true]]){
-   await page.evaluate(({kind,shop})=>{const a=window.__REAL_MAP__,p=a.scenery.obstacles.find(p=>p.kind===kind);if(!p)throw Error('Missing photo-reference detail');const f=a.scenery.frontages.filter(f=>f.shop===shop).sort((a,b)=>Math.hypot(a.x-p.x,a.z-p.z)-Math.hypot(b.x-p.x,b.z-p.z))[0];a.camera.position.set(f.x+f.nx*15+f.nz*5,7,f.z+f.nz*15-f.nx*5);a.camera.lookAt(f.x,2.7,f.z);for(const light of a.scene.children)if(light.isDirectionalLight){light.position.set(f.x-40,90,f.z+35);light.target.position.set(f.x,0,f.z);}a.graphics.render()},{kind,shop});
+   await page.evaluate(({kind,shop})=>{const a=window.__REAL_MAP__,p=a.scenery.obstacles.find(p=>p.kind===kind);if(!p)throw Error('Missing image-inspired detail');const f=a.scenery.frontages.filter(f=>f.shop===shop).sort((a,b)=>Math.hypot(a.x-p.x,a.z-p.z)-Math.hypot(b.x-p.x,b.z-p.z))[0];a.camera.position.set(f.x+f.nx*15+f.nz*5,7,f.z+f.nz*15-f.nx*5);a.camera.lookAt(f.x,2.7,f.z);for(const light of a.scene.children)if(light.isDirectionalLight){light.position.set(f.x-40,90,f.z+35);light.target.position.set(f.x,0,f.z);}a.graphics.render()},{kind,shop});
    await page.screenshot({path:`artifacts/real-map/${id}-photo-${name}.png`,timeout:120000});
   }
   await page.close();
  }
- console.log('All available real map locations, attribution, human riders, model selection and mobile steering passed.');
+ console.log('Original image-inspired map, matched HUD, human riders, model selection and mobile steering passed.');
 }finally{await browser.close()}

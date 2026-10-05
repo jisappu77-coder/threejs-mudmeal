@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 import {pointInPolygon,segmentDistance} from './real-map-data.js';
 
-// Original hip roofs follow convex mapped footprints; irregular buildings keep their flat roof.
+// Original hip roofs follow convex authored footprints; irregular buildings keep their flat roof.
 export function createKeralaRoof(points,y){
  const turns=points.map((a,i)=>{const b=points[(i+1)%points.length],c=points[(i+2)%points.length];return (b.x-a.x)*(c.z-b.z)-(b.z-a.z)*(c.x-b.x)});
  if(points.length<3||!(turns.every(t=>t>=-.001)||turns.every(t=>t<=.001)))return null;
@@ -24,7 +24,7 @@ export function createKeralaRoof(points,y){
  return {geometry,eaves,ridge};
 }
 
-// Illustrative lots fill missing urban fabric without changing the imported map.
+// Original lots dress open parts of the authored neighbourhood.
 export function planKochiInfill(map,clear,anchor={x:0,z:0}){
  const plots=[];
  const segments=map.segments.filter(s=>Math.hypot((s.a.x+s.b.x)/2,(s.a.z+s.b.z)/2)<650).sort((a,b)=>Math.hypot((a.a.x+a.b.x)/2-anchor.x,(a.a.z+a.b.z)/2-anchor.z)-Math.hypot((b.a.x+b.b.x)/2-anchor.x,(b.a.z+b.b.z)/2-anchor.z));
@@ -210,7 +210,7 @@ export function dressRealMap({scene,map,id,height,buildingAt,waterAt,trees,art,a
    }
   }
  }
- // Ground-cover clusters break up empty terrain without putting scenery in mapped roads or footprints.
+ // Ground-cover clusters break up empty terrain without putting scenery in roads or building footprints.
  for(let i=0;i<180;i++){const x=(random()-.5)*1100,z=(random()-.5)*1100;if(!clearPlot(x,z,.45))continue;const y=height(x,z);for(let j=0;j<7;j++)put(smallLeaf,leaves[j%4],x+Math.sin(j*2.4)*.24,y+.2,z+Math.cos(j*2.4)*.24,.7,.65,.7,0,j*2.4);stats.plants++}
  for(const {geometry,material,matrices}of groups.values()){
   const cells=new Map();for(const m of matrices){const key=Math.floor(m.elements[12]/64)+','+Math.floor(m.elements[14]/64);if(!cells.has(key))cells.set(key,[]);cells.get(key).push(m);}

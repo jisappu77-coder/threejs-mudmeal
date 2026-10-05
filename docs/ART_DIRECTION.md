@@ -3,7 +3,7 @@
 ## Visual target
 The supplied Mud Meals reference image is the primary visual acceptance target.
 
-Use the inspected real photographs in [Kochi and Kerala photo references](kochi-photo-references.md) for building construction, frontage and prop details. Keep the supplied game reference as the palette and presentation target.
+Use only [the images shared by the user](kochi-image-references.md) for layout, building construction, frontage, props, palette and presentation. Do not consult external maps, satellite imagery, Google Images, tourism photos or generated concept boards. Author original playable arrangements from the supplied compositions.
 
 The goal is a premium stylized 3D scene with:
 - dense Kerala-inspired roadside composition
@@ -45,6 +45,6 @@ Current committed GLBs remain temporary visual stand-ins until replaced by produ
 
 ## Implemented Fort Kochi slice
 
-The approved waterfront direction is implemented in geographic mode using original procedural game assets: a tiled Mud Meals restaurant, occupied shore stalls, mapped coastline, fishing nets, jetty/boats and the St Francis Church footprint. The raised follow view and portrait HUD are captured from the running game by `npm run check:maps:browser`. These captures establish current runtime fidelity; the generated reference images remain a target rather than proof of photographic fidelity.
+The approved waterfront direction is implemented in an original image-inspired game world using original procedural game assets: a tiled Mud Meals restaurant, occupied shore stalls, authored shoreline, fishing nets, jetty/boats and a fictional waterfront chapel. The raised follow view and portrait HUD are captured from the running game by `npm run check:maps:browser`. These captures establish current runtime fidelity; the user-provided images remain the visual target.
 
 The current renderer uses official RenderPass/SSAOPass/OutputPass with a multisampled render target, sunlight shadows and environment lighting. SMAA and production scanned GLB replacements above remain aspirations. Rigid vehicle batching preserves shape and materials, while a 30/60 FPS budget and paused/hidden rendering controls address device load. See [measured performance](rendering-performance.md).

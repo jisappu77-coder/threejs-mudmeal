@@ -1,5 +1,7 @@
 # Rendering work and device heat
 
+The archived scene measurements below predate replacement of the imported city layout. They document the rendering optimizations, not performance of the current image-inspired city.
+
 Both playable modes use a 30 FPS render budget by default, with a 60 FPS option. This reduces unnecessary work on 60–144 Hz displays while preserving time-based driving and animation. It is a frame cap, not a promise that every device can sustain 30 FPS.
 
 Hidden tabs stop rendering and simulation. Paused scenes redraw only for changes, including camera/settings edits; paused free-camera controls remain usable without continuous rendering. GPU fences prevent queued frames, and elapsed time is retained across short GPU waits. Held controls clear when the page loses focus or becomes hidden.
@@ -7,7 +9,7 @@ Hidden tabs stop rendering and simulation. Paused scenes redraw only for changes
 ## Changes that retain scene detail
 
 - Fixed vehicle parts sharing a material now use one merged, indexed geometry. Wheels, transparent glass and animated parts stay separate. Source model hierarchies remain available for inspection and dimension checks, with their redundant draw layers disabled.
-- Scenery uses spatial batches, so distant cells outside the camera and shadow views can be culled. The flat geographic ground uses two triangles rather than a subdivided terrain mesh.
+- Scenery uses spatial batches, so distant cells outside the camera and shadow views can be culled. The flat game ground uses two triangles rather than a subdivided terrain mesh.
 - Off-screen actor rigs skip animation; their movement and collision simulation continue. Nearby actors remain available to cast shadows, and culling refreshes on camera changes even while paused.
 - The colour pass refreshes shadows once. The AO normal pass reuses them, retaining the original shadow resolution and AO settings. Model inspection renders explicitly refresh their own shadow maps.
 - Sharp rendering retains native pixel density up to 2×. It no longer forces 1.25× supersampling on 1× screens; multisample antialiasing remains enabled. The existing user-selected detail/balanced modes remain available.

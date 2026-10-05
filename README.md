@@ -52,7 +52,7 @@ Buildings, furniture, water, and road widths govern procedural vegetation and pe
 
 The town road and district connector now form one paved closed circuit. The turquoise navigation guide and traffic lanes derive from that circuit; vehicles cross its seam continuously. The canal bridge is a separate narrow shortcut. The initial delivery marker and order text now point to a roadside home reachable on the circuit. Junction kerbs are opened, and the original rice plots and fences are clipped outside the road corridor. Automated checks cover loop position/tangent continuity, centerline self-intersection and vehicle wrap distance; Chromium captures a whole-map overhead view.
 
-People use a sculpted face surface, fitted facial details, swept hair and articulated clothing/limbs. Autorickshaws have a formed yellow nose, a single raked windshield, open passenger entrances, stitched canvas canopy, bench seating, a seated driver and three wheels. Dimensions and proportions are informed by [Bajaj RE specifications](https://www.bajajauto.com/three-wheelers/re/specifications). The map remains a compressed fictional Kerala-inspired world, not a surveyed or imported real-world road map; [Kochi on OpenStreetMap](https://www.openstreetmap.org/#map=13/9.966/76.260) is a geographic reference.
+People use a sculpted face surface, fitted facial details, swept hair and articulated clothing/limbs. Autorickshaws have a formed yellow nose, a single raked windshield, open passenger entrances, stitched canvas canopy, bench seating, a seated driver and three wheels. Dimensions and proportions are informed by [Bajaj RE specifications](https://www.bajajauto.com/three-wheelers/re/specifications). The map remains a compressed fictional Kerala-inspired world, not a surveyed or imported real-world road map; the user-provided images are the environment references.
 
 ### Consistent metre scale
 
@@ -62,9 +62,9 @@ Reference specifications: [Bajaj RE](https://www.bajajauto.com/three-wheelers/re
 
 ### Object realism revision
 
-The object review identified flat teal glass, rounded toy-like cabins and smooth skin/cloth. Materials now combine the original reference's vibrant greens, terracotta roofs, golden daylight and turquoise water with reflective glass, separate paint/rubber/canvas finishes, woven clothing, fine skin variation and weathered plaster. The main game and geographic maps use Three.js Neutral tone mapping to preserve material colours. Car and van cabins use matching lofted body/window surfaces; wheel openings are cut into the metal body profile. Scene checks verify every window sits outside its opaque cabin and preserve the metre-scale dimensions and circular rolling wheels. Chromium produces isolated studio renders of every vehicle and both person poses, plus the world and scale lineup.
+The object review identified flat teal glass, rounded toy-like cabins and smooth skin/cloth. Materials now combine the original reference's vibrant greens, terracotta roofs, golden daylight and turquoise water with reflective glass, separate paint/rubber/canvas finishes, woven clothing, fine skin variation and weathered plaster. The main game and Kochi map use Three.js Neutral tone mapping to preserve material colours. Car and van cabins use matching lofted body/window surfaces; wheel openings are cut into the metal body profile. Scene checks verify every window sits outside its opaque cabin and preserve the metre-scale dimensions and circular rolling wheels. Chromium produces isolated studio renders of every vehicle and both person poses, plus the world and scale lineup.
 
-These remain procedural game assets; this revision moves them toward natural materials and forms but does not make them photorealistic scanned models. The generated photographic sheet is an art-direction reference, not the rendered game.
+These remain procedural game assets; this revision moves them toward natural materials and forms but does not make them photorealistic scanned models. The environment's visual acceptance target is the user's supplied images.
 
 ## NPC wardrobe and driving
 
@@ -72,7 +72,7 @@ The approved textured human now supplies four rigged NPC clothing/hair styles in
 
 The delivery bike offers four original, unbranded motorcycle/scooter styles under **Explore Kerala → Bike style**. Model provenance and naming are documented in [vehicle models](docs/vehicle-models.md).
 
-Real Kerala locations: **Explore Kerala → Play real maps** opens the Fort Kochi waterfront, using attributed OpenStreetMap roads and footprints with detailed stylized scenery, walking pedestrians and timed meal deliveries. The waterfront adds the original Mud Meals restaurant, an occupied shore market, Chinese fishing nets, a jetty, boats and three connected delivery bays. Use **30 FPS** (default) for less GPU work or select **60 FPS**. **Detail on/off** still controls contact shading and resolution. See [location details and data licensing](docs/real-maps.md).
+**Kochi map** opens an original fictional waterfront composed only from the images shared by the user. Connected market and residential streets, a Mud Meals restaurant, occupied shore stalls, fishing nets, a chapel, jetty, boats and three delivery bays use authored local coordinates. No external map database or photo references remain. The original HUD and 30/60 FPS controls are retained. See [layout and controls](docs/real-maps.md).
 
 ## Rendering load
 
@@ -80,4 +80,4 @@ Both game modes now cap rendering at 30 FPS by default, retain a 60 FPS option, 
 
 See [rendering measurements and limitations](docs/rendering-performance.md). Browser measurements cannot certify phone temperature or sustained hardware performance.
 
-For the geographic waterfront checks, run `npm run check:maps` and, with the built preview running, `npm run check:maps:browser`.
+For the Kochi layout checks, run `npm run check:maps` and, with the built preview running, `npm run check:maps:browser`.
