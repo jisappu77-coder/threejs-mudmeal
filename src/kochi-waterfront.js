@@ -133,7 +133,7 @@ export function createWaterfront({scene,map,art,site}){
  const church=map.buildings.find(b=>b.landmark==='chapel');
  if(church){
   const center=church.points.reduce((p,q)=>({x:p.x+q.x/church.points.length,z:p.z+q.z/church.points.length}),{x:0,z:0});
-  const face=church.points.map((a,i)=>{const b=church.points[(i+1)%church.points.length],x=(a.x+b.x)/2,z=(a.z+b.z)/2;return {a,b,x,z,d:map.nearestRoad(x,z).distance};}).sort((a,b)=>a.d-b.d)[0];
+  const face=church.points.map((a,i)=>{const b=church.points[(i+1)%church.points.length],x=(a.x+b.x)/2,z=(a.z+b.z)/2;return {a,b,x,z,d:map.nearestRoad(x,z).distance};}).sort((a,b)=>b.z-a.z)[0];
   let nx=face.b.z-face.a.z,nz=face.a.x-face.b.x;const length=Math.hypot(nx,nz);nx/=length;nz/=length;if(pointInPolygon(face.x+nx,face.z+nz,church.points)){nx=-nx;nz=-nz;}const angle=Math.atan2(nx,nz),pos=(u,y,v)=>[face.x+Math.cos(angle)*u+nx*v,y,face.z-Math.sin(angle)*u+nz*v];
   cube(white,pos(0,church.height/2,.13),[length,church.height,.22],angle);
   for(const u of [-length*.4,0,length*.4]){cube(white,pos(u,church.height/2,.28),[.5,church.height,.35],angle);cube(wood,pos(u,1.7,.4),[u?1.2:1.8,3.2,.12],angle);cube(white,pos(u,3.4,.4),[u?1.6:2.2,.24,.25],angle);}
@@ -166,7 +166,7 @@ export function createWaterfront({scene,map,art,site}){
   const tx=(b.x-a.x)/length,tz=(b.z-a.z)/length;let nx=tz,nz=-tx;if(!waterAt((a.x+b.x)/2+nx*2,(a.z+b.z)/2+nz*2)){nx=-nx;nz=-nz;}const angle=Math.atan2(tx,tz);
   for(let d=0;d<length;d+=2){const step=Math.min(2,length-d),x=a.x+tx*(d+step/2),z=a.z+tz*(d+step/2),near=map.nearestRoad(x,z);if(near.distance<near.segment.width/2+1||waterAt(x-nx*2,z-nz*2))continue;
    cube(stone,[x,.35,z],[.65,.8,step+.05],angle);for(const y of [.95,1.5])bar(black,[x-tx*step/2,y,z-tz*step/2],[x+tx*step/2,y,z+tz*step/2],.035);bar(black,[x,.65,z],[x,1.55,z],.045);obstacles.push({x,z,radius:.55,kind:'seawall'});stats.quayMetres+=step;
-   const px=x-nx*6,pz=z-nz*6,pnear=map.nearestRoad(px,pz);if(pnear.distance>pnear.segment.width/2+.2&&!map.buildings.some(b=>pointInPolygon(px,pz,b.points)))cube(art.paving,[px,.09,pz],[10,.16,step+.1],angle);
+   const pavingWidth=Math.min(10,near.distance-near.segment.width/2-1.35),offset=pavingWidth/2+.65,px=x-nx*offset,pz=z-nz*offset,pnear=map.nearestRoad(px,pz);if(pavingWidth>1&&pnear.distance>pnear.segment.width/2+.2&&!map.buildings.some(b=>pointInPolygon(px,pz,b.points)))cube(art.paving,[px,.09,pz],[pavingWidth,.16,step+.1],angle);
    shore.push({x,z,nx,nz,tx,tz});
   }
  }
