@@ -1,0 +1,623 @@
+{
+  "schema_version": "1.0",
+  "game": "MUD MEALS",
+  "phase": 2,
+  "zone": {
+    "id": "ZONE_02",
+    "name": "Kochi Urban Commercial"
+  },
+  "scene": {
+    "id": "SCENE_02",
+    "name": "Commercial Street & Bus Stop",
+    "playable_size_m": {
+      "east_west": 120,
+      "north_south": 100
+    },
+    "zone_origin_m": [
+      0,
+      100,
+      0
+    ],
+    "inspiration": "Fictional compact Kochi commercial block; not surveyed",
+    "purpose": [
+      "Snack/bakery pickup",
+      "Shop/office delivery",
+      "Overtake stopped bus",
+      "Service alley pursuit bypass"
+    ]
+  },
+  "coordinate_system": {
+    "units": "meters",
+    "axes": "x east/y north/z up",
+    "threejs_mapping": "[x,z,-y]"
+  },
+  "geometry_authority": "JSON defines exact geometry; PNGs are generated visual references, not calibrated renders of a shared model.",
+  "terrain": {
+    "ground_z": 0,
+    "water": null
+  },
+  "roads": [
+    {
+      "id": "R_MAIN",
+      "centerline": [
+        [
+          60,
+          0,
+          0
+        ],
+        [
+          60,
+          100,
+          0
+        ]
+      ],
+      "width_m": 8,
+      "traffic": "left-hand; northbound centerx58, southboundx62",
+      "surface": "asphalt"
+    },
+    {
+      "id": "R_ALLEY",
+      "centerline": [
+        [
+          20,
+          8,
+          0
+        ],
+        [
+          20,
+          94,
+          0
+        ]
+      ],
+      "width_m": 3,
+      "access": "motorcycles/pedestrians, cars prohibited",
+      "surface": "worn paving"
+    },
+    {
+      "id": "R_SPUR_S",
+      "centerline": [
+        [
+          20,
+          8,
+          0
+        ],
+        [
+          56,
+          8,
+          0
+        ]
+      ],
+      "width_m": 3,
+      "surface": "paving",
+      "access": "motorcycles/pedestrians, no car road"
+    },
+    {
+      "id": "R_SPUR_N",
+      "centerline": [
+        [
+          20,
+          94,
+          0
+        ],
+        [
+          56,
+          94,
+          0
+        ]
+      ],
+      "width_m": 3,
+      "surface": "paving",
+      "access": "motorcycles/pedestrians, no car road"
+    }
+  ],
+  "junction": {
+    "type": "none for cars; two motorcycle-only alley mouths"
+  },
+  "buildings": [
+    {
+      "id": "B_SNACK",
+      "footprint": [
+        28,
+        12,
+        46,
+        32
+      ],
+      "floors": 2,
+      "walls": "cream",
+      "awning": "red east",
+      "entrance": [
+        46,
+        22,
+        0
+      ],
+      "roof": "flat concrete parapet",
+      "wall_height_m": 6.8,
+      "parapet_height_m": 0.45,
+      "plinth_height_m": 0.15,
+      "balconies": "road-facing",
+      "secondary_entrance": [
+        37,
+        12,
+        0
+      ],
+      "secondary_awning": "red south courtyard"
+    },
+    {
+      "id": "B_GROCERY",
+      "footprint": [
+        28,
+        70,
+        46,
+        90
+      ],
+      "floors": 1,
+      "walls": "pale green",
+      "awning": "beige east",
+      "entrance": [
+        46,
+        80,
+        0
+      ],
+      "roof": "flat concrete parapet",
+      "wall_height_m": 3.4,
+      "parapet_height_m": 0.45,
+      "plinth_height_m": 0.15,
+      "balconies": "none",
+      "secondary_entrance": [
+        37,
+        70,
+        0
+      ],
+      "secondary_awning": "beige south frontage"
+    },
+    {
+      "id": "B_BAKERY",
+      "footprint": [
+        74,
+        12,
+        94,
+        34
+      ],
+      "floors": 2,
+      "walls": "white",
+      "awning": "blue west",
+      "entrance": [
+        74,
+        23,
+        0
+      ],
+      "roof": "flat concrete parapet",
+      "wall_height_m": 6.8,
+      "parapet_height_m": 0.45,
+      "plinth_height_m": 0.15,
+      "balconies": "road-facing",
+      "secondary_entrance": [
+        84,
+        12,
+        0
+      ],
+      "secondary_awning": "blue south courtyard"
+    },
+    {
+      "id": "B_OFFICE",
+      "footprint": [
+        74,
+        68,
+        94,
+        90
+      ],
+      "floors": 3,
+      "walls": "pale yellow",
+      "awning": "grey west",
+      "entrance": [
+        74,
+        79,
+        0
+      ],
+      "roof": "flat concrete parapet",
+      "wall_height_m": 10.2,
+      "parapet_height_m": 0.45,
+      "plinth_height_m": 0.15,
+      "balconies": "road-facing"
+    }
+  ],
+  "bus_stop": {
+    "id": "L_BUS_STOP",
+    "bay_rect": [
+      51,
+      40,
+      56,
+      62
+    ],
+    "shelter_rect": [
+      44,
+      45,
+      49,
+      55
+    ],
+    "shelter_height_m": 2.8,
+    "roof": "blue corrugated steel",
+    "sidewalk_rect": [
+      49.5,
+      40,
+      51,
+      62
+    ],
+    "bench_position": [
+      46.5,
+      50,
+      0
+    ],
+    "access": "waiting area west of bay; stop outside main northbound lane",
+    "asphalt_apron_polygon": [
+      [
+        56,
+        36,
+        0
+      ],
+      [
+        51,
+        40,
+        0
+      ],
+      [
+        51,
+        62,
+        0
+      ],
+      [
+        56,
+        66,
+        0
+      ]
+    ],
+    "bus_reentry": "Merge north through tapered apron; yield to northbound motorcycles"
+  },
+  "delivery_bays": [
+    {
+      "id": "D_SNACK",
+      "rect": [
+        46,
+        18,
+        54,
+        28
+      ],
+      "building": "B_SNACK"
+    },
+    {
+      "id": "D_GROCERY",
+      "rect": [
+        46,
+        74,
+        54,
+        86
+      ],
+      "building": "B_GROCERY"
+    },
+    {
+      "id": "D_BAKERY",
+      "rect": [
+        65.5,
+        18,
+        74,
+        30
+      ],
+      "building": "B_BAKERY"
+    },
+    {
+      "id": "D_OFFICE",
+      "rect": [
+        65.5,
+        72,
+        74,
+        84
+      ],
+      "building": "B_OFFICE"
+    }
+  ],
+  "infrastructure": {
+    "sidewalk_width_m": 1.5,
+    "roadside_sidewalk_x_ranges": [
+      [
+        54.5,
+        56
+      ],
+      [
+        64,
+        65.5
+      ]
+    ],
+    "bus_bay_sidewalk_exception": [
+      49.5,
+      51
+    ],
+    "drains": "covered concrete; flush entrance crossings",
+    "utility_poles": [
+      [
+        66,
+        8,
+        0
+      ],
+      [
+        66,
+        56,
+        0
+      ],
+      [
+        66,
+        94,
+        0
+      ]
+    ],
+    "signage": "replace generated glyphs with reviewed Malayalam"
+  },
+  "vegetation": [
+    {
+      "id": "T_PALM_S",
+      "position": [
+        12,
+        12,
+        0
+      ],
+      "type": "coconut palm"
+    },
+    {
+      "id": "T_PALM_N",
+      "position": [
+        106,
+        86,
+        0
+      ],
+      "type": "coconut palm"
+    },
+    {
+      "id": "T_TREE",
+      "position": [
+        108,
+        14,
+        0
+      ],
+      "type": "broad tropical tree"
+    }
+  ],
+  "props": [
+    {
+      "id": "P_BUS",
+      "position": [
+        53.5,
+        51,
+        0
+      ],
+      "heading": "north",
+      "type": "green/cream Kerala-style bus",
+      "dimensions_m": [
+        2.5,
+        9.5,
+        3.2
+      ]
+    },
+    {
+      "id": "P_RIDER",
+      "position": [
+        58,
+        6,
+        0
+      ],
+      "heading": "north",
+      "type": "teal helmeted rider orange box"
+    },
+    {
+      "id": "P_AUTO",
+      "position": [
+        69,
+        24,
+        0
+      ],
+      "heading": "north",
+      "type": "black-yellow auto"
+    },
+    {
+      "id": "P_SCOOTER",
+      "position": [
+        49,
+        24,
+        0
+      ],
+      "heading": "north",
+      "type": "parked scooter"
+    },
+    {
+      "id": "P_CAR",
+      "position": [
+        62,
+        80,
+        0
+      ],
+      "heading": "south",
+      "type": "white compact car"
+    },
+    {
+      "id": "P_BIN",
+      "position": [
+        45,
+        44,
+        0
+      ],
+      "type": "litter bin"
+    }
+  ],
+  "connections": [
+    {
+      "id": "C_SOUTH",
+      "position": [
+        60,
+        0,
+        0
+      ],
+      "width_m": 8,
+      "neighbor_scene": "SCENE_01",
+      "matches": "SCENE_01.C_NORTH",
+      "zone_position_m": [
+        60,
+        100,
+        0
+      ]
+    },
+    {
+      "id": "C_NORTH",
+      "position": [
+        60,
+        100,
+        0
+      ],
+      "width_m": 8,
+      "neighbor_scene": "SCENE_04",
+      "zone_position_m": [
+        60,
+        200,
+        0
+      ],
+      "matches": "SCENE_04.C_SOUTH"
+    }
+  ],
+  "gameplay": {
+    "stopping": "recessed bays; keep1.5m pedestrian walkway clear",
+    "bus_overtaking": "main8m carriageway stays open; no bus parking on throughlane",
+    "shortcut": "alley behind west shops,3m motorcycle spurs at ends; keep2m clear riding width",
+    "hazards": [
+      "bus reentry",
+      "waiting pedestrians",
+      "drain crossings"
+    ],
+    "engine_tests": [
+      "turning/clearance",
+      "collision",
+      "bus reentry AI",
+      "pickup accessibility"
+    ]
+  },
+  "reference_views": [
+    {
+      "file": "01_MASTER_SPATIAL.png",
+      "camera_position_m": [
+        -32,
+        -38,
+        108
+      ],
+      "target_position_m": [
+        60,
+        50,
+        0
+      ],
+      "purpose": "High southwest elevated master, entire playable street segment, four footprints, one straight road with no crossroads, recessed west bus bay/shelter, narrow west alley/spurs, pickup forecourts and north/south continuation.",
+      "camera_calibration": "intended approximate coordinates, not recovered calibration"
+    },
+    {
+      "file": "02_PLAYER_GAMEPLAY.png",
+      "camera_position_m": [
+        58,
+        1,
+        2.4
+      ],
+      "target_position_m": [
+        58,
+        75,
+        1.5
+      ],
+      "purpose": "Street-height third-person behind delivery rider looking NORTH from south entry. Cream red-awning two-floor snack shop LEFT near, white blue-awning two-floor bakery RIGHT near. West green/cream bus and blue shelter LEFT halfway, green grocery LEFT far, three-floor yellow office RIGHT far. Through lane remains passable beside recessed stopped bus; no crossroads.",
+      "camera_calibration": "intended approximate coordinates, not recovered calibration"
+    },
+    {
+      "file": "03_REVERSE_GAMEPLAY.png",
+      "camera_position_m": [
+        62,
+        98,
+        2.4
+      ],
+      "target_position_m": [
+        62,
+        25,
+        1.5
+      ],
+      "purpose": "Street-height reverse camera from NORTH looking SOUTH, actual reverse view not mirror. Green one-floor grocery RIGHT/west near, yellow three-floor office LEFT/east near. Busbay/shelter RIGHT/west mid-distance; white bakery LEFT far, cream snack shop RIGHT far. Bus FRONT faces camera because parked headingnorth. One straight road, no junction.",
+      "camera_calibration": "intended approximate coordinates, not recovered calibration"
+    },
+    {
+      "file": "04_SIDE_CROSS_STREET.png",
+      "camera_position_m": [
+        20,
+        48,
+        1.8
+      ],
+      "target_position_m": [
+        64,
+        48,
+        1.5
+      ],
+      "purpose": "Ground-level SIDE ACCESS view looking EAST from service alley opposite bus shelter, through modest garden/service apron between west shops. Cream snack shop RIGHT/south edge; green grocery LEFT/north edge. Shelter in front of west busbay, bus beyond, mainroad further, yellow office LEFT/east north and white bakery RIGHT/east south across road. This lateral access is a small pedestrian/service apron, NOT a cross street.",
+      "camera_calibration": "intended approximate coordinates, not recovered calibration"
+    },
+    {
+      "file": "05_ARCHITECTURE.png",
+      "camera_position_m": [
+        64,
+        22,
+        1.8
+      ],
+      "target_position_m": [
+        37,
+        22,
+        4
+      ],
+      "purpose": "Ground-level close oblique EAST frontage of CREAM TWO-story snack restaurant facing WEST: flat parapet roof, red east awning, small upper balcony, doors and recessed delivery stopping area. Road strip foreground, no new road branches. Show east facade, not an aerial or unrelated restaurant.",
+      "camera_calibration": "intended approximate coordinates, not recovered calibration"
+    },
+    {
+      "file": "06_ENVIRONMENT_PROPS.png",
+      "camera_position_m": [
+        45,
+        37,
+        1.7
+      ],
+      "target_position_m": [
+        53,
+        52,
+        2
+      ],
+      "purpose": "Ground-level oblique busstop detail looking NORTH-EAST: blue corrugated shelter roof, bench, drainage behind recessed asphalt bay, green/cream bus rear-side, shelter safe waiting apron west of bus. Show bay separated from clear main throughlane on RIGHT/east, steel posts, modest litter bin. Same midblock stop; no second bus, bus terminal or junction.",
+      "camera_calibration": "intended approximate coordinates, not recovered calibration"
+    },
+    {
+      "file": "08_CONNECTION.png",
+      "camera_position_m": [
+        58,
+        7,
+        2.3
+      ],
+      "target_position_m": [
+        58,
+        -55,
+        1.5
+      ],
+      "purpose": "Ground-level SOUTH seam looking SOUTH toward Scene1 north approach. All Scene2 core buildings and busstop BEHIND camera. Continuous8m mainroad; further south Scene1 yellow three-floor apartments LEFT/east and teal one-floor flat bakery/beige awning RIGHT/west. Farther central cross street, then white hip restaurant LEFT/east and cream twofloor redawning restaurant RIGHT/west. That crossroads is about57m ahead, not at seam. No near new junction or barrier.",
+      "camera_calibration": "intended approximate coordinates, not recovered calibration"
+    }
+  ],
+  "omitted_views": {
+    "07_LANDMARK": "Bus stop covered by master/side/props; separate redundant landmark view omitted"
+  },
+  "reconstruction_order": [
+    "Main road and bay",
+    "Footprints/heights",
+    "Alley/spurs",
+    "Delivery and sidewalk clearance",
+    "Shelter/infrastructure",
+    "Materials/props"
+  ],
+  "validation": {
+    "status": "Seven reference views reviewed; remaining visual variation documented",
+    "exact_multiview_consistency_certified": false,
+    "quality_report": "QUALITY_REVIEW.md",
+    "checks": "PNG/JSON/ZIP integrity, IDs, footprints, bus bay containment and matching Scene01 seam"
+  }
+}

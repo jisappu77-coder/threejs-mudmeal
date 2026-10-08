@@ -1,0 +1,608 @@
+{
+  "schema_version": "1.0",
+  "game": "MUD MEALS",
+  "phase": 2,
+  "zone": {
+    "id": "ZONE_02",
+    "name": "Kochi Urban Commercial",
+    "placement_status": "Separate zone; no direct geographic adjacency to Fort Kochi claimed"
+  },
+  "scene": {
+    "id": "SCENE_01",
+    "name": "Restaurant Cluster & Busy Junction",
+    "inspiration": "Fictional Kochi commercial neighborhood, not a surveyed reconstruction",
+    "playable_size_m": {
+      "east_west": 120,
+      "north_south": 100
+    },
+    "zone_origin_m": [
+      0,
+      0,
+      0
+    ],
+    "purpose": [
+      "Multiple restaurant/bakery pickups",
+      "Apartment deliveries",
+      "Traffic and rival pursuit",
+      "Motorcycle service shortcut"
+    ]
+  },
+  "coordinate_system": {
+    "units": "meters",
+    "axes": "x east/y north/z up",
+    "threejs_mapping": "[x,z,-y]"
+  },
+  "geometry_authority": "This specification defines exact layout. Generated references are not calibrated renders of a shared 3D model.",
+  "terrain": {
+    "ground_z": 0,
+    "water": null
+  },
+  "roads": [
+    {
+      "id": "R_MAIN",
+      "centerline": [
+        [
+          60,
+          0,
+          0
+        ],
+        [
+          60,
+          100,
+          0
+        ]
+      ],
+      "width_m": 8,
+      "surface": "asphalt",
+      "traffic": "left-hand; two lanes"
+    },
+    {
+      "id": "R_CROSS",
+      "centerline": [
+        [
+          0,
+          50,
+          0
+        ],
+        [
+          120,
+          50,
+          0
+        ]
+      ],
+      "width_m": 6,
+      "surface": "asphalt",
+      "traffic": "left-hand; two lanes"
+    },
+    {
+      "id": "R_ALLEY",
+      "centerline": [
+        [
+          26,
+          8,
+          0
+        ],
+        [
+          26,
+          92,
+          0
+        ]
+      ],
+      "width_m": 3,
+      "surface": "worn paving",
+      "access": "motorcycles/pedestrians; cars prohibited",
+      "spurs": [
+        [
+          [
+            26,
+            27,
+            0
+          ],
+          [
+            34,
+            27,
+            0
+          ]
+        ],
+        [
+          [
+            26,
+            74,
+            0
+          ],
+          [
+            34,
+            74,
+            0
+          ]
+        ]
+      ]
+    }
+  ],
+  "junction": {
+    "position": [
+      60,
+      50,
+      0
+    ],
+    "type": "single four-way",
+    "corners": "Keep 8m setback from intersecting road edges free of parked vehicles/stalls"
+  },
+  "buildings": [
+    {
+      "id": "B_RESTAURANT_W",
+      "footprint": [
+        34,
+        16,
+        50,
+        36
+      ],
+      "floors": 2,
+      "roof": "flat concrete parapet",
+      "walls": "cream",
+      "awning": "red east",
+      "entrance": [
+        50,
+        27,
+        0
+      ],
+      "service_entrance": [
+        34,
+        27,
+        0
+      ],
+      "secondary_entrance": [
+        42,
+        16,
+        0
+      ],
+      "secondary_awning": "red south courtyard frontage",
+      "wall_height_m": 6.8,
+      "plinth_height_m": 0.15,
+      "roof_top_height_m": 7.25
+    },
+    {
+      "id": "B_RESTAURANT_E",
+      "footprint": [
+        74,
+        16,
+        96,
+        36
+      ],
+      "floors": 1,
+      "roof": "red tiled hip",
+      "walls": "warm off-white plaster with terracotta accents; red tiled hip roof",
+      "awning": "white west",
+      "entrance": [
+        74,
+        27,
+        0
+      ],
+      "secondary_entrance": [
+        85,
+        16,
+        0
+      ],
+      "secondary_awning": "white south courtyard frontage",
+      "wall_height_m": 3.6,
+      "plinth_height_m": 0.15,
+      "roof_top_height_m": 5.8
+    },
+    {
+      "id": "B_BAKERY",
+      "footprint": [
+        34,
+        64,
+        50,
+        84
+      ],
+      "floors": 1,
+      "roof": "flat concrete parapet",
+      "walls": "teal",
+      "awning": "beige east",
+      "entrance": [
+        50,
+        74,
+        0
+      ],
+      "service_entrance": [
+        34,
+        74,
+        0
+      ],
+      "secondary_entrance": [
+        42,
+        64,
+        0
+      ],
+      "secondary_awning": "beige south cross-street frontage",
+      "wall_height_m": 3.6,
+      "plinth_height_m": 0.15,
+      "roof_top_height_m": 4.05
+    },
+    {
+      "id": "B_APARTMENTS",
+      "footprint": [
+        74,
+        64,
+        96,
+        88
+      ],
+      "floors": 3,
+      "roof": "flat concrete parapet",
+      "walls": "pale yellow",
+      "entrance": [
+        74,
+        76,
+        0
+      ],
+      "balconies": "west",
+      "wall_height_m": 10.2,
+      "plinth_height_m": 0.15,
+      "roof_top_height_m": 10.649999999999999
+    }
+  ],
+  "delivery_bays": [
+    {
+      "id": "D_W",
+      "rect": [
+        50,
+        20,
+        56,
+        32
+      ],
+      "restaurant": "B_RESTAURANT_W",
+      "pedestrian_clearance": "Reserve 1.5m continuous curbside sidewalk within forecourt bounds; parking/props stay behind this walkway"
+    },
+    {
+      "id": "D_E",
+      "rect": [
+        64,
+        20,
+        74,
+        32
+      ],
+      "restaurant": "B_RESTAURANT_E",
+      "pedestrian_clearance": "Reserve 1.5m continuous curbside sidewalk within forecourt bounds; parking/props stay behind this walkway"
+    },
+    {
+      "id": "D_B",
+      "rect": [
+        50,
+        68,
+        56,
+        80
+      ],
+      "restaurant": "B_BAKERY",
+      "pedestrian_clearance": "Reserve 1.5m continuous curbside sidewalk within forecourt bounds; parking/props stay behind this walkway"
+    },
+    {
+      "id": "D_A",
+      "rect": [
+        64,
+        70,
+        74,
+        82
+      ],
+      "customer": "B_APARTMENTS",
+      "pedestrian_clearance": "Reserve 1.5m continuous curbside sidewalk within forecourt bounds; parking/props stay behind this walkway"
+    }
+  ],
+  "vegetation": [
+    {
+      "id": "T_1",
+      "position": [
+        12,
+        12,
+        0
+      ],
+      "type": "coconut palm"
+    },
+    {
+      "id": "T_2",
+      "position": [
+        108,
+        88,
+        0
+      ],
+      "type": "coconut palm"
+    },
+    {
+      "id": "T_3",
+      "position": [
+        106,
+        12,
+        0
+      ],
+      "type": "broad tropical tree"
+    }
+  ],
+  "infrastructure": {
+    "sidewalk_width_m": 1.5,
+    "drains": "covered concrete, curbside; flush crossing slabs at entrances",
+    "utility_poles": [
+      [
+        66,
+        8,
+        0
+      ],
+      [
+        66,
+        55,
+        0
+      ],
+      [
+        66,
+        94,
+        0
+      ]
+    ],
+    "wires": "follow east main-road verge",
+    "signage": "Author reviewed Malayalam signs in reconstruction"
+  },
+  "props": [
+    {
+      "id": "P_AUTO",
+      "position": [
+        68,
+        27,
+        0
+      ],
+      "type": "black-yellow auto-rickshaw",
+      "heading": "north"
+    },
+    {
+      "id": "P_SCOOTER",
+      "position": [
+        53,
+        25,
+        0
+      ],
+      "type": "parked scooter",
+      "heading": "north"
+    },
+    {
+      "id": "P_CAR",
+      "position": [
+        62,
+        70,
+        0
+      ],
+      "type": "silver compact car",
+      "heading": "south"
+    },
+    {
+      "id": "P_PLAYER",
+      "position": [
+        58,
+        8,
+        0
+      ],
+      "type": "teal helmeted delivery rider with orange box",
+      "heading": "north"
+    },
+    {
+      "id": "P_BIN",
+      "position": [
+        33,
+        24,
+        0
+      ],
+      "type": "covered service bin"
+    },
+    {
+      "id": "P_CRATES",
+      "position": [
+        33,
+        30,
+        0
+      ],
+      "type": "stacked restaurant service crates"
+    }
+  ],
+  "gameplay": {
+    "pickup_stopping": "recessed forecourts; no lane parking",
+    "chase_routes": [
+      "main crossroads",
+      "west motorcycle alley with two service spurs"
+    ],
+    "hazards": [
+      "turning traffic",
+      "drain covers",
+      "pedestrians at entrances"
+    ],
+    "engine_validation_required": [
+      "motorcycle turning radius",
+      "collision clearance",
+      "traffic navigation",
+      "pickup accessibility"
+    ],
+    "traffic_note": "Northbound lane centered x58; southbound lane centered x62; cars cannot enter service alley",
+    "shortcut_clearance": "Keep at least 2m clear rideable width within 3m alley, recess bins/crates/parked scooters"
+  },
+  "connections": [
+    {
+      "id": "C_NORTH",
+      "position": [
+        60,
+        100,
+        0
+      ],
+      "width_m": 8,
+      "neighbor_scene": "SCENE_02",
+      "matches": "SCENE_02.C_SOUTH",
+      "zone_position_m": [
+        60,
+        100,
+        0
+      ]
+    },
+    {
+      "id": "C_SOUTH",
+      "position": [
+        60,
+        0,
+        0
+      ],
+      "width_m": 8,
+      "neighbor": "future approach block"
+    },
+    {
+      "id": "C_WEST",
+      "position": [
+        0,
+        50,
+        0
+      ],
+      "width_m": 6,
+      "neighbor_scene": "SCENE_03",
+      "matches": "SCENE_03.C_EAST",
+      "zone_position_m": [
+        0,
+        50,
+        0
+      ]
+    },
+    {
+      "id": "C_EAST",
+      "position": [
+        120,
+        50,
+        0
+      ],
+      "width_m": 6,
+      "neighbor": "future commercial block"
+    }
+  ],
+  "reference_views": [
+    {
+      "file": "01_MASTER_SPATIAL.png",
+      "camera_position_m": [
+        -32,
+        -38,
+        112
+      ],
+      "target_position_m": [
+        60,
+        50,
+        0
+      ],
+      "purpose": "High southwest elevated master showing entire compact block, one crossroads, four quadrant footprints, roofs, recessed forecourts, west narrow alley and all four open road exits.",
+      "camera_calibration": "intended coordinates, not recovered calibration",
+      "intended_horizontal_fov_deg": 55
+    },
+    {
+      "file": "02_PLAYER_GAMEPLAY.png",
+      "camera_position_m": [
+        58,
+        1,
+        2.4
+      ],
+      "target_position_m": [
+        58,
+        68,
+        1.6
+      ],
+      "purpose": "Street-height third-person behind teal delivery rider looking NORTH from south edge. Cream two-floor restaurant with red awning LEFT foreground; terracotta one-floor hipped restaurant with white awning RIGHT foreground. Beyond cross junction teal bakery LEFT, three-floor pale-yellow apartments RIGHT. Two traffic lanes and stopping clearance readable. No overhead aerial camera.",
+      "camera_calibration": "intended coordinates, not recovered calibration",
+      "intended_horizontal_fov_deg": 60
+    },
+    {
+      "file": "03_REVERSE_GAMEPLAY.png",
+      "camera_position_m": [
+        62,
+        96,
+        2.4
+      ],
+      "target_position_m": [
+        62,
+        28,
+        1.6
+      ],
+      "purpose": "Street-height reverse camera looking SOUTH from north end, actual opposite viewpoint not mirrored. Yellow three-floor apartments LEFT foreground, teal flat bakery RIGHT foreground. Across intersection terracotta hip restaurant LEFT, cream two-floor flat restaurant RIGHT. Show south road continuing.",
+      "camera_calibration": "intended coordinates, not recovered calibration",
+      "intended_horizontal_fov_deg": 60
+    },
+    {
+      "file": "04_SIDE_CROSS_STREET.png",
+      "camera_position_m": [
+        4,
+        50,
+        1.8
+      ],
+      "target_position_m": [
+        104,
+        50,
+        1.6
+      ],
+      "purpose": "Street-height WEST cross-street camera looking EAST: teal bakery LEFT near/north, cream restaurant RIGHT near/south; beyond main road yellow apartments LEFT/north, terracotta restaurant RIGHT/south. Main north-south road crosses left-right ahead. Reveal narrow service alley crossing nearx26 and west service access.",
+      "camera_calibration": "intended coordinates, not recovered calibration",
+      "intended_horizontal_fov_deg": 60
+    },
+    {
+      "file": "05_ARCHITECTURE.png",
+      "camera_position_m": [
+        62,
+        27,
+        1.8
+      ],
+      "target_position_m": [
+        43,
+        27,
+        4
+      ],
+      "purpose": "Ground-level close facade of cream TWO-story restaurant looking WEST from across main road. Flat concrete parapet roof silhouette, red EAST awning, narrow balcony, restaurant doors, recessed pickup bay and sidewalk drain. Keep other buildings peripheral; do not rearrange scene.",
+      "camera_calibration": "intended coordinates, not recovered calibration",
+      "intended_horizontal_fov_deg": 60
+    },
+    {
+      "file": "06_ENVIRONMENT_PROPS.png",
+      "camera_position_m": [
+        26,
+        18,
+        1.7
+      ],
+      "target_position_m": [
+        26,
+        45,
+        1.5
+      ],
+      "purpose": "Ground-level motorcycle service alley looking NORTH alongx26, west/rear cream restaurant on RIGHT/east, west compound garden LEFT, covered drain, service doorway, modest bins/crates and utility wiring, cross street ahead. Show 3m clearance; do not widen into second car road.",
+      "camera_calibration": "intended coordinates, not recovered calibration",
+      "intended_horizontal_fov_deg": 60
+    },
+    {
+      "file": "08_CONNECTION.png",
+      "camera_position_m": [
+        58,
+        89,
+        2.2
+      ],
+      "target_position_m": [
+        58,
+        120,
+        1.6
+      ],
+      "purpose": "Street-height NORTH exit facing NORTH, junction and all four core buildings BEHIND camera. Straight continuous8m asphalt mainroad with sidewalks/drains/wires extends into next lowrise urban commercial block. No new junction immediately at seam, no dead end or isolation barriers.",
+      "camera_calibration": "intended coordinates, not recovered calibration",
+      "intended_horizontal_fov_deg": 60
+    }
+  ],
+  "omitted_views": {
+    "07_LANDMARK": "No distinct unique landmark; restaurant architecture covered by05"
+  },
+  "reconstruction_order": [
+    "Roads/junction/seams",
+    "Building footprints and roofs",
+    "Delivery bays/shortcut",
+    "Entrances/drains",
+    "Vegetation/utility lines",
+    "Materials/props"
+  ],
+  "validation": {
+    "status": "Seven visual references reviewed; remaining variation documented",
+    "exact_multiview_consistency_certified": false,
+    "quality_report": "QUALITY_REVIEW.md",
+    "checks": "PNG/JSON/ZIP integrity, IDs, footprints and seam dimensions"
+  }
+}

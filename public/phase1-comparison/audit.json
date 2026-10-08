@@ -1,0 +1,129 @@
+{
+  "reports": [
+    {
+      "scene": "p1-scene_01",
+      "view": "01_MASTER_SPATIAL.png",
+      "drawCalls": 533,
+      "triangles": 2056590,
+      "path": "artifacts/scenes/p1-scene_01-01_MASTER_SPATIAL.png"
+    },
+    {
+      "scene": "p1-scene_01",
+      "view": "02_PLAYER_GAMEPLAY.png",
+      "drawCalls": 708,
+      "triangles": 2593688,
+      "path": "artifacts/scenes/p1-scene_01-02_PLAYER_GAMEPLAY.png"
+    },
+    {
+      "scene": "p1-scene_02",
+      "view": "01_MASTER_SPATIAL.png",
+      "drawCalls": 450,
+      "triangles": 1669132,
+      "path": "artifacts/scenes/p1-scene_02-01_MASTER_SPATIAL.png"
+    },
+    {
+      "scene": "p1-scene_02",
+      "view": "02_PLAYER_GAMEPLAY.png",
+      "drawCalls": 345,
+      "triangles": 1551814,
+      "path": "artifacts/scenes/p1-scene_02-02_PLAYER_GAMEPLAY.png"
+    },
+    {
+      "scene": "p1-scene_03",
+      "view": "01_MASTER_SPATIAL.png",
+      "drawCalls": 790,
+      "triangles": 2602451,
+      "path": "artifacts/scenes/p1-scene_03-01_MASTER_SPATIAL.png"
+    },
+    {
+      "scene": "p1-scene_03",
+      "view": "02_PLAYER_GAMEPLAY.png",
+      "drawCalls": 629,
+      "triangles": 2280807,
+      "path": "artifacts/scenes/p1-scene_03-02_PLAYER_GAMEPLAY.png"
+    },
+    {
+      "scene": "p1-scene_04",
+      "view": "01_MASTER_SPATIAL.png",
+      "drawCalls": 476,
+      "triangles": 1632302,
+      "path": "artifacts/scenes/p1-scene_04-01_MASTER_SPATIAL.png"
+    },
+    {
+      "scene": "p1-scene_04",
+      "view": "02_PLAYER_GAMEPLAY.png",
+      "drawCalls": 255,
+      "triangles": 1107299,
+      "path": "artifacts/scenes/p1-scene_04-02_PLAYER_GAMEPLAY.png"
+    },
+    {
+      "scene": "p2-scene_01",
+      "view": "01_MASTER_SPATIAL.png",
+      "drawCalls": 909,
+      "triangles": 1918027,
+      "path": "artifacts/scenes/p2-scene_01-01_MASTER_SPATIAL.png"
+    },
+    {
+      "scene": "p2-scene_01",
+      "view": "02_PLAYER_GAMEPLAY.png",
+      "drawCalls": 844,
+      "triangles": 2364165,
+      "path": "artifacts/scenes/p2-scene_01-02_PLAYER_GAMEPLAY.png"
+    },
+    {
+      "scene": "p2-scene_02",
+      "view": "01_MASTER_SPATIAL.png",
+      "drawCalls": 739,
+      "triangles": 1894027,
+      "path": "artifacts/scenes/p2-scene_02-01_MASTER_SPATIAL.png"
+    },
+    {
+      "scene": "p2-scene_02",
+      "view": "02_PLAYER_GAMEPLAY.png",
+      "drawCalls": 529,
+      "triangles": 1870933,
+      "path": "artifacts/scenes/p2-scene_02-02_PLAYER_GAMEPLAY.png"
+    },
+    {
+      "scene": "p2-scene_03",
+      "view": "01_MASTER_SPATIAL.png",
+      "drawCalls": 876,
+      "triangles": 2250997,
+      "path": "artifacts/scenes/p2-scene_03-01_MASTER_SPATIAL.png"
+    },
+    {
+      "scene": "p2-scene_03",
+      "view": "02_PLAYER_GAMEPLAY.png",
+      "drawCalls": 862,
+      "triangles": 2597895,
+      "path": "artifacts/scenes/p2-scene_03-02_PLAYER_GAMEPLAY.png"
+    },
+    {
+      "scene": "p2-scene_04",
+      "view": "01_MASTER_SPATIAL.png",
+      "drawCalls": 435,
+      "triangles": 1400937,
+      "path": "artifacts/scenes/p2-scene_04-01_MASTER_SPATIAL.png"
+    },
+    {
+      "scene": "p2-scene_04",
+      "view": "02_PLAYER_GAMEPLAY.png",
+      "drawCalls": 232,
+      "triangles": 1152177,
+      "path": "artifacts/scenes/p2-scene_04-02_PLAYER_GAMEPLAY.png"
+    }
+  ],
+  "errors": [],
+  "source_sha256": {
+    "src/characters.js": "c7995e097e0b1f1415ed38bae90ce8bc3cde99b6a5f719d07e38480f3f512b53",
+    "src/layout.js": "a44293fa0223bfddaeee35542a2072d28d4b88dae8d9b14ca1916d05d3455ba0",
+    "src/main.js": "809d52bdf15992581520172099b22b0db84741a135592c3c476a22c8f5b5df63",
+    "src/prototypes/auto.js": "8eec99b7a2144b9746bf523527434343a9d749b62ca9cb6669249fca6bd26146",
+    "src/prototypes/crowd-review.js": "27af491cd9598465528857480fcd0a6b3d873ae2b8a540f4e279ae6efd562b83",
+    "src/prototypes/person.js": "a706e726c08d1cb3b8118d021aa187788385f3b6bb4b3be5f85feb8b3fd38d48",
+    "src/prototypes/review.js": "c37e26e257c1b53f435057ba8b0e168ba37e4ffc9b13014e10b9219b6f0b2a76",
+    "src/prototypes/vehicles.js": "6244b01bfab948d0cf0f27ced8398854eca0414d4cf87a84bc6c16af765de91e",
+    "src/scenes.js": "23f8aeea3c198322f85e9e260a4202622ce8e8afc26d8e3a76b8c5716e9bfec4"
+  },
+  "visual_acceptance": "Functional and geometry checks passed. Pixel-identical visual acceptance has not been met."
+}

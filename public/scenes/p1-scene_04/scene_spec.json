@@ -1,0 +1,828 @@
+{
+  "schema_version": "1.0",
+  "game": "MUD MEALS",
+  "phase": 1,
+  "zone": {
+    "id": "ZONE_01",
+    "name": "Fort Kochi"
+  },
+  "scene": {
+    "id": "SCENE_04",
+    "name": "Market and Residential Delivery Block",
+    "inspiration": "Fictional compact Fort Kochi/Kerala neighborhood, not a surveyed recreation",
+    "complexity": "medium commercial/residential block",
+    "playable_size_m": {
+      "east_west": 100,
+      "north_south": 90
+    },
+    "zone_origin_m": [
+      -100,
+      190,
+      0
+    ],
+    "purpose": [
+      "Grocery, restaurant and bakery pickups",
+      "Deliver to upper-floor residence and clothing shop",
+      "Navigate market four-way junction",
+      "Avoid recessed loading stalls and use rear service shortcut"
+    ]
+  },
+  "coordinate_system": {
+    "units": "meters",
+    "x": "east",
+    "y": "north",
+    "z": "up",
+    "origin": "scene southwest corner",
+    "bounds": {
+      "x": [
+        0,
+        100
+      ],
+      "y": [
+        0,
+        90
+      ],
+      "z_ground": 0
+    },
+    "zone_mapping": "Add scene.zone_origin_m to local (x,y,z)",
+    "threejs_mapping": "(X,Y,Z)=(x,z,-y)",
+    "unity_mapping": "(X,Y,Z)=(x,z,y)",
+    "blender_mapping": "(X,Y,Z)=(x,y,z)"
+  },
+  "geometry_authority": "JSON defines intended geometry; generated views are visual references, not camera-calibrated renders of an actual shared 3D model.",
+  "terrain": {
+    "type": "flat inland urban block",
+    "ground_elevation_m": 0,
+    "water_present": false
+  },
+  "roads": [
+    {
+      "id": "R_MAIN",
+      "centerline": [
+        [
+          50,
+          -20,
+          0
+        ],
+        [
+          50,
+          110,
+          0
+        ]
+      ],
+      "width_m": 6,
+      "width_profile": [
+        {
+          "y_m": 0,
+          "width_m": 4
+        },
+        {
+          "y_m": 15,
+          "width_m": 4
+        },
+        {
+          "y_m": 25,
+          "width_m": 6
+        },
+        {
+          "y_m": 90,
+          "width_m": 6
+        }
+      ],
+      "surface": "weathered asphalt",
+      "traffic_side": "left",
+      "lanes": 2,
+      "driveable": true
+    },
+    {
+      "id": "R_CROSS",
+      "centerline": [
+        [
+          -20,
+          45,
+          0
+        ],
+        [
+          120,
+          45,
+          0
+        ]
+      ],
+      "width_m": 6,
+      "surface": "weathered asphalt",
+      "traffic_side": "left",
+      "lanes": 2,
+      "driveable": true
+    },
+    {
+      "id": "R_SHORTCUT",
+      "centerline": [
+        [
+          12,
+          8,
+          0
+        ],
+        [
+          12,
+          80,
+          0
+        ]
+      ],
+      "width_m": 3,
+      "vehicle_access": [
+        "motorcycle",
+        "scooter"
+      ],
+      "surface": "worn concrete",
+      "traffic_side": "left",
+      "lanes": 1,
+      "driveable": true
+    }
+  ],
+  "junction": {
+    "id": "J_MARKET_CROSS",
+    "position": [
+      50,
+      45,
+      0
+    ],
+    "type": "four-way",
+    "through": [
+      "R_MAIN",
+      "R_CROSS"
+    ],
+    "corner_radius_m": 4,
+    "motorcycle_design_turning_radius_m": 3,
+    "visibility": "Keep intersection corners clear of goods, poles and parking"
+  },
+  "buildings": [
+    {
+      "id": "B_GROCERY",
+      "name": "Mustard Grocery",
+      "footprint_xy": [
+        [
+          18,
+          14
+        ],
+        [
+          38,
+          14
+        ],
+        [
+          38,
+          34
+        ],
+        [
+          18,
+          34
+        ]
+      ],
+      "floors": 1,
+      "eaves_z_m": 3.5,
+      "roof": {
+        "shape": "flat",
+        "ridge_z_m": 3.9,
+        "material": "concrete parapet"
+      },
+      "walls": "mustard plaster",
+      "front_direction": "east",
+      "entrances": [
+        {
+          "id": "E_GROCERY",
+          "position": [
+            38,
+            25,
+            0
+          ],
+          "width_m": 1.6,
+          "delivery": true
+        }
+      ],
+      "awning": {
+        "color": "green",
+        "edge": "east",
+        "projection_m": 1.2
+      }
+    },
+    {
+      "id": "B_RESTAURANT",
+      "name": "Rust Orange Restaurant",
+      "footprint_xy": [
+        [
+          64,
+          14
+        ],
+        [
+          84,
+          14
+        ],
+        [
+          84,
+          34
+        ],
+        [
+          64,
+          34
+        ]
+      ],
+      "floors": 2,
+      "eaves_z_m": 6.4,
+      "roof": {
+        "shape": "hip",
+        "ridge_z_m": 8.2,
+        "material": "red clay tiles"
+      },
+      "walls": "rust-orange plaster",
+      "front_direction": "west",
+      "entrances": [
+        {
+          "id": "E_RESTAURANT",
+          "position": [
+            64,
+            25,
+            0
+          ],
+          "width_m": 1.6,
+          "delivery": true
+        }
+      ],
+      "awning": {
+        "color": "white",
+        "edge": "west",
+        "projection_m": 1.2
+      }
+    },
+    {
+      "id": "B_CLOTHING_HOME",
+      "name": "Clothing Shop and Residence",
+      "footprint_xy": [
+        [
+          18,
+          56
+        ],
+        [
+          38,
+          56
+        ],
+        [
+          38,
+          78
+        ],
+        [
+          18,
+          78
+        ]
+      ],
+      "floors": 2,
+      "eaves_z_m": 6.4,
+      "roof": {
+        "shape": "flat",
+        "ridge_z_m": 6.8,
+        "material": "concrete parapet"
+      },
+      "walls": "lilac upper floor, teal ground shop",
+      "front_direction": "east",
+      "entrances": [
+        {
+          "id": "E_CLOTHING_HOME",
+          "position": [
+            38,
+            67,
+            0
+          ],
+          "width_m": 1.6,
+          "delivery": true
+        }
+      ],
+      "awning": {
+        "color": "grey",
+        "edge": "east",
+        "projection_m": 1.2
+      },
+      "balcony": "narrow east upper balcony"
+    },
+    {
+      "id": "B_BAKERY",
+      "name": "White Bakery",
+      "footprint_xy": [
+        [
+          64,
+          56
+        ],
+        [
+          84,
+          56
+        ],
+        [
+          84,
+          78
+        ],
+        [
+          64,
+          78
+        ]
+      ],
+      "floors": 1,
+      "eaves_z_m": 3.5,
+      "roof": {
+        "shape": "gable",
+        "ridge_z_m": 5.5,
+        "material": "red clay tiles",
+        "ridge_axis": "north-south"
+      },
+      "walls": "white plaster",
+      "front_direction": "west",
+      "entrances": [
+        {
+          "id": "E_BAKERY",
+          "position": [
+            64,
+            67,
+            0
+          ],
+          "width_m": 1.6,
+          "delivery": true
+        }
+      ],
+      "awning": {
+        "color": "blue",
+        "edge": "west",
+        "projection_m": 1.2
+      }
+    }
+  ],
+  "landmarks": [],
+  "vegetation": [
+    {
+      "id": "T_PALM_01",
+      "position": [
+        8,
+        8,
+        0
+      ],
+      "species": "coconut palm",
+      "height_m": 10
+    },
+    {
+      "id": "T_PALM_02",
+      "position": [
+        90,
+        80,
+        0
+      ],
+      "species": "coconut palm",
+      "height_m": 10
+    },
+    {
+      "id": "T_RAIN",
+      "position": [
+        88,
+        10,
+        0
+      ],
+      "species": "rain tree",
+      "height_m": 9
+    }
+  ],
+  "props": [
+    {
+      "id": "V_RIDER",
+      "position": [
+        50,
+        8,
+        0
+      ],
+      "type": "helmeted teal delivery rider/motorcycle with orange rear box",
+      "heading": "north",
+      "static_in_references": true
+    },
+    {
+      "id": "V_AUTO",
+      "position": [
+        60,
+        65,
+        0
+      ],
+      "type": "black-yellow auto-rickshaw",
+      "heading": "north",
+      "static_in_references": true
+    },
+    {
+      "id": "V_SCOOTER",
+      "position": [
+        42,
+        25,
+        0
+      ],
+      "type": "parked scooter",
+      "heading": "north",
+      "static_in_references": true
+    },
+    {
+      "id": "U_POLE_01",
+      "position": [
+        46,
+        5,
+        0
+      ],
+      "type": "utility pole",
+      "static_in_references": true,
+      "height_m": 8
+    },
+    {
+      "id": "U_POLE_02",
+      "position": [
+        46,
+        50,
+        0
+      ],
+      "type": "utility pole",
+      "static_in_references": true,
+      "height_m": 8
+    },
+    {
+      "id": "U_POLE_03",
+      "position": [
+        46,
+        85,
+        0
+      ],
+      "type": "utility pole",
+      "static_in_references": true,
+      "height_m": 8
+    },
+    {
+      "id": "P_STALLS",
+      "position": [
+        41,
+        25,
+        0
+      ],
+      "type": "two recessed covered produce stalls",
+      "dimensions_m": [
+        3,
+        6,
+        2.6
+      ],
+      "static_in_references": true
+    },
+    {
+      "id": "P_CRATES",
+      "position": [
+        40,
+        29,
+        0
+      ],
+      "type": "produce crates",
+      "static_in_references": true
+    },
+    {
+      "id": "P_BIN",
+      "position": [
+        39,
+        61,
+        0
+      ],
+      "type": "service bin",
+      "static_in_references": true
+    }
+  ],
+  "delivery_bays": [
+    {
+      "id": "BAY_GROCERY",
+      "footprint_xy": [
+        [
+          38,
+          18
+        ],
+        [
+          45,
+          18
+        ],
+        [
+          45,
+          30
+        ],
+        [
+          38,
+          30
+        ]
+      ],
+      "target_building_id": "B_GROCERY",
+      "keep_traffic_clear": true
+    },
+    {
+      "id": "BAY_RESTAURANT",
+      "footprint_xy": [
+        [
+          56,
+          20
+        ],
+        [
+          64,
+          20
+        ],
+        [
+          64,
+          30
+        ],
+        [
+          56,
+          30
+        ]
+      ],
+      "target_building_id": "B_RESTAURANT",
+      "keep_traffic_clear": true
+    },
+    {
+      "id": "BAY_CLOTHING",
+      "footprint_xy": [
+        [
+          38,
+          60
+        ],
+        [
+          45,
+          60
+        ],
+        [
+          45,
+          72
+        ],
+        [
+          38,
+          72
+        ]
+      ],
+      "target_building_id": "B_CLOTHING_HOME",
+      "keep_traffic_clear": true
+    },
+    {
+      "id": "BAY_BAKERY",
+      "footprint_xy": [
+        [
+          56,
+          60
+        ],
+        [
+          64,
+          60
+        ],
+        [
+          64,
+          72
+        ],
+        [
+          56,
+          72
+        ]
+      ],
+      "target_building_id": "B_BAKERY",
+      "keep_traffic_clear": true
+    }
+  ],
+  "infrastructure": {
+    "drain_depth_m": 0.25,
+    "drain_width_m": 0.3,
+    "drain_rule": "Follow road/yard edges; cover at entrances, bays, junction crossings and shortcut crossing",
+    "utility_wires": "Connect specified utility poles; maintain at least6m road clearance",
+    "signage": "Business signage may use Malayalam; generated glyphs are not authoritative. Replace with reviewed lettering.",
+    "sidewalks": "1.2\u20132m concrete where practical, interrupted by recessed pickup bays; never widen roads by moving footprints"
+  },
+  "gameplay": {
+    "primary_routes": [
+      "R_MAIN",
+      "R_CROSS"
+    ],
+    "alternate_route": "R_SHORTCUT, motorcycle/scooter access only",
+    "trust_jobs": "Shop/restaurant pickups and local customer dropoffs",
+    "rival_design": "Fair ambush at shortcut mouth with visible alternative main-road escape",
+    "collision_objects": [
+      "buildings",
+      "compound walls",
+      "utility poles",
+      "recessed fixed props"
+    ],
+    "moving_actor_note": "Traffic/pedestrians are engine implementation; reference snapshot actors stay fixed",
+    "engine_validation_required": [
+      "motorcycle turning radius",
+      "pickup stopping room",
+      "shortcut clearance",
+      "junction sightlines",
+      "drain crossings",
+      "pedestrian safety space"
+    ]
+  },
+  "connections": [
+    {
+      "id": "C_SOUTH_ROAD",
+      "edge": "south",
+      "position": [
+        50,
+        0,
+        0
+      ],
+      "width_m": 4,
+      "neighbor_scene": "SCENE_03",
+      "matches": "SCENE_03.C_NORTH_ROAD"
+    },
+    {
+      "id": "C_NORTH_ROAD",
+      "edge": "north",
+      "position": [
+        50,
+        90,
+        0
+      ],
+      "width_m": 6,
+      "neighbor_scene": "future neighborhood"
+    },
+    {
+      "id": "C_WEST_ROAD",
+      "edge": "west",
+      "position": [
+        0,
+        45,
+        0
+      ],
+      "width_m": 6,
+      "neighbor_scene": "future market block"
+    },
+    {
+      "id": "C_EAST_ROAD",
+      "edge": "east",
+      "position": [
+        100,
+        45,
+        0
+      ],
+      "width_m": 6,
+      "neighbor_scene": "future market block"
+    }
+  ],
+  "reference_views": [
+    {
+      "file": "01_MASTER_SPATIAL.png",
+      "camera_position_m": [
+        -32,
+        -35,
+        100
+      ],
+      "target_position_m": [
+        50,
+        45,
+        0
+      ],
+      "purpose": "Elevated southwest master with whole compact block, one four-way junction,4 core footprints/roof types, south road narrowing seam, recessed stalls/bays, west shortcut and edges. No extra intersections or giant empty market plaza.",
+      "projection": "perspective",
+      "camera_coordinates_status": "intended reconstruction coordinates, not recovered calibration"
+    },
+    {
+      "file": "02_PLAYER_GAMEPLAY.png",
+      "camera_position_m": [
+        50,
+        1,
+        2.3
+      ],
+      "target_position_m": [
+        50,
+        55,
+        1.5
+      ],
+      "purpose": "GROUND-level third-person south entry looking NORTH behind rider. Mustard grocery LEFT/west and rust-orange TWO-floor hip-roof restaurant RIGHT/east before intersection. Lilac TWO-floor residence/teal clothing LEFT beyond intersection; white gabled bakery RIGHT beyond. Road widens gradually from4m to6m. Stalls stay recessed, horizon midframe, no aerial. Revised: low chase camera, enlarged rider, active traffic and sidewalk actors.",
+      "projection": "perspective",
+      "camera_coordinates_status": "intended approximate camera; generated elevation can differ"
+    },
+    {
+      "file": "03_REVERSE_GAMEPLAY.png",
+      "camera_position_m": [
+        50,
+        85,
+        2.1
+      ],
+      "target_position_m": [
+        50,
+        30,
+        1.5
+      ],
+      "purpose": "GROUND-level north end looking SOUTH. Lilac/teal clothing RIGHT/west foreground; white gabled bakery LEFT/east foreground. Cross road intersection ahead, grocery farther RIGHT and rust-orange restaurant farther LEFT. Rider tiny facing camera near south seam. Actual reversed camera, no mirror/aerial.",
+      "projection": "perspective",
+      "camera_coordinates_status": "intended approximate camera; generated elevation can differ"
+    },
+    {
+      "file": "04_SIDE_CROSS_STREET.png",
+      "camera_position_m": [
+        8,
+        45,
+        1.8
+      ],
+      "target_position_m": [
+        76,
+        45,
+        1.5
+      ],
+      "purpose": "GROUND-level WEST cross-street looking EAST toward four-way junction. Lilac residence/teal clothing LEFT/north; mustard grocery RIGHT/south. Beyond main road white bakery LEFT/north, orange restaurant RIGHT/south. Reveal shortcut crossing x12 and service gates. Six-meter asphalt route, no footpath substitute or added stalls in junction.",
+      "projection": "perspective",
+      "camera_coordinates_status": "intended reconstruction coordinates, not recovered calibration"
+    },
+    {
+      "file": "05_ARCHITECTURE.png",
+      "camera_position_m": [
+        52,
+        69,
+        1.7
+      ],
+      "target_position_m": [
+        29,
+        67,
+        4
+      ],
+      "purpose": "Close GROUND-level lilac TWO-story building EAST facade looking WEST, teal clothing shop at ground, grey awning, narrow upper residential balcony, flat parapet roof silhouette, delivery door and bay. Foreground road strip, same footprint. Do not turn building into tower or view down onto roof.",
+      "projection": "perspective",
+      "camera_coordinates_status": "intended reconstruction coordinates, not recovered calibration"
+    },
+    {
+      "file": "06_ENVIRONMENT_PROPS.png",
+      "camera_position_m": [
+        43,
+        15,
+        1.7
+      ],
+      "target_position_m": [
+        41,
+        27,
+        1.5
+      ],
+      "purpose": "Close GROUND-level grocery forecourt facing NORTH: mustard wall, green awning edge, recessed covered produce stalls, produce crates, scooter and covered drain. Show clear separation from main road on RIGHT/east, loading access and curb scale. Do not make a giant market or put goods across street. No aerial or collage.",
+      "projection": "perspective",
+      "camera_coordinates_status": "intended reconstruction coordinates, not recovered calibration"
+    },
+    {
+      "file": "08_CONNECTION.png",
+      "camera_position_m": [
+        50,
+        6,
+        2.5
+      ],
+      "target_position_m": [
+        50,
+        -24,
+        1.5
+      ],
+      "purpose": "GROUND-level SOUTH seam looking SOUTH into Heritage Scene3 NORTH lane. Market buildings/junction/rider all BEHIND camera. Road narrows to4m at seam, continues straight into heritage north branch; small chapel compound LEFT/east in preceding block, ochre home RIGHT/west, main east-west heritage T-junction farther south. No road ending at church, no water, no barrier, no near extra junction.",
+      "projection": "perspective",
+      "camera_coordinates_status": "intended reconstruction coordinates, not recovered calibration"
+    }
+  ],
+  "style": {
+    "render": "stylized-realistic 3D game environment",
+    "lighting": "neutral tropical daylight, readable routes",
+    "exclude": [
+      "HUD",
+      "UI",
+      "collage",
+      "giant city map",
+      "cropped map tiles",
+      "floating isolated level"
+    ]
+  },
+  "omitted_views": {
+    "file": "07_LANDMARK.png",
+    "reason": "No separate unique landmark: market buildings and stalls are covered by architecture/prop views."
+  },
+  "reconstruction_order": [
+    "Apply numeric road seam contracts",
+    "Block out terrain and road geometry",
+    "Place fixed building footprints and roofs",
+    "Add bays, walls, shortcut and pedestrian access",
+    "Test motorcycle routes and collisions",
+    "Add vegetation, infrastructure and props",
+    "Apply reference materials and reviewed signage"
+  ],
+  "validation": {
+    "status": "Game-camera revision reviewed; residual visual differences documented",
+    "method": "Manual visual review; PNG, JSON, ZIP and numeric seam checks performed for complete phase release",
+    "exact_multiview_consistency_certified": false,
+    "quality_report": "QUALITY_REVIEW.md"
+  },
+  "visual_style": {
+    "name": "Approved colorful modeled 3D game style",
+    "approved_reference": "SCENE_01_Waterfront_Delivery_Block/02_PLAYER_GAMEPLAY.png",
+    "treatment": [
+      "smooth modeled characters and vehicles",
+      "bold bright tropical foliage",
+      "clean authored materials",
+      "warm terracotta roofs and colorful facades",
+      "soft directional shadows and ambient occlusion",
+      "vivid turquoise game water"
+    ],
+    "hud": "none; world reference only",
+    "shared_model_calibrated": false
+  },
+  "graphics_revision": {
+    "date": "2026-10-08",
+    "all_reference_views_restyled": true,
+    "image_count": 7,
+    "geometry_authority": "Original scene specification; generated view details can vary"
+  }
+}

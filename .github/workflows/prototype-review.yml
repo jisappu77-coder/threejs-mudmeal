@@ -16,20 +16,17 @@ jobs:
           node-version: 22
           cache: npm
       - run: npm ci
-      - run: node scripts/check-prototypes.mjs
+      - run: npm run check
       - run: npm run build
       - run: npx playwright install --with-deps chromium
       - name: Render actual prototypes in Chromium
         run: |
           npm run preview -- --port 4173 --strictPort > /tmp/prototype-preview.log 2>&1 &
-          node scripts/check-prototype-browser.mjs
-          node scripts/check-review-startup.mjs
-          node scripts/check-crowd-browser.mjs
+          MODEL_REVIEW_ONLY=1 npm run check:browser
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: prototype-renders
           path: |
-            artifacts/prototypes/
-            artifacts/crowd/
+            artifacts/scenes/
           retention-days: 14

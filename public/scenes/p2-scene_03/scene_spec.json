@@ -1,0 +1,472 @@
+{
+  "schema_version": "1.0",
+  "game": "MUD MEALS",
+  "phase": 2,
+  "zone": {
+    "id": "ZONE_02",
+    "name": "Kochi Urban Commercial"
+  },
+  "scene": {
+    "id": "SCENE_03",
+    "name": "Market Loading Lane",
+    "playable_size_m": {
+      "east_west": 100,
+      "north_south": 100
+    },
+    "zone_origin_m": [
+      -100,
+      0,
+      0
+    ],
+    "inspiration": "Fictional compact Kerala/Kochi block, not surveyed",
+    "complexity": "medium",
+    "purpose": [
+      "Wholesale food loading/pickup",
+      "Market meals pickup",
+      "Home/office deliveries",
+      "Service alley rival bypass"
+    ]
+  },
+  "coordinate_system": {
+    "units": "meters",
+    "axes": "x east/y north/z up",
+    "threejs_mapping": "[x,z,-y]"
+  },
+  "geometry_authority": "JSON specifies exact geometry; images are generated references, not calibrated renders of one shared 3D model.",
+  "terrain": {
+    "ground_z": 0,
+    "water": null
+  },
+  "roads": [
+    {
+      "id": "R_MAIN",
+      "centerline": [
+        [
+          0,
+          50,
+          0
+        ],
+        [
+          100,
+          50,
+          0
+        ]
+      ],
+      "width_m": 6,
+      "surface": "asphalt",
+      "traffic": "left-hand; eastbound center y51.5, westbound y48.5"
+    },
+    {
+      "id": "R_NORTH",
+      "centerline": [
+        [
+          45,
+          50,
+          0
+        ],
+        [
+          45,
+          100,
+          0
+        ]
+      ],
+      "width_m": 4,
+      "surface": "asphalt"
+    },
+    {
+      "id": "R_ALLEY",
+      "centerline": [
+        [
+          36,
+          8,
+          0
+        ],
+        [
+          36,
+          92,
+          0
+        ]
+      ],
+      "width_m": 3,
+      "surface": "paving",
+      "access": "motorcycles/pedestrians only"
+    }
+  ],
+  "buildings": [
+    {
+      "id": "B_WAREHOUSE",
+      "footprint": [
+        8,
+        68,
+        30,
+        90
+      ],
+      "floors": 1,
+      "roof": "grey corrugated gable ridge north-south",
+      "walls": "laterite brown",
+      "entrance": [
+        19,
+        68,
+        0
+      ],
+      "wall_height_m": 4.8,
+      "plinth_height_m": 0.15,
+      "roof_top_m": 7.5,
+      "loading_door_size_m": {
+        "width": 6,
+        "height": 4
+      }
+    },
+    {
+      "id": "B_OFFICE",
+      "footprint": [
+        60,
+        68,
+        80,
+        90
+      ],
+      "floors": 2,
+      "roof": "flat concrete parapet",
+      "walls": "blue",
+      "awning": "white south",
+      "entrance": [
+        70,
+        68,
+        0
+      ],
+      "wall_height_m": 6.8,
+      "plinth_height_m": 0.15,
+      "roof_top_m": 7.25
+    },
+    {
+      "id": "B_MARKET",
+      "footprint": [
+        8,
+        16,
+        30,
+        36
+      ],
+      "floors": 1,
+      "roof": "red corrugated gable ridge east-west",
+      "walls": "mustard",
+      "awning": "green north",
+      "entrance": [
+        19,
+        36,
+        0
+      ],
+      "service_entrance": [
+        19,
+        16,
+        0
+      ],
+      "wall_height_m": 3.4,
+      "plinth_height_m": 0.15,
+      "roof_top_m": 5.4,
+      "secondary_awning": "green south service courtyard"
+    },
+    {
+      "id": "B_HOUSE",
+      "footprint": [
+        62,
+        16,
+        82,
+        36
+      ],
+      "floors": 1,
+      "roof": "red tiled hip",
+      "walls": "cream",
+      "entrance": [
+        72,
+        36,
+        0
+      ],
+      "wall_height_m": 3.4,
+      "plinth_height_m": 0.15,
+      "roof_top_m": 5.4
+    }
+  ],
+  "landmarks": [],
+  "delivery_bays": [
+    {
+      "id": "D_LOADING",
+      "rect": [
+        8,
+        56,
+        30,
+        68
+      ],
+      "building": "B_WAREHOUSE"
+    },
+    {
+      "id": "D_MARKET",
+      "rect": [
+        8,
+        36,
+        30,
+        46
+      ],
+      "building": "B_MARKET"
+    }
+  ],
+  "vegetation": [
+    {
+      "id": "T_PALM_S",
+      "position": [
+        6,
+        8,
+        0
+      ],
+      "type": "coconut palm"
+    },
+    {
+      "id": "T_PALM_N",
+      "position": [
+        90,
+        90,
+        0
+      ],
+      "type": "coconut palm"
+    },
+    {
+      "id": "T_TREE",
+      "position": [
+        90,
+        12,
+        0
+      ],
+      "type": "broad tropical tree"
+    }
+  ],
+  "infrastructure": {
+    "sidewalk_width_m": 1.2,
+    "utility_poles": [
+      [
+        4,
+        54,
+        0
+      ],
+      [
+        48,
+        54,
+        0
+      ],
+      [
+        96,
+        54,
+        0
+      ]
+    ],
+    "drains": "covered concrete; flush entrance crossings",
+    "signage": "reviewed Malayalam required"
+  },
+  "props": [
+    {
+      "id": "P_TRUCK",
+      "type": "small cream goods truck",
+      "position": [
+        18,
+        62,
+        0
+      ],
+      "heading": "west",
+      "dimensions_m": [
+        6,
+        2.2,
+        2.8
+      ]
+    },
+    {
+      "id": "P_AUTO",
+      "type": "black-yellow auto",
+      "position": [
+        22,
+        41,
+        0
+      ],
+      "heading": "east"
+    },
+    {
+      "id": "P_PLAYER",
+      "type": "teal helmeted rider orangebox",
+      "position": [
+        4,
+        51,
+        0
+      ],
+      "heading": "east"
+    }
+  ],
+  "connections": [
+    {
+      "id": "C_EAST",
+      "position": [
+        100,
+        50,
+        0
+      ],
+      "width_m": 6,
+      "neighbor_scene": "SCENE_01",
+      "matches": "SCENE_01.C_WEST",
+      "zone_position_m": [
+        0,
+        50,
+        0
+      ]
+    },
+    {
+      "id": "C_WEST",
+      "position": [
+        0,
+        50,
+        0
+      ],
+      "width_m": 6,
+      "neighbor": "future market block"
+    },
+    {
+      "id": "C_NORTH",
+      "position": [
+        45,
+        100,
+        0
+      ],
+      "width_m": 4,
+      "neighbor": "future service block"
+    }
+  ],
+  "gameplay": {
+    "engine_checks": [
+      "motorcycle turning/clearance",
+      "pickupaccess",
+      "traffic/collision",
+      "pedestrianbypass"
+    ],
+    "route_note": "Keep single north T-arm; loading/marketcourts offmainroad",
+    "pedestrian_note": "Reserve1.2m continuous sidewalk through loading/market entrances; keep goods insidecourts."
+  },
+  "reference_views": [
+    {
+      "file": "01_MASTER_SPATIAL.png",
+      "camera_position_m": [
+        -32,
+        -32,
+        100
+      ],
+      "target_position_m": [
+        50,
+        50,
+        0
+      ],
+      "purpose": "Elevated southwest master covering all footprints, one east-west street, sole NORTH T-arm, north warehouse loading court, market pickup courtyard, narrowx36 servicealley and east/west/north open roads.",
+      "camera_calibration": "intended approximate reconstruction camera, not recovered calibration"
+    },
+    {
+      "file": "02_PLAYER_GAMEPLAY.png",
+      "camera_position_m": [
+        1,
+        51,
+        2.4
+      ],
+      "target_position_m": [
+        76,
+        51,
+        1.5
+      ],
+      "purpose": "Third-person street-height WEST entry looking EAST behind rider. Warehouse LEFT/north near, mustard market RIGHT/south near; blue office LEFT/north far, cream hip house RIGHT/south far. Main road straight, north4m T-arm joins LEFT midway. Truck in LEFT loading courtyard, not lane.",
+      "camera_calibration": "intended approximate reconstruction camera, not recovered calibration"
+    },
+    {
+      "file": "03_REVERSE_GAMEPLAY.png",
+      "camera_position_m": [
+        97,
+        49,
+        2.4
+      ],
+      "target_position_m": [
+        20,
+        49,
+        1.5
+      ],
+      "purpose": "Actual reverse EAST entry looking WEST, street-height. Cream house LEFT/south near, blue office RIGHT/north near; market LEFT/south far, warehouse RIGHT/north far. North side T-arm joins RIGHT midway. Do not mirror; no south branch.",
+      "camera_calibration": "intended approximate reconstruction camera, not recovered calibration"
+    },
+    {
+      "file": "04_SIDE_CROSS_STREET.png",
+      "camera_position_m": [
+        45,
+        94,
+        1.8
+      ],
+      "target_position_m": [
+        45,
+        40,
+        1.5
+      ],
+      "purpose": "North T-arm street-height camera looking SOUTH. Warehouse RIGHT/west, blue office LEFT/east; east-west main street crosses ahead, mustard market RIGHT beyond, cream house LEFT beyond. No drivable southern continuation of car lane; only separate narrow motorcyclealley west atx36.",
+      "camera_calibration": "intended approximate reconstruction camera, not recovered calibration"
+    },
+    {
+      "file": "05_ARCHITECTURE.png",
+      "camera_position_m": [
+        20,
+        51,
+        1.8
+      ],
+      "target_position_m": [
+        20,
+        78,
+        3
+      ],
+      "purpose": "Ground-height warehouse SOUTH facade lookingNORTH from opposite edge of loading apron. Laterite masonry, grey north-south GABLE roof, double south doors, off-road loading court and small cream goods truck. Reveal door clearance, pallet/roof forms without whole-block aerial.",
+      "camera_calibration": "intended approximate reconstruction camera, not recovered calibration"
+    },
+    {
+      "file": "06_ENVIRONMENT_PROPS.png",
+      "camera_position_m": [
+        19,
+        55,
+        1.7
+      ],
+      "target_position_m": [
+        19,
+        28,
+        1.5
+      ],
+      "purpose": "Ground-height market north frontage from opposite main-road curb looking south: mustard walls, red east-west gable roof, green awning, recessed ice boxes/crates/stalls, drainage and stopping frontage; main street in foreground.",
+      "camera_calibration": "intended approximate reconstruction camera, not recovered calibration"
+    },
+    {
+      "file": "08_CONNECTION.png",
+      "camera_position_m": [
+        91,
+        50,
+        2.3
+      ],
+      "target_position_m": [
+        125,
+        50,
+        1.5
+      ],
+      "purpose": "EAST seam street-height looking EAST into Scene1 WEST approach. Market Scene3 buildingsbehindcamera. Continuous6m road; Scene1 teal singlefloor bakery LEFT/north and cream twofloor redawningrestaurant RIGHT/south ahead; far main crossroads about69m ahead, yellow threefloor apartments LEFT beyond and white hip restaurant RIGHT beyond. No near extra intersection or barrier.",
+      "camera_calibration": "intended approximate reconstruction camera, not recovered calibration"
+    }
+  ],
+  "omitted_views": {
+    "07_LANDMARK": "No separate unique landmark; warehouse architecture and market props have distinct useful coverage."
+  },
+  "reconstruction_order": [
+    "Road/canal/bridge geometry",
+    "Footprints and roofs",
+    "Pickup and serviceaccess",
+    "Seams",
+    "Infrastructure/vegetation",
+    "Materials/props"
+  ],
+  "validation": {
+    "status": "Reference views reviewed; remaining variation documented",
+    "exact_multiview_consistency_certified": false,
+    "quality_report": "QUALITY_REVIEW.md",
+    "checks": "PNG/JSON/ZIP integrity, object IDs, footprints and reciprocal road seam coordinates"
+  }
+}

@@ -5,12 +5,12 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "check": "node scripts/check-driving.mjs && node scripts/check-scene.mjs && node scripts/check-frame-loop.mjs && node scripts/check-rigid-batch.mjs",
+    "check": "node scripts/check-scenes.mjs",
     "build": "vite build",
     "preview": "vite preview --host 0.0.0.0",
     "check:browser": "node scripts/check-browser.mjs",
-    "check:maps": "node scripts/check-real-map.mjs",
-    "check:maps:browser": "node scripts/check-real-map-browser.mjs"
+    "check:maps": "node scripts/check-scenes.mjs",
+    "check:maps:browser": "node scripts/check-browser.mjs"
   },
   "dependencies": {
     "three": "0.180.0"

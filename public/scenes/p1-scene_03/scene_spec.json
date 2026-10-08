@@ -1,0 +1,896 @@
+{
+  "schema_version": "1.0",
+  "game": "MUD MEALS",
+  "phase": 1,
+  "zone": {
+    "id": "ZONE_01",
+    "name": "Fort Kochi"
+  },
+  "scene": {
+    "id": "SCENE_03",
+    "name": "Heritage Street Delivery Block",
+    "inspiration": "Fictional compact Fort Kochi/Kerala neighborhood, not a surveyed recreation",
+    "complexity": "medium with chapel landmark",
+    "playable_size_m": {
+      "east_west": 100,
+      "north_south": 90
+    },
+    "zone_origin_m": [
+      -100,
+      100,
+      0
+    ],
+    "purpose": [
+      "Cafe/bakery pickup",
+      "Residence and chapel-side delivery",
+      "Ride through heritage T-junction",
+      "Use a narrow service shortcut during rival pursuit"
+    ]
+  },
+  "coordinate_system": {
+    "units": "meters",
+    "x": "east",
+    "y": "north",
+    "z": "up",
+    "origin": "scene southwest corner",
+    "bounds": {
+      "x": [
+        0,
+        100
+      ],
+      "y": [
+        0,
+        90
+      ],
+      "z_ground": 0
+    },
+    "zone_mapping": "Add scene.zone_origin_m to local (x,y,z)",
+    "threejs_mapping": "(X,Y,Z)=(x,z,-y)",
+    "unity_mapping": "(X,Y,Z)=(x,z,y)",
+    "blender_mapping": "(X,Y,Z)=(x,y,z)"
+  },
+  "geometry_authority": "JSON defines intended geometry; generated views are visual references, not camera-calibrated renders of an actual shared 3D model.",
+  "terrain": {
+    "type": "flat inland urban block",
+    "ground_elevation_m": 0,
+    "water_present": false
+  },
+  "roads": [
+    {
+      "id": "R_MAIN",
+      "centerline": [
+        [
+          -20,
+          35,
+          0
+        ],
+        [
+          120,
+          35,
+          0
+        ]
+      ],
+      "width_m": 6,
+      "surface": "weathered asphalt",
+      "traffic_side": "left",
+      "lanes": 2,
+      "driveable": true
+    },
+    {
+      "id": "R_NORTH",
+      "centerline": [
+        [
+          50,
+          35,
+          0
+        ],
+        [
+          50,
+          110,
+          0
+        ]
+      ],
+      "width_m": 4,
+      "surface": "weathered asphalt",
+      "traffic_side": "left",
+      "lanes": 1,
+      "driveable": true
+    },
+    {
+      "id": "R_SHORTCUT",
+      "centerline": [
+        [
+          38,
+          8,
+          0
+        ],
+        [
+          38,
+          70,
+          0
+        ]
+      ],
+      "width_m": 3,
+      "vehicle_access": [
+        "motorcycle",
+        "scooter"
+      ],
+      "surface": "worn concrete",
+      "traffic_side": "left",
+      "lanes": 1,
+      "driveable": true
+    }
+  ],
+  "junction": {
+    "id": "J_NORTH_T",
+    "position": [
+      50,
+      35,
+      0
+    ],
+    "type": "T",
+    "north_arm": "R_NORTH",
+    "through": "R_MAIN",
+    "south_arm": "none",
+    "corner_radius_m": 4,
+    "motorcycle_design_turning_radius_m": 3,
+    "visibility": "Keep intersection corners clear of goods, poles and parking"
+  },
+  "buildings": [
+    {
+      "id": "B_CAFE",
+      "name": "Pink Heritage Cafe",
+      "footprint_xy": [
+        [
+          12,
+          10
+        ],
+        [
+          30,
+          10
+        ],
+        [
+          30,
+          26
+        ],
+        [
+          12,
+          26
+        ]
+      ],
+      "floors": 2,
+      "eaves_z_m": 6.4,
+      "roof": {
+        "shape": "hip",
+        "ridge_z_m": 8.2,
+        "material": "red Kerala clay tiles"
+      },
+      "walls": "pink plaster",
+      "front_direction": "north",
+      "entrances": [
+        {
+          "id": "E_CAFE",
+          "position": [
+            21,
+            26,
+            0
+          ],
+          "width_m": 1.6,
+          "delivery": true
+        },
+        {
+          "id": "E_CAFE_COURTYARD",
+          "position": [
+            21,
+            10,
+            0
+          ],
+          "width_m": 1.6,
+          "delivery": false
+        }
+      ],
+      "awning": {
+        "color": "beige",
+        "edge": "north",
+        "projection_m": 1.2
+      },
+      "balcony": "narrow north balcony",
+      "courtyard_facade": "South secondary public door/seating; north pickup facade faces main road."
+    },
+    {
+      "id": "B_BAKERY",
+      "name": "Pale Blue Bakery",
+      "footprint_xy": [
+        [
+          64,
+          10
+        ],
+        [
+          84,
+          10
+        ],
+        [
+          84,
+          26
+        ],
+        [
+          64,
+          26
+        ]
+      ],
+      "floors": 1,
+      "eaves_z_m": 3.5,
+      "roof": {
+        "shape": "flat",
+        "ridge_z_m": 3.9,
+        "material": "concrete parapet"
+      },
+      "walls": "pale blue plaster",
+      "front_direction": "north",
+      "entrances": [
+        {
+          "id": "E_BAKERY",
+          "position": [
+            74,
+            26,
+            0
+          ],
+          "width_m": 1.6,
+          "delivery": true
+        },
+        {
+          "id": "E_BAKERY_COURTYARD",
+          "position": [
+            74,
+            10,
+            0
+          ],
+          "width_m": 1.6,
+          "delivery": false
+        }
+      ],
+      "awning": {
+        "color": "dark blue",
+        "edge": "north",
+        "projection_m": 1.2
+      }
+    },
+    {
+      "id": "B_HOME",
+      "name": "Ochre Home",
+      "footprint_xy": [
+        [
+          12,
+          48
+        ],
+        [
+          32,
+          48
+        ],
+        [
+          32,
+          68
+        ],
+        [
+          12,
+          68
+        ]
+      ],
+      "floors": 1,
+      "eaves_z_m": 3.2,
+      "roof": {
+        "shape": "hip",
+        "ridge_z_m": 5,
+        "material": "red clay tiles"
+      },
+      "walls": "ochre plaster",
+      "front_direction": "east",
+      "entrances": [
+        {
+          "id": "E_HOME",
+          "position": [
+            32,
+            57,
+            0
+          ],
+          "width_m": 1.6,
+          "delivery": true
+        }
+      ],
+      "compound": {
+        "footprint_xy": [
+          [
+            10,
+            46
+          ],
+          [
+            34,
+            46
+          ],
+          [
+            34,
+            70
+          ],
+          [
+            10,
+            70
+          ]
+        ],
+        "gate_position": [
+          34,
+          57,
+          0
+        ],
+        "gate_width_m": 2.4,
+        "wall_height_m": 1.2
+      }
+    },
+    {
+      "id": "B_TEA",
+      "name": "Yellow Tea Shop",
+      "footprint_xy": [
+        [
+          64,
+          46
+        ],
+        [
+          80,
+          46
+        ],
+        [
+          80,
+          56
+        ],
+        [
+          64,
+          56
+        ]
+      ],
+      "floors": 1,
+      "eaves_z_m": 3,
+      "roof": {
+        "shape": "single_pitch",
+        "ridge_z_m": 3.8,
+        "material": "red clay tiles"
+      },
+      "walls": "yellow plaster",
+      "front_direction": "south",
+      "entrances": [
+        {
+          "id": "E_TEA",
+          "position": [
+            72,
+            46,
+            0
+          ],
+          "width_m": 1.6,
+          "delivery": true
+        }
+      ]
+    },
+    {
+      "id": "B_CHAPEL",
+      "name": "Small Heritage Chapel",
+      "footprint_xy": [
+        [
+          62,
+          66
+        ],
+        [
+          82,
+          66
+        ],
+        [
+          82,
+          84
+        ],
+        [
+          62,
+          84
+        ]
+      ],
+      "floors": 1,
+      "eaves_z_m": 4.8,
+      "roof": {
+        "shape": "gable",
+        "ridge_z_m": 7,
+        "material": "red clay tiles",
+        "ridge_axis": "north-south"
+      },
+      "walls": "white plaster",
+      "front_direction": "south",
+      "entrances": [
+        {
+          "id": "E_CHAPEL",
+          "position": [
+            72,
+            66,
+            0
+          ],
+          "width_m": 1.6,
+          "delivery": true
+        }
+      ],
+      "compound": {
+        "footprint_xy": [
+          [
+            58,
+            60
+          ],
+          [
+            88,
+            60
+          ],
+          [
+            88,
+            88
+          ],
+          [
+            58,
+            88
+          ]
+        ],
+        "gate_position": [
+          70,
+          60,
+          0
+        ],
+        "gate_width_m": 2.4,
+        "wall_height_m": 1.2
+      },
+      "bell_tower": {
+        "position": [
+          70,
+          66,
+          0
+        ],
+        "footprint_m": [
+          3,
+          3
+        ],
+        "height_m": 10
+      }
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "L_CHAPEL",
+      "building_id": "B_CHAPEL",
+      "type": "small white chapel with modest bell tower",
+      "footpath_centerline": [
+        [
+          50,
+          60,
+          0
+        ],
+        [
+          70,
+          60,
+          0
+        ],
+        [
+          72,
+          66,
+          0
+        ]
+      ],
+      "footpath_width_m": 2,
+      "vehicle_access": false
+    }
+  ],
+  "vegetation": [
+    {
+      "id": "T_PALM_01",
+      "position": [
+        8,
+        8,
+        0
+      ],
+      "species": "coconut palm",
+      "height_m": 10
+    },
+    {
+      "id": "T_PALM_02",
+      "position": [
+        88,
+        82,
+        0
+      ],
+      "species": "coconut palm",
+      "height_m": 10
+    },
+    {
+      "id": "T_RAIN",
+      "position": [
+        20,
+        78,
+        0
+      ],
+      "species": "rain tree",
+      "height_m": 9
+    }
+  ],
+  "props": [
+    {
+      "id": "V_RIDER",
+      "position": [
+        8,
+        35,
+        0
+      ],
+      "type": "helmeted rider/motorcycle, teal jacket and orange rear box",
+      "heading": "east",
+      "static_in_references": true
+    },
+    {
+      "id": "V_SCOOTER",
+      "position": [
+        20,
+        29,
+        0
+      ],
+      "type": "parked scooter",
+      "heading": "east",
+      "static_in_references": true
+    },
+    {
+      "id": "V_AUTO",
+      "position": [
+        73,
+        29,
+        0
+      ],
+      "type": "black-yellow auto-rickshaw",
+      "heading": "east",
+      "static_in_references": true
+    },
+    {
+      "id": "U_POLE_01",
+      "position": [
+        5,
+        40,
+        0
+      ],
+      "type": "utility pole",
+      "static_in_references": true,
+      "height_m": 8
+    },
+    {
+      "id": "U_POLE_02",
+      "position": [
+        45,
+        40,
+        0
+      ],
+      "type": "utility pole",
+      "static_in_references": true,
+      "height_m": 8
+    },
+    {
+      "id": "U_POLE_03",
+      "position": [
+        95,
+        40,
+        0
+      ],
+      "type": "utility pole",
+      "static_in_references": true,
+      "height_m": 8
+    },
+    {
+      "id": "P_BIN",
+      "position": [
+        32,
+        18,
+        0
+      ],
+      "type": "service bin",
+      "static_in_references": true
+    },
+    {
+      "id": "P_CRATES",
+      "position": [
+        32,
+        21,
+        0
+      ],
+      "type": "two delivery crates",
+      "static_in_references": true
+    }
+  ],
+  "delivery_bays": [
+    {
+      "id": "BAY_CAFE",
+      "footprint_xy": [
+        [
+          16,
+          26
+        ],
+        [
+          26,
+          26
+        ],
+        [
+          26,
+          32
+        ],
+        [
+          16,
+          32
+        ]
+      ],
+      "target_building_id": "B_CAFE",
+      "keep_traffic_clear": true
+    },
+    {
+      "id": "BAY_BAKERY",
+      "footprint_xy": [
+        [
+          68,
+          26
+        ],
+        [
+          78,
+          26
+        ],
+        [
+          78,
+          32
+        ],
+        [
+          68,
+          32
+        ]
+      ],
+      "target_building_id": "B_BAKERY",
+      "keep_traffic_clear": true
+    }
+  ],
+  "infrastructure": {
+    "drain_depth_m": 0.25,
+    "drain_width_m": 0.3,
+    "drain_rule": "Follow road/yard edges; cover at entrances, bays, junction crossings and shortcut crossing",
+    "utility_wires": "Connect specified utility poles; maintain at least6m road clearance",
+    "signage": "Business signage may use Malayalam; generated glyphs are not authoritative. Replace with reviewed lettering.",
+    "sidewalks": "1.2\u20132m concrete where practical, interrupted by recessed pickup bays; never widen roads by moving footprints"
+  },
+  "gameplay": {
+    "primary_routes": [
+      "R_MAIN",
+      "R_NORTH"
+    ],
+    "alternate_route": "R_SHORTCUT, motorcycle/scooter access only",
+    "trust_jobs": "Shop/restaurant pickups and local customer dropoffs",
+    "rival_design": "Fair ambush at shortcut mouth with visible alternative main-road escape",
+    "collision_objects": [
+      "buildings",
+      "compound walls",
+      "utility poles",
+      "recessed fixed props"
+    ],
+    "moving_actor_note": "Traffic/pedestrians are engine implementation; reference snapshot actors stay fixed",
+    "engine_validation_required": [
+      "motorcycle turning radius",
+      "pickup stopping room",
+      "shortcut clearance",
+      "junction sightlines",
+      "drain crossings",
+      "pedestrian safety space"
+    ]
+  },
+  "connections": [
+    {
+      "id": "C_EAST_ROAD",
+      "edge": "east",
+      "position": [
+        100,
+        35,
+        0
+      ],
+      "width_m": 6,
+      "neighbor_scene": "SCENE_02",
+      "matches": "SCENE_02.C_WEST_ROAD"
+    },
+    {
+      "id": "C_WEST_ROAD",
+      "edge": "west",
+      "position": [
+        0,
+        35,
+        0
+      ],
+      "width_m": 6,
+      "neighbor_scene": "future heritage block"
+    },
+    {
+      "id": "C_NORTH_ROAD",
+      "edge": "north",
+      "position": [
+        50,
+        90,
+        0
+      ],
+      "width_m": 4,
+      "neighbor_scene": "SCENE_04",
+      "matches": "SCENE_04.C_SOUTH_ROAD"
+    }
+  ],
+  "reference_views": [
+    {
+      "file": "01_MASTER_SPATIAL.png",
+      "camera_position_m": [
+        -35,
+        -35,
+        95
+      ],
+      "target_position_m": [
+        50,
+        45,
+        0
+      ],
+      "purpose": "Elevated southwest master, full block. Horizontal main road and sole north T-arm, five footprints/roof types, chapel compound, shortcut/bays and all three road exits. No extra south branch or giant city.",
+      "projection": "perspective",
+      "camera_coordinates_status": "intended reconstruction coordinates, not recovered calibration"
+    },
+    {
+      "file": "02_PLAYER_GAMEPLAY.png",
+      "camera_position_m": [
+        2,
+        35,
+        2.3
+      ],
+      "target_position_m": [
+        65,
+        35,
+        1.5
+      ],
+      "purpose": "GROUND-level third-person behind rider, WEST end looking EAST along main road. Pink cafe RIGHT/south foreground, blue bakery RIGHT farther east; ochre home LEFT/north, yellow tea shop LEFT beyond north T-arm. Chapel far northeast background, not blocking road. Horizon midframe, no aerial roofs. Revised: low chase camera, enlarged rider, active traffic and sidewalk actors.",
+      "projection": "perspective",
+      "camera_coordinates_status": "intended approximate camera; generated elevation can differ"
+    },
+    {
+      "file": "03_REVERSE_GAMEPLAY.png",
+      "camera_position_m": [
+        94,
+        35,
+        2.1
+      ],
+      "target_position_m": [
+        28,
+        35,
+        1.5
+      ],
+      "purpose": "GROUND-level opposite EAST end looking WEST. Blue bakery LEFT/south foreground, pink cafe LEFT farther west; yellow tea shop RIGHT/north foreground; north branch joins RIGHT at x50. Home farther north/right. Actual reverse viewpoint, not mirror, no aerial.",
+      "projection": "perspective",
+      "camera_coordinates_status": "intended approximate camera; generated elevation can differ"
+    },
+    {
+      "file": "04_SIDE_CROSS_STREET.png",
+      "camera_position_m": [
+        50,
+        76,
+        1.8
+      ],
+      "target_position_m": [
+        50,
+        22,
+        1.5
+      ],
+      "purpose": "GROUND-level north side street looking SOUTH toward T-junction. Chapel compound LEFT/east, ochre home RIGHT/west; across main road pink cafe to RIGHT/west and blue bakery LEFT/east. Main road crosses ahead and no drivable southern continuation. Reveal chapel side access and home gate. No whole-block aerial.",
+      "projection": "perspective",
+      "camera_coordinates_status": "intended reconstruction coordinates, not recovered calibration"
+    },
+    {
+      "file": "05_ARCHITECTURE.png",
+      "camera_position_m": [
+        23,
+        43,
+        1.7
+      ],
+      "target_position_m": [
+        21,
+        18,
+        4
+      ],
+      "purpose": "Close GROUND-level pink cafe NORTH facade from opposite side of main road looking SOUTH. TWO floors, red hipped roof silhouette, narrow balcony, beige awning, pickup door and stopping bay. Same footprint/doors/roof, asphalt foreground. No view down onto roof; do not relocate cafe.",
+      "projection": "perspective",
+      "camera_coordinates_status": "intended reconstruction coordinates, not recovered calibration"
+    },
+    {
+      "file": "06_ENVIRONMENT_PROPS.png",
+      "camera_position_m": [
+        38,
+        18,
+        1.7
+      ],
+      "target_position_m": [
+        38,
+        45,
+        1.5
+      ],
+      "purpose": "GROUND-level shortcut detail looking NORTH along the3m alley EAST of pink cafe. Cafe east service wall on LEFT/west, lane drains, modest bin/crates, overhead service wire; main road crosses ahead, home-side access beyond. Show motorcycle clearance and drain crossing. No isolated prop board, aerial or new road.",
+      "projection": "perspective",
+      "camera_coordinates_status": "intended reconstruction coordinates, not recovered calibration"
+    },
+    {
+      "file": "07_LANDMARK.png",
+      "camera_position_m": [
+        70,
+        57,
+        1.8
+      ],
+      "target_position_m": [
+        72,
+        77,
+        4
+      ],
+      "purpose": "GROUND-level chapel compound view at its SOUTH gate looking NORTH. Same small white chapel, red north-south gable roof, small south bell tower, modest wall/gate, path and shrubs. No monumental cathedral, redesign or road into church. North side street stays WEST/left outside compound.",
+      "projection": "perspective",
+      "camera_coordinates_status": "intended reconstruction coordinates, not recovered calibration"
+    },
+    {
+      "file": "08_CONNECTION.png",
+      "camera_position_m": [
+        88,
+        35,
+        2.5
+      ],
+      "target_position_m": [
+        120,
+        35,
+        1.5
+      ],
+      "purpose": "GROUND-level EAST seam looking EAST toward adjacent Scene2 west service street. Heritage cafe/bakery/chapel are BEHIND camera; do not show whole block. Continuous6m asphalt to Scene2 west side approach; further ahead net workshop LEFT/north, ochre home RIGHT/south, mint shop LEFT at far T-mouth, rust-red seafood RIGHT, sea beyond. No near extra junction, dead end or barrier.",
+      "projection": "perspective",
+      "camera_coordinates_status": "intended reconstruction coordinates, not recovered calibration"
+    }
+  ],
+  "style": {
+    "render": "stylized-realistic 3D game environment",
+    "lighting": "neutral tropical daylight, readable routes",
+    "exclude": [
+      "HUD",
+      "UI",
+      "collage",
+      "giant city map",
+      "cropped map tiles",
+      "floating isolated level"
+    ]
+  },
+  "omitted_views": null,
+  "reconstruction_order": [
+    "Apply numeric road seam contracts",
+    "Block out terrain and road geometry",
+    "Place fixed building footprints and roofs",
+    "Add bays, walls, shortcut and pedestrian access",
+    "Test motorcycle routes and collisions",
+    "Add vegetation, infrastructure and props",
+    "Apply reference materials and reviewed signage"
+  ],
+  "validation": {
+    "status": "Game-camera revision reviewed; residual visual differences documented",
+    "method": "Manual visual review; PNG, JSON, ZIP and numeric seam checks performed for complete phase release",
+    "exact_multiview_consistency_certified": false,
+    "quality_report": "QUALITY_REVIEW.md"
+  },
+  "visual_style": {
+    "name": "Approved colorful modeled 3D game style",
+    "approved_reference": "SCENE_01_Waterfront_Delivery_Block/02_PLAYER_GAMEPLAY.png",
+    "treatment": [
+      "smooth modeled characters and vehicles",
+      "bold bright tropical foliage",
+      "clean authored materials",
+      "warm terracotta roofs and colorful facades",
+      "soft directional shadows and ambient occlusion",
+      "vivid turquoise game water"
+    ],
+    "hud": "none; world reference only",
+    "shared_model_calibrated": false
+  },
+  "graphics_revision": {
+    "date": "2026-10-08",
+    "all_reference_views_restyled": true,
+    "image_count": 8,
+    "geometry_authority": "Original scene specification; generated view details can vary"
+  }
+}

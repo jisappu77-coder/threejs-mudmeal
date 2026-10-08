@@ -1,0 +1,572 @@
+{
+  "schema_version": "1.0",
+  "game": "MUD MEALS",
+  "phase": 2,
+  "zone": {
+    "id": "ZONE_02",
+    "name": "Kochi Urban Commercial"
+  },
+  "scene": {
+    "id": "SCENE_04",
+    "name": "Canal Bridge Approach",
+    "playable_size_m": {
+      "east_west": 120,
+      "north_south": 100
+    },
+    "zone_origin_m": [
+      0,
+      200,
+      0
+    ],
+    "inspiration": "Fictional compact Kerala/Kochi block, not surveyed",
+    "complexity": "medium with bridge landmark",
+    "purpose": [
+      "Tea/bakery pickup",
+      "Deliver to home/workshop",
+      "Bridge chokepoint pursuit",
+      "Explore canalbank approach"
+    ]
+  },
+  "coordinate_system": {
+    "units": "meters",
+    "axes": "x east/y north/z up",
+    "threejs_mapping": "[x,z,-y]"
+  },
+  "geometry_authority": "JSON specifies exact geometry; images are generated references, not calibrated renders of one shared 3D model.",
+  "terrain": {
+    "ground_z": 0,
+    "canal_water_z": -1.2,
+    "canal_rect": [
+      0,
+      45,
+      120,
+      65
+    ],
+    "bank_edges_y": [
+      45,
+      65
+    ]
+  },
+  "roads": [
+    {
+      "id": "R_MAIN",
+      "centerline": [
+        [
+          60,
+          0,
+          0
+        ],
+        [
+          60,
+          100,
+          0
+        ]
+      ],
+      "width_m": 8,
+      "surface": "asphalt",
+      "traffic": "left-hand; northboundx58/southboundx62"
+    },
+    {
+      "id": "R_BANK_S",
+      "centerline": [
+        [
+          8,
+          38,
+          0
+        ],
+        [
+          56,
+          38,
+          0
+        ]
+      ],
+      "width_m": 3,
+      "surface": "paving",
+      "access": "motorcycles/pedestrians; cannot bypass canal bridge"
+    },
+    {
+      "id": "R_BANK_N",
+      "centerline": [
+        [
+          0,
+          69,
+          0
+        ],
+        [
+          120,
+          69,
+          0
+        ]
+      ],
+      "width_m": 2,
+      "surface": "paving",
+      "access": "pedestrians; no car cross-street"
+    },
+    {
+      "id": "R_BANK_S_WALK",
+      "centerline": [
+        [
+          0,
+          42,
+          0
+        ],
+        [
+          120,
+          42,
+          0
+        ]
+      ],
+      "width_m": 2,
+      "surface": "paving",
+      "access": "pedestrians; connects bridge sidewalks, no car cross-street"
+    }
+  ],
+  "buildings": [
+    {
+      "id": "B_TEA",
+      "footprint": [
+        24,
+        12,
+        46,
+        32
+      ],
+      "floors": 1,
+      "roof": "red tiled hip",
+      "walls": "ochre",
+      "awning": "beige east",
+      "entrance": [
+        46,
+        22,
+        0
+      ],
+      "wall_height_m": 3.4,
+      "plinth_height_m": 0.15,
+      "roof_top_m": 5.4,
+      "secondary_entrance": [
+        35,
+        12,
+        0
+      ],
+      "secondary_awning": "beige south courtyard"
+    },
+    {
+      "id": "B_BAKERY",
+      "footprint": [
+        76,
+        12,
+        98,
+        32
+      ],
+      "floors": 1,
+      "roof": "flat concrete parapet",
+      "walls": "mint",
+      "awning": "blue west",
+      "entrance": [
+        76,
+        22,
+        0
+      ],
+      "wall_height_m": 3.4,
+      "plinth_height_m": 0.15,
+      "roof_top_m": 3.85,
+      "secondary_entrance": [
+        87,
+        12,
+        0
+      ],
+      "secondary_awning": "blue south courtyard"
+    },
+    {
+      "id": "B_HOUSE",
+      "footprint": [
+        24,
+        74,
+        46,
+        94
+      ],
+      "floors": 2,
+      "roof": "red tiled hip",
+      "walls": "cream",
+      "entrance": [
+        46,
+        84,
+        0
+      ],
+      "balcony": "east",
+      "wall_height_m": 6.8,
+      "plinth_height_m": 0.15,
+      "roof_top_m": 8.8
+    },
+    {
+      "id": "B_WORKSHOP",
+      "footprint": [
+        76,
+        74,
+        98,
+        94
+      ],
+      "floors": 1,
+      "roof": "grey corrugated gable ridge north-south",
+      "walls": "pale blue",
+      "entrance": [
+        76,
+        84,
+        0
+      ],
+      "wall_height_m": 3.4,
+      "plinth_height_m": 0.15,
+      "roof_top_m": 5.4,
+      "secondary_entrance": [
+        87,
+        74,
+        0
+      ],
+      "secondary_door": "south roll-up door"
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "L_BRIDGE",
+      "deck_rect": [
+        54,
+        43,
+        66,
+        67
+      ],
+      "carriageway_rect": [
+        56,
+        43,
+        64,
+        67
+      ],
+      "deck_top_z": 0,
+      "deck_thickness_m": 0.6,
+      "sidewalk_width_m": 1.5,
+      "parapet_width_m": 0.5,
+      "parapet_height_m": 1.1,
+      "abutment_bank_y": [
+        45,
+        65
+      ],
+      "type": "single low concrete slab bridge",
+      "channel_piers": 0
+    }
+  ],
+  "delivery_bays": [
+    {
+      "id": "D_TEA",
+      "rect": [
+        46,
+        18,
+        54.5,
+        28
+      ],
+      "building": "B_TEA"
+    },
+    {
+      "id": "D_BAKERY",
+      "rect": [
+        65.5,
+        18,
+        76,
+        28
+      ],
+      "building": "B_BAKERY"
+    }
+  ],
+  "vegetation": [
+    {
+      "id": "T_PALM_S",
+      "position": [
+        12,
+        10,
+        0
+      ],
+      "type": "coconut palm"
+    },
+    {
+      "id": "T_PALM_N",
+      "position": [
+        106,
+        90,
+        0
+      ],
+      "type": "coconut palm"
+    },
+    {
+      "id": "T_TREE",
+      "position": [
+        108,
+        14,
+        0
+      ],
+      "type": "broad tropical tree"
+    }
+  ],
+  "infrastructure": {
+    "sidewalk_width_m": 1.5,
+    "utility_poles": [
+      [
+        66,
+        6,
+        0
+      ],
+      [
+        66,
+        36,
+        0
+      ],
+      [
+        66,
+        74,
+        0
+      ],
+      [
+        66,
+        96,
+        0
+      ]
+    ],
+    "drains": "covered concrete; bank outfall guarded; flushentrancecrossings",
+    "signage": "reviewed Malayalam required"
+  },
+  "props": [
+    {
+      "id": "P_PLAYER",
+      "type": "tealhelmet rider orangebox",
+      "position": [
+        58,
+        5,
+        0
+      ],
+      "heading": "north"
+    },
+    {
+      "id": "P_AUTO",
+      "type": "black-yellow auto",
+      "position": [
+        70,
+        23,
+        0
+      ],
+      "heading": "north"
+    },
+    {
+      "id": "P_SCOOTER",
+      "type": "parked scooter",
+      "position": [
+        50,
+        22,
+        0
+      ],
+      "heading": "north"
+    },
+    {
+      "id": "P_SKIFF",
+      "type": "low flat moored skiff",
+      "position": [
+        20,
+        55,
+        -1
+      ],
+      "heading": "east"
+    }
+  ],
+  "connections": [
+    {
+      "id": "C_SOUTH",
+      "position": [
+        60,
+        0,
+        0
+      ],
+      "width_m": 8,
+      "neighbor_scene": "SCENE_02",
+      "matches": "SCENE_02.C_NORTH",
+      "zone_position_m": [
+        60,
+        200,
+        0
+      ]
+    },
+    {
+      "id": "C_NORTH",
+      "position": [
+        60,
+        100,
+        0
+      ],
+      "width_m": 8,
+      "neighbor": "future north urban block"
+    },
+    {
+      "id": "C_CANAL_W",
+      "position": [
+        0,
+        55,
+        -1.2
+      ],
+      "width_m": 20,
+      "neighbor": "future canal block",
+      "kind": "canal"
+    },
+    {
+      "id": "C_CANAL_E",
+      "position": [
+        120,
+        55,
+        -1.2
+      ],
+      "width_m": 20,
+      "neighbor": "future canal block",
+      "kind": "canal"
+    }
+  ],
+  "gameplay": {
+    "engine_checks": [
+      "motorcycle turning/clearance",
+      "pickupaccess",
+      "traffic/collision",
+      "pedestrianbypass"
+    ],
+    "route_note": "No motor shortcut across canal; bridge remains the single road crossing",
+    "pedestrian_note": "South bank walk at y42 separate from3m motor approach path at y38; pedestrians cross mainroad only at approach clearances."
+  },
+  "reference_views": [
+    {
+      "file": "01_MASTER_SPATIAL.png",
+      "camera_position_m": [
+        -35,
+        -40,
+        105
+      ],
+      "target_position_m": [
+        60,
+        50,
+        0
+      ],
+      "purpose": "High southwest master wholecompact area: north-south road/oneflatbridge, east-west canal/banks, fourfootprints/roofs, north/south approaches, west/east watercontinuation, bankpath and recessedpickupbays.",
+      "camera_calibration": "intended approximate reconstruction camera, not recovered calibration"
+    },
+    {
+      "file": "02_PLAYER_GAMEPLAY.png",
+      "camera_position_m": [
+        58,
+        1,
+        2.4
+      ],
+      "target_position_m": [
+        58,
+        85,
+        1.5
+      ],
+      "purpose": "Third-person rider street-height SOUTH approach lookingNORTH. Ochre hip tea shopLEFT/southwest near, mintflat bakeryRIGHT/southeast near; canal bridge straightahead with bothparapets and8m openroad. Across canal cream2floorhiphouseLEFT/northwest and pale-bluegabledworkshopRIGHT/northeast. No huge bridge or crossroads.",
+      "camera_calibration": "intended approximate reconstruction camera, not recovered calibration"
+    },
+    {
+      "file": "03_REVERSE_GAMEPLAY.png",
+      "camera_position_m": [
+        62,
+        98,
+        2.4
+      ],
+      "target_position_m": [
+        62,
+        15,
+        1.5
+      ],
+      "purpose": "Street-height NORTH end lookingSOUTH. CreamtwofloorhiphouseRIGHT/west near, pale-bluegabledworkshopLEFT/east near. Lowflatbridge/canal mid-distance; mintflat bakeryLEFT/southeast far, ochrehipteashopRIGHT/southwest far. Actualreversecamera, no mirroredposter.",
+      "camera_calibration": "intended approximate reconstruction camera, not recovered calibration"
+    },
+    {
+      "file": "04_SIDE_CROSS_STREET.png",
+      "camera_position_m": [
+        8,
+        38,
+        1.8
+      ],
+      "target_position_m": [
+        75,
+        45,
+        1.5
+      ],
+      "purpose": "Street-height south BANK PATH lookingEAST towardbridge fromWEST. CanalLEFT/north, paved3m bankpathforeground, ochreteashopRIGHT/south behindedge. Bridge crosses ahead LEFT-RIGHT across canal (north-south), show bridge side/abutment and roadsideentrance. No east-west car road, no secondbridge.",
+      "camera_calibration": "intended approximate reconstruction camera, not recovered calibration"
+    },
+    {
+      "file": "05_ARCHITECTURE.png",
+      "camera_position_m": [
+        62,
+        22,
+        1.8
+      ],
+      "target_position_m": [
+        35,
+        22,
+        3
+      ],
+      "purpose": "Closeground-height ochre tea-shop EAST facade lookingWEST, onefloor redHIPtiledroof, beigeawning, entrance, curb/drain and recessedpickupbay. Roofgeometry/footprintsame, no architectureposter or additionalshop.",
+      "camera_calibration": "intended approximate reconstruction camera, not recovered calibration"
+    },
+    {
+      "file": "06_ENVIRONMENT_PROPS.png",
+      "camera_position_m": [
+        24,
+        39,
+        1.7
+      ],
+      "target_position_m": [
+        24,
+        55,
+        0
+      ],
+      "purpose": "South canalbank detail lookingNORTH acrosswater near moored flat skiff westofbridge. Masonrybank coping, modest drainoutfall/guardedge,3m pavedbankpath, ropes and smallskiff. Oppositecreamhouse compound visiblefar. Bridge on RIGHT/east edge ascontext. No unrelatedpropboard, boatmarket or fantasywaterfront.",
+      "camera_calibration": "intended approximate reconstruction camera, not recovered calibration"
+    },
+    {
+      "file": "07_LANDMARK.png",
+      "camera_position_m": [
+        45,
+        40,
+        1.7
+      ],
+      "target_position_m": [
+        60,
+        55,
+        0
+      ],
+      "purpose": "Ground-height SW bank oblique view of SINGLE LOW concrete slabbridge: sidefascia/abutments,8m carriageway pluswalkways/parapets, murkycanal flowingEAST-WEST beneath. Deckflushwithroads atgroundlevel, no elevatedflyover, arch, towers or newbridges.",
+      "camera_calibration": "intended approximate reconstruction camera, not recovered calibration"
+    },
+    {
+      "file": "08_CONNECTION.png",
+      "camera_position_m": [
+        58,
+        6,
+        2.3
+      ],
+      "target_position_m": [
+        58,
+        -45,
+        1.5
+      ],
+      "purpose": "SOUTH seam street-height lookingSOUTH into Scene2 NORTH approach. Canal/bridge/Scene4 buildingsallBEHINDcamera. Continuous8m road, Scene2 green1floor groceryRIGHT/west, yellow3floorofficeLEFT/east ahead; fartherbluebus shelterandnorthboundbusRIGHT/west bay, white2floorbluebakeryLEFT farther, cream2floorredsnackshopRIGHT farther. No canal in front, no newjunction, no barrier.",
+      "camera_calibration": "intended approximate reconstruction camera, not recovered calibration"
+    }
+  ],
+  "omitted_views": {},
+  "reconstruction_order": [
+    "Road/canal/bridge geometry",
+    "Footprints and roofs",
+    "Pickup and serviceaccess",
+    "Seams",
+    "Infrastructure/vegetation",
+    "Materials/props"
+  ],
+  "validation": {
+    "status": "Reference views reviewed; remaining variation documented",
+    "exact_multiview_consistency_certified": false,
+    "quality_report": "QUALITY_REVIEW.md",
+    "checks": "PNG/JSON/ZIP integrity, object IDs, footprints and reciprocal road seam coordinates"
+  }
+}

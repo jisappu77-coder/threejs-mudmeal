@@ -1,0 +1,1107 @@
+{
+  "schema_version": "1.0",
+  "game": "MUD MEALS",
+  "phase": 1,
+  "zone": {
+    "id": "ZONE_01",
+    "name": "Fort Kochi"
+  },
+  "scene": {
+    "id": "SCENE_01",
+    "name": "Waterfront Delivery Block",
+    "inspiration": "Fictional compact block inspired by Fort Kochi, Kerala; not a surveyed recreation",
+    "complexity": "medium",
+    "playable_size_m": {
+      "east_west": 120,
+      "north_south": 100
+    },
+    "purpose": [
+      "Collect food at cafe and bakery",
+      "Make local waterfront deliveries",
+      "Navigate traffic at west T-junction",
+      "Use a narrow motorcycle shortcut during rival pursuit"
+    ],
+    "reference_state": "Fixed snapshot; only camera changes between references",
+    "zone_origin_m": [
+      0,
+      0,
+      0
+    ]
+  },
+  "coordinate_system": {
+    "units": "meters",
+    "x": "east",
+    "y": "north",
+    "z": "up",
+    "origin": "southwest corner at ground level",
+    "bounds": {
+      "x": [
+        0,
+        120
+      ],
+      "y": [
+        0,
+        100
+      ],
+      "z_ground": 0
+    },
+    "threejs_mapping": "Three.js (X,Y,Z) = scene (x,z,-y); meters",
+    "unity_mapping": "Unity (X,Y,Z) = scene (x,z,y); meters",
+    "blender_mapping": "Blender (X,Y,Z) = scene (x,y,z)"
+  },
+  "geometry_authority": "scene_spec.json defines intended geometry. Generated images are appearance and visibility references, not measured projections. Do not infer a different footprint or road alignment from rendering drift.",
+  "terrain": {
+    "type": "flat urban waterfront block",
+    "ground_elevation_m": 0,
+    "water_surface_z_m": -1.2,
+    "seawall_top_z_m": 0.6,
+    "drains_depth_m": 0.25,
+    "water_region_xy": [
+      [
+        90,
+        0
+      ],
+      [
+        120,
+        0
+      ],
+      [
+        120,
+        100
+      ],
+      [
+        90,
+        100
+      ]
+    ],
+    "water_collision": "not driveable; seawall prevents accidental entry",
+    "unmodeled_areas": "Continue neighboring urban fabric beyond north, south and west; no floating isolated island"
+  },
+  "roads": [
+    {
+      "id": "R_MAIN",
+      "centerline": [
+        [
+          72,
+          -20,
+          0
+        ],
+        [
+          72,
+          120,
+          0
+        ]
+      ],
+      "width_m": 8,
+      "lanes": 2,
+      "traffic_side": "left",
+      "surface": "weathered asphalt, restrained wear",
+      "speed_design_kmh": 30,
+      "driveable": true
+    },
+    {
+      "id": "R_WEST",
+      "centerline": [
+        [
+          -20,
+          50,
+          0
+        ],
+        [
+          72,
+          50,
+          0
+        ]
+      ],
+      "width_m": 6,
+      "lanes": 2,
+      "traffic_side": "left",
+      "surface": "asphalt",
+      "driveable": true
+    },
+    {
+      "id": "R_SHORTCUT",
+      "centerline": [
+        [
+          46.5,
+          12,
+          0
+        ],
+        [
+          46.5,
+          80,
+          0
+        ]
+      ],
+      "width_m": 3,
+      "lanes": 1,
+      "surface": "worn concrete",
+      "vehicle_access": [
+        "motorcycle",
+        "scooter"
+      ],
+      "crosses": "R_WEST at y50",
+      "no_steps": true
+    }
+  ],
+  "junction": {
+    "id": "J_WEST_T",
+    "center": [
+      72,
+      50,
+      0
+    ],
+    "type": "T",
+    "west_arm": "R_WEST",
+    "through": "R_MAIN",
+    "east_arm": "none; only pedestrian promenade/pier",
+    "corner_radius_m": 4,
+    "visibility": "Keep corner sightlines clear; no market clutter in turning envelope",
+    "motorcycle_turning_radius_m": 3
+  },
+  "paths": [
+    {
+      "id": "P_PROMENADE",
+      "footprint_xy": [
+        [
+          80,
+          0
+        ],
+        [
+          88,
+          0
+        ],
+        [
+          88,
+          100
+        ],
+        [
+          80,
+          100
+        ]
+      ],
+      "surface": "muted warm-grey concrete pavers",
+      "vehicle_access": false
+    },
+    {
+      "id": "P_WEST_SIDEWALK",
+      "x": [
+        64,
+        68
+      ],
+      "y": [
+        0,
+        100
+      ],
+      "surface": "concrete, interrupted by parking bays and west junction"
+    },
+    {
+      "id": "P_EAST_VERGE",
+      "x": [
+        76,
+        80
+      ],
+      "y": [
+        0,
+        100
+      ],
+      "surface": "concrete edge and drainage transition"
+    }
+  ],
+  "buildings": [
+    {
+      "id": "B_CAFE",
+      "name": "Waterfront Cafe",
+      "footprint_xy": [
+        [
+          50,
+          12
+        ],
+        [
+          64,
+          12
+        ],
+        [
+          64,
+          30
+        ],
+        [
+          50,
+          30
+        ]
+      ],
+      "floors": 2,
+      "eaves_z_m": 6.4,
+      "roof": {
+        "shape": "hip",
+        "material": "red Kerala clay tiles",
+        "ridge_z_m": 8.2
+      },
+      "walls": "warm cream plaster",
+      "front_direction": "east",
+      "shutters": "dark green",
+      "awning": {
+        "color": "beige",
+        "edge": "east",
+        "projection_m": 1.5
+      },
+      "entrances": [
+        {
+          "id": "E_CAFE",
+          "position": [
+            64,
+            22,
+            0
+          ],
+          "width_m": 1.6,
+          "delivery": true
+        },
+        {
+          "id": "E_CAFE_PUBLIC",
+          "position": [
+            57,
+            12,
+            0
+          ],
+          "width_m": 1.6,
+          "delivery": false
+        }
+      ],
+      "gameplay_role": "food pickup"
+    },
+    {
+      "id": "B_BAKERY",
+      "name": "Teal Bakery",
+      "footprint_xy": [
+        [
+          50,
+          64
+        ],
+        [
+          64,
+          64
+        ],
+        [
+          64,
+          80
+        ],
+        [
+          50,
+          80
+        ]
+      ],
+      "floors": 1,
+      "eaves_z_m": 3.6,
+      "roof": {
+        "shape": "flat",
+        "material": "concrete",
+        "parapet_height_m": 0.4
+      },
+      "walls": "muted teal plaster",
+      "front_direction": "east",
+      "awning": {
+        "color": "white",
+        "edges": [
+          "south public facade",
+          "east pickup door"
+        ],
+        "projection_m": 1.2
+      },
+      "entrances": [
+        {
+          "id": "E_BAKERY",
+          "position": [
+            64,
+            70,
+            0
+          ],
+          "width_m": 1.8,
+          "delivery": true
+        },
+        {
+          "id": "E_BAKERY_PUBLIC",
+          "position": [
+            57,
+            64,
+            0
+          ],
+          "width_m": 1.8,
+          "delivery": false
+        }
+      ],
+      "gameplay_role": "food pickup"
+    },
+    {
+      "id": "B_HOME",
+      "name": "Ochre Home",
+      "footprint_xy": [
+        [
+          24,
+          12
+        ],
+        [
+          42,
+          12
+        ],
+        [
+          42,
+          34
+        ],
+        [
+          24,
+          34
+        ]
+      ],
+      "floors": 1,
+      "eaves_z_m": 3.2,
+      "roof": {
+        "shape": "gable",
+        "ridge_axis": "north-south",
+        "material": "red Kerala clay tiles",
+        "ridge_z_m": 5.2
+      },
+      "walls": "ochre plaster",
+      "front_direction": "east",
+      "entrances": [
+        {
+          "id": "E_HOME",
+          "position": [
+            42,
+            24,
+            0
+          ],
+          "width_m": 1.2,
+          "delivery": true
+        }
+      ],
+      "compound": {
+        "boundary_xy": [
+          [
+            22,
+            10
+          ],
+          [
+            44,
+            10
+          ],
+          [
+            44,
+            36
+          ],
+          [
+            22,
+            36
+          ]
+        ],
+        "wall_height_m": 1.2,
+        "gate_position": [
+          44,
+          24,
+          0
+        ],
+        "gate_width_m": 2.4
+      },
+      "gameplay_role": "customer delivery"
+    },
+    {
+      "id": "B_SHED",
+      "name": "Net Storage Shed",
+      "footprint_xy": [
+        [
+          22,
+          64
+        ],
+        [
+          44,
+          64
+        ],
+        [
+          44,
+          84
+        ],
+        [
+          22,
+          84
+        ]
+      ],
+      "floors": 1,
+      "eaves_z_m": 3.8,
+      "roof": {
+        "shape": "gable",
+        "ridge_axis": "east-west",
+        "material": "red Kerala clay tiles",
+        "ridge_z_m": 5.8
+      },
+      "walls": "laterite masonry",
+      "front_direction": "south",
+      "entrances": [
+        {
+          "id": "E_SHED",
+          "position": [
+            33,
+            64,
+            0
+          ],
+          "width_m": 3,
+          "delivery": true
+        }
+      ],
+      "gameplay_role": "landmark and loading-side delivery"
+    }
+  ],
+  "landmarks": [
+    {
+      "id": "L_PIER",
+      "name": "Small Pedestrian Delivery Pier",
+      "footprint_xy": [
+        [
+          88,
+          48
+        ],
+        [
+          108,
+          48
+        ],
+        [
+          108,
+          52
+        ],
+        [
+          88,
+          52
+        ]
+      ],
+      "deck_z_m": 0,
+      "railing_height_m": 1,
+      "railing_material": "weathered timber",
+      "canopy": {
+        "footprint_xy": [
+          [
+            91,
+            48
+          ],
+          [
+            96,
+            48
+          ],
+          [
+            96,
+            52
+          ],
+          [
+            91,
+            52
+          ]
+        ],
+        "eaves_z_m": 2.4,
+        "roof": "cream single-pitch sheet"
+      },
+      "access": "pedestrians only; stop motorcycle in designated mainland bay",
+      "position_fixed": true
+    }
+  ],
+  "seawall": {
+    "id": "W_SEAWALL",
+    "opening_for_pier_y": [
+      48,
+      52
+    ],
+    "height_above_ground_m": 0.9,
+    "material": "weathered grey stone with rough rock revetment on water side",
+    "collision": true,
+    "segments": [
+      [
+        [
+          88,
+          0
+        ],
+        [
+          88,
+          48
+        ]
+      ],
+      [
+        [
+          88,
+          52
+        ],
+        [
+          88,
+          100
+        ]
+      ]
+    ],
+    "rail_design": "pale concrete posts and two horizontal rails, stone revetment water-side"
+  },
+  "vegetation": [
+    {
+      "id": "T_PALM_01",
+      "species": "coconut palm",
+      "position": [
+        84,
+        14,
+        0
+      ],
+      "height_m": 10
+    },
+    {
+      "id": "T_PALM_02",
+      "species": "coconut palm",
+      "position": [
+        84,
+        38,
+        0
+      ],
+      "height_m": 11
+    },
+    {
+      "id": "T_PALM_03",
+      "species": "coconut palm",
+      "position": [
+        84,
+        72,
+        0
+      ],
+      "height_m": 10
+    },
+    {
+      "id": "T_PALM_04",
+      "species": "coconut palm",
+      "position": [
+        84,
+        92,
+        0
+      ],
+      "height_m": 11
+    },
+    {
+      "id": "T_RAIN",
+      "species": "rain tree",
+      "position": [
+        15,
+        38,
+        0
+      ],
+      "height_m": 9,
+      "canopy_radius_m": 6
+    }
+  ],
+  "props": [
+    {
+      "id": "U_POLE_01",
+      "type": "concrete utility pole",
+      "position": [
+        66,
+        10,
+        0
+      ],
+      "height_m": 8
+    },
+    {
+      "id": "U_POLE_02",
+      "type": "concrete utility pole",
+      "position": [
+        66,
+        56,
+        0
+      ],
+      "height_m": 8
+    },
+    {
+      "id": "U_POLE_03",
+      "type": "concrete utility pole",
+      "position": [
+        66,
+        90,
+        0
+      ],
+      "height_m": 8
+    },
+    {
+      "id": "P_BENCH_01",
+      "type": "promenade bench",
+      "position": [
+        85,
+        25,
+        0
+      ],
+      "orientation_degrees": 90
+    },
+    {
+      "id": "P_BENCH_02",
+      "type": "promenade bench",
+      "position": [
+        85,
+        78,
+        0
+      ],
+      "orientation_degrees": 90
+    },
+    {
+      "id": "P_CRATES",
+      "type": "two cafe delivery crates",
+      "position": [
+        65,
+        19,
+        0
+      ],
+      "keep_clear_of": "entrance and driving lanes"
+    },
+    {
+      "id": "P_BIN",
+      "type": "blue bakery bin",
+      "position": [
+        65,
+        75,
+        0
+      ]
+    },
+    {
+      "id": "V_AUTO",
+      "type": "black-yellow auto-rickshaw",
+      "position": [
+        66,
+        70,
+        0
+      ],
+      "orientation_degrees": 0,
+      "static_in_reference": true
+    },
+    {
+      "id": "V_SCOOTER",
+      "type": "parked scooter",
+      "position": [
+        66,
+        24,
+        0
+      ],
+      "orientation_degrees": 0,
+      "static_in_reference": true
+    },
+    {
+      "id": "V_PLAYER",
+      "type": "food-delivery motorcycle with rider",
+      "position": [
+        72,
+        22,
+        0
+      ],
+      "orientation_degrees": 0,
+      "rider": "helmet, dark teal jacket",
+      "rear_box": "orange",
+      "static_in_reference": true
+    },
+    {
+      "id": "P_CLEATS",
+      "type": "small mooring cleats",
+      "positions": [
+        [
+          106,
+          48.2,
+          0
+        ],
+        [
+          106,
+          51.8,
+          0
+        ]
+      ],
+      "mounted_on": "L_PIER"
+    }
+  ],
+  "infrastructure": {
+    "utility_wires": "Connect U_POLE_01 -> U_POLE_02 -> U_POLE_03, minimum clearance 6m",
+    "drains": [
+      {
+        "id": "D_WEST",
+        "centerline": [
+          [
+            67,
+            0
+          ],
+          [
+            67,
+            100
+          ]
+        ],
+        "width_m": 0.3,
+        "covered_at": "entrances, bays and west T-junction"
+      },
+      {
+        "id": "D_EAST",
+        "centerline": [
+          [
+            78,
+            0
+          ],
+          [
+            78,
+            100
+          ]
+        ],
+        "width_m": 0.3,
+        "covered_at": "pier approach"
+      }
+    ],
+    "signs": [
+      {
+        "id": "S_CAFE",
+        "on_building": "B_CAFE",
+        "facade": "east",
+        "text_language": "Malayalam",
+        "role": "cafe business signage; exact readable text is not supplied by generated image"
+      },
+      {
+        "id": "S_BAKERY",
+        "on_building": "B_BAKERY",
+        "facade": "east",
+        "text_language": "Malayalam",
+        "role": "bakery signage; replace malformed generated glyphs with locally reviewed text"
+      }
+    ],
+    "lamps": "simple streetlight arms mounted on the three specified west-verge utility poles"
+  },
+  "delivery_bays": [
+    {
+      "id": "BAY_CAFE",
+      "bounds_xy": [
+        [
+          64,
+          18
+        ],
+        [
+          68,
+          18
+        ],
+        [
+          68,
+          28
+        ],
+        [
+          64,
+          28
+        ]
+      ],
+      "target": "E_CAFE"
+    },
+    {
+      "id": "BAY_BAKERY",
+      "bounds_xy": [
+        [
+          64,
+          66
+        ],
+        [
+          68,
+          66
+        ],
+        [
+          68,
+          76
+        ],
+        [
+          64,
+          76
+        ]
+      ],
+      "target": "E_BAKERY"
+    },
+    {
+      "id": "BAY_PIER",
+      "bounds_xy": [
+        [
+          76,
+          44
+        ],
+        [
+          80,
+          44
+        ],
+        [
+          80,
+          48
+        ],
+        [
+          76,
+          48
+        ]
+      ],
+      "target": "L_PIER",
+      "rider_dismount": true
+    }
+  ],
+  "gameplay": {
+    "main_route": "R_MAIN connects north and south; R_WEST branches west",
+    "alternate_route": "R_SHORTCUT links cafe/home side and shed/bakery side across R_WEST",
+    "rival_ambush": "Shortcut mouth near y64; keep road visibility and fair escape space",
+    "hazards": [
+      "Wet asphalt and shallow curbside puddles in monsoon variant",
+      "Blind shed corner; do not conceal unavoidable collision obstacles"
+    ],
+    "pedestrian_zones": [
+      "P_PROMENADE",
+      "L_PIER"
+    ],
+    "vehicle_collision": "Buildings, walls, seawall, poles; benches on promenade",
+    "traffic": "Left-side India traffic; moving actors are game implementation, reference snapshot stays fixed"
+  },
+  "connections": [
+    {
+      "id": "C_NORTH_ROAD",
+      "edge": "north",
+      "position": [
+        72,
+        100,
+        0
+      ],
+      "width_m": 8,
+      "tangent": [
+        0,
+        1,
+        0
+      ],
+      "neighbor_scene": "SCENE_02",
+      "matches": "SCENE_02.C_SOUTH_ROAD"
+    },
+    {
+      "id": "C_SOUTH_ROAD",
+      "edge": "south",
+      "position": [
+        72,
+        0,
+        0
+      ],
+      "width_m": 8,
+      "tangent": [
+        0,
+        -1,
+        0
+      ],
+      "neighbor": "next waterfront block"
+    },
+    {
+      "id": "C_WEST_ROAD",
+      "edge": "west",
+      "position": [
+        0,
+        50,
+        0
+      ],
+      "width_m": 6,
+      "tangent": [
+        -1,
+        0,
+        0
+      ],
+      "neighbor": "heritage/residential side block"
+    },
+    {
+      "id": "C_NORTH_PROMENADE",
+      "edge": "north",
+      "position": [
+        84,
+        100,
+        0
+      ],
+      "width_m": 8,
+      "tangent": [
+        0,
+        1,
+        0
+      ],
+      "neighbor_scene": "SCENE_02",
+      "matches": "SCENE_02.C_SOUTH_PROMENADE"
+    },
+    {
+      "id": "C_SOUTH_PROMENADE",
+      "edge": "south",
+      "position": [
+        84,
+        0,
+        0
+      ],
+      "width_m": 8,
+      "tangent": [
+        0,
+        -1,
+        0
+      ]
+    }
+  ],
+  "reference_views": [
+    {
+      "file": "01_MASTER_SPATIAL.png",
+      "camera_position_m": [
+        -30,
+        -45,
+        100
+      ],
+      "target_position_m": [
+        60,
+        50,
+        0
+      ],
+      "projection": "perspective",
+      "purpose": "Master elevated spatial view from SOUTHWEST looking northeast. Show full small block, water EAST/right, main road running bottom-to-top, west T-arm, all four buildings and footprints, roof differences, shortcut, parking bays, pier and boundaries. Camera elevated enough to show all roads; no cutaway platforms, no floating island, no giant city map."
+    },
+    {
+      "file": "02_PLAYER_GAMEPLAY.png",
+      "camera_position_m": [
+        72,
+        15,
+        2.3
+      ],
+      "target_position_m": [
+        72,
+        58,
+        1.8
+      ],
+      "projection": "perspective",
+      "purpose": "Third-person motorcycle gameplay camera south of rider, behind orange delivery box, looking NORTH along main road. Cafe on LEFT foreground; teal flat-roof bakery on LEFT beyond west T-junction; water/promenade on RIGHT, pier extends right at junction. Show 8m two-way road and safe turning space; rider remains at fixed x72 y22. Revised: low chase camera, enlarged rider, active traffic and sidewalk actors.",
+      "camera_coordinates_status": "intended approximate camera; generated elevation can differ"
+    },
+    {
+      "file": "03_REVERSE_GAMEPLAY.png",
+      "camera_position_m": [
+        72,
+        90,
+        2.1
+      ],
+      "target_position_m": [
+        72,
+        35,
+        1.5
+      ],
+      "projection": "perspective",
+      "purpose": "Reverse gameplay road view from NORTH end looking SOUTH. Teal single-story flat-roof bakery RIGHT foreground, side T-road branches RIGHT in middle, cream two-story red-hipped-roof cafe RIGHT farther south; promenade and water LEFT; pier points LEFT. Same fixed rider seen approaching in distance. Actually reverse camera, do not mirror image.",
+      "camera_coordinates_status": "intended approximate camera; generated elevation can differ"
+    },
+    {
+      "file": "04_SIDE_CROSS_STREET.png",
+      "camera_position_m": [
+        28,
+        50,
+        2.2
+      ],
+      "target_position_m": [
+        92,
+        50,
+        1.5
+      ],
+      "projection": "perspective",
+      "purpose": "Eye-level cross-street view from WEST side road looking EAST directly through T-junction at main road and pedestrian pier beyond. Laterite shed on LEFT/north with south loading door; ochre house RIGHT/south. At far mouth teal bakery LEFT/north, cream cafe RIGHT/south. Reveal shortcut crossing, house gate, loading door, 6m side-road width and drain crossings."
+    },
+    {
+      "file": "05_ARCHITECTURE.png",
+      "camera_position_m": [
+        79,
+        32,
+        1.7
+      ],
+      "target_position_m": [
+        54,
+        23,
+        3
+      ],
+      "projection": "perspective",
+      "purpose": "Near architecture oblique view from cafe's northeast across road, looking southwest at fixed cafe EAST-front and NORTH side. Two-story cream cafe, exact red hipped roof, green shutters, beige east awning, delivery door and bay; ochre single-story gable home behind west, 3m shortcut between. Show roof form, facade proportions and wall/entrance junction, same buildings."
+    },
+    {
+      "file": "06_ENVIRONMENT_PROPS.png",
+      "camera_position_m": [
+        82,
+        40,
+        1.7
+      ],
+      "target_position_m": [
+        98,
+        52,
+        1.5
+      ],
+      "projection": "perspective",
+      "purpose": "Promenade-level detail from SOUTHWEST of pier looking NORTHEAST. Same pier at y50 with low timber rails and small cream single-pitch canopy at near end, seawall x88, continuous water EAST, practical bench/curb/drain/palm spacing, ropes and pier cleats. Include road/promenade transition on left to anchor details. No separate prop sheet or isolated new objects."
+    },
+    {
+      "file": "08_CONNECTION.png",
+      "camera_position_m": [
+        72,
+        90,
+        2.5
+      ],
+      "target_position_m": [
+        72,
+        120,
+        1.8
+      ],
+      "projection": "perspective",
+      "purpose": "Boundary connection view near NORTHEAST corner looking NORTH along the main road exiting scene. Show exact continuous 8m road, west utility verge, 4m promenade/east seawall and water continuing north, fourth palm x84 y92, bakery's flat-roof north/back corner at left foreground. Neighboring low-rise building fabric beyond north edge, no barriers, closed gates, decorative scene borders or new intersection."
+    }
+  ],
+  "omitted_view": {
+    "filename": "07_LANDMARK.png",
+    "reason": "The small pier is already shown in master, cross-street and environment detail; a dedicated eighth view would duplicate coverage."
+  },
+  "style": {
+    "render": "stylized-realistic 3D, modern open-world game",
+    "lighting": "bright overcast tropical daylight, fixed for all references",
+    "exclude": [
+      "HUD",
+      "minimap",
+      "quest markers",
+      "collage",
+      "tourism photography",
+      "floating diorama",
+      "extreme depth of field"
+    ]
+  },
+  "reconstruction_order": [
+    "Block out terrain and water",
+    "Build exact roads and connection seams",
+    "Place fixed building footprints and roof types",
+    "Add promenade, pier, bays and shortcut",
+    "Test riding, turning and stopping",
+    "Add collisions, vegetation and infrastructure",
+    "Apply reference materials and props"
+  ],
+  "validation": {
+    "status": "Game-camera revision reviewed; residual visual differences documented",
+    "method": "Manual review of generated outputs against master and scene layout",
+    "checks": {
+      "same_scene_topology": "reviewed: waterfront road, one west T-junction, cafe/home south, bakery/shed north",
+      "camera_coverage": "seven independently generated views; rejected repeated aerial compositions replaced",
+      "roof_categories": "cafe hipped, bakery flat, home and shed gabled; roof axis must follow JSON",
+      "playable_routes": "main road, west branch and shortcut defined; driving controller tests remain implementation work",
+      "scene_connections": "north, south, west road seams plus continuous promenade and water defined",
+      "no_ui_or_collage": "visually reviewed",
+      "kerala_identity": "tiled roofs, low-rise shops, palms, laterite, concrete walls, utility lines, auto-rickshaw"
+    },
+    "remaining_variation": [
+      "Window counts, door/awning proportions and some roof ridge details vary across generated views.",
+      "Small prop, scooter, palm and pole details are not guaranteed to remain at identical projected positions.",
+      "Camera positions in the specification are intended reconstruction camera coordinates, not recovered image calibration.",
+      "Signage is not reliable readable Malayalam; replace with reviewed text during implementation."
+    ],
+    "instruction": "Use master for visual scene identity and scene_spec.json for exact footprints, routes, dimensions and prop positions. Use facade/detail references as appearance guides; do not move buildings or roads to reconcile illustrative drift.",
+    "exact_multiview_consistency_certified": false
+  },
+  "visual_style": {
+    "name": "Approved colorful modeled 3D game style",
+    "approved_reference": "SCENE_01_Waterfront_Delivery_Block/02_PLAYER_GAMEPLAY.png",
+    "treatment": [
+      "smooth modeled characters and vehicles",
+      "bold bright tropical foliage",
+      "clean authored materials",
+      "warm terracotta roofs and colorful facades",
+      "soft directional shadows and ambient occlusion",
+      "vivid turquoise game water"
+    ],
+    "hud": "none; world reference only",
+    "shared_model_calibrated": false
+  },
+  "graphics_revision": {
+    "date": "2026-10-08",
+    "all_reference_views_restyled": true,
+    "image_count": 7,
+    "geometry_authority": "Original scene specification; generated view details can vary"
+  }
+}

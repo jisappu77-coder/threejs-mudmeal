@@ -1,0 +1,50 @@
+[
+  {
+    "key": "p1-scene_01",
+    "phase": 1,
+    "name": "Waterfront Delivery Block",
+    "spec": "scenes/p1-scene_01/scene_spec.json"
+  },
+  {
+    "key": "p1-scene_02",
+    "phase": 1,
+    "name": "Chinese Fishing Net Delivery Block",
+    "spec": "scenes/p1-scene_02/scene_spec.json"
+  },
+  {
+    "key": "p1-scene_03",
+    "phase": 1,
+    "name": "Heritage Street Delivery Block",
+    "spec": "scenes/p1-scene_03/scene_spec.json"
+  },
+  {
+    "key": "p1-scene_04",
+    "phase": 1,
+    "name": "Market and Residential Delivery Block",
+    "spec": "scenes/p1-scene_04/scene_spec.json"
+  },
+  {
+    "key": "p2-scene_01",
+    "phase": 2,
+    "name": "Restaurant Cluster & Busy Junction",
+    "spec": "scenes/p2-scene_01/scene_spec.json"
+  },
+  {
+    "key": "p2-scene_02",
+    "phase": 2,
+    "name": "Commercial Street & Bus Stop",
+    "spec": "scenes/p2-scene_02/scene_spec.json"
+  },
+  {
+    "key": "p2-scene_03",
+    "phase": 2,
+    "name": "Market Loading Lane",
+    "spec": "scenes/p2-scene_03/scene_spec.json"
+  },
+  {
+    "key": "p2-scene_04",
+    "phase": 2,
+    "name": "Canal Bridge Approach",
+    "spec": "scenes/p2-scene_04/scene_spec.json"
+  }
+]
