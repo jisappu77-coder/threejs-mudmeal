@@ -1,6 +1,11 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {normalize,worldPoint,roadWidth,canRide,stepBike,calibrateWaterfront} from '../src/layout.js';
+import {renderPoint,renderHeading,waterfrontShift} from '../src/projection.js';
+assert.deepEqual(renderPoint([-50,0,-198],1),[-50,0,-198]);
+assert.equal(renderHeading(0,198,1,-50),0);
+assert.ok(waterfrontShift(72,198)>0);
+for(const x of[-15,0])assert.ok(Math.abs(waterfrontShift(x-.000001,144)-waterfrontShift(x+.000001,144))<.00001,'Coastal projection is continuous at both transition boundaries');
 const manifest=JSON.parse(await readFile(new URL('../public/scenes/manifest.json',import.meta.url)));
 const scenes=await Promise.all(manifest.map(async m=>normalize(JSON.parse(await readFile(new URL('../public/'+m.spec,import.meta.url))),m.key)));
 assert.equal(scenes.length,8);assert.deepEqual(worldPoint([12,20,3],[5,100,0]),[17,3,-120]);

@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {calibrateWaterfront} from '../src/layout.js';
-import {waterfrontBend} from '../src/projection.js';
+import {waterfrontShift} from '../src/projection.js';
 import {chromium} from 'playwright';
 import {mkdir,writeFile,readFile} from 'node:fs/promises';
 const base=process.env.PREVIEW_URL||'http://localhost:4173/';
@@ -24,7 +24,7 @@ try{
    await page.evaluate(v=>window.mudMeals.setCamera(v),filename);await page.waitForFunction(v=>window.mudMeals.renderedView===v,`${m.key}:${filename}`,{timeout:240000});await page.locator('#hide-hud').evaluate(el=>el.click());await page.locator('#restore-hud').evaluate(el=>el.style.visibility='hidden');
    const output=`artifacts/scenes/${m.key}-${filename.replace('.png','')}.png`;if(!process.env.SKIP_CAPTURES)await page.screenshot({path:output,timeout:240000});
    await page.locator('#restore-hud').evaluate(el=>el.style.visibility='visible');await page.locator('#restore-hud').evaluate(el=>el.click());
-   const audit=await page.evaluate(()=>window.mudMeals.audit);assert.ok(audit.triangles>1000);const buildings=audit.objects.filter(o=>o.scene===m.key&&o.id.startsWith('B_'));assert.equal(buildings.length,spec.buildings.length);for(const building of buildings){for(let i=0;i<4;i++)assert.ok(Math.abs(building.rect[i]+(m.phase===1&&i%2===0?waterfrontBend(building.rect[i===0?1:3]+(building.origin?.[1]||0)):0)-building.renderedRect[i])<1e-4,`Measured mesh footprint ${building.id}`);const original=spec.buildings.find(b=>b.id===building.id);assert.ok(Math.abs(building.renderedHeight-(original.eaves_z_m||original.wall_height_m))<1e-4)}
+   const audit=await page.evaluate(()=>window.mudMeals.audit);assert.ok(audit.triangles>1000);const buildings=audit.objects.filter(o=>o.scene===m.key&&o.id.startsWith('B_'));assert.equal(buildings.length,spec.buildings.length);for(const building of buildings){for(let i=0;i<4;i++)assert.ok(Math.abs(building.rect[i]+(m.phase===1&&i%2===0?waterfrontShift(building.rect[i]+(building.origin?.[0]||0),building.rect[i===0?1:3]+(building.origin?.[1]||0)):0)-building.renderedRect[i])<1e-4,`Measured mesh footprint ${building.id}`);const original=spec.buildings.find(b=>b.id===building.id);assert.ok(Math.abs(building.renderedHeight-(original.eaves_z_m||original.wall_height_m))<1e-4)}
    reports.push({scene:m.key,view:filename,drawCalls:audit.drawCalls,triangles:audit.triangles,path:output});console.log(`Captured ${m.key} ${filename}: ${audit.drawCalls} draw calls`);
   }
   // All supplied cameras must be selectable without reconstructing or moving geometry.

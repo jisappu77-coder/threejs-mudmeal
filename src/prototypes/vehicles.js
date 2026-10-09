@@ -268,9 +268,9 @@ export function createMotorcycle(style='city',color){
   for(let y=.61;y<.80;y+=.027)box(classic?.23:.19,.012,.15,.003,alloy,[0,y,-.015]);
   tube([[.12,.62,-.10],[.20,.41,.13],[.22,.37,.68]],.025,alloy);
  }
- box(classic?.10:.075,.085,classic?.52:.39,.03,classic?alloy:trim,[.22,.385,.61]);
+ if(!classic&&!scooter){add(new THREE.CylinderGeometry(.045,.055,.39,18),trim,[.22,.385,.61],[Math.PI/2,0,0]);add(new THREE.CylinderGeometry(.049,.049,.012,18),alloy,[.22,.385,.812],[Math.PI/2,0,0]);add(new THREE.CircleGeometry(.031,18),rubber,[.22,.385,.820]);}else box(classic?.10:.075,.085,classic?.52:.39,.03,classic?alloy:trim,[.22,.385,.61]);
  tube([[-.20,.91,.52],[-.20,.94,.72],[.20,.94,.72],[.20,.91,.52]],.016,alloy);
- box(.17,.065,.025,.012,red,[0,.71,.91]);box(.18,.10,.008,.004,lamp,[0,.60,.93]);
+ box(.17,.065,.025,.012,red,[0,.71,.91]);box(.18,.10,.008,.004,lamp,[0,.60,.93]);k.badge('MM 125',.16,.075,[0,.60,.941],[0,0,0],'#f3eddd','#303532');
  root.userData={assetType:'original-motorcycle',style,wheelCount:2,seatHeight:.925,design:'Original fictional vehicle; no manufacturer models or logos'};
  const size=new THREE.Box3().setFromObject(root).getSize(new THREE.Vector3());
  root.userData.bodyDimensions={width:size.x,height:size.y,length:size.z};
