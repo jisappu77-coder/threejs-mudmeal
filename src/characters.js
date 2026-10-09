@@ -108,11 +108,12 @@ export async function loadCrowd(){
    g.position.y-=new THREE.Box3().setFromObject(g).min.y;
   }
   function ride(){
+   const widthScale=g.userData.riderWidthScale||1;
    animate(0,0,false,0);
    turn('pelvis',.32);turn('spine',.5);turn('neck',-.35);turn('head',-.35);
    for(const [side,sign]of [['l',1],['r',-1]]){
-    reach('thigh_'+side,'shin_'+side,'foot_'+side,new THREE.Vector3(sign*.285,.368,.0155),new THREE.Vector3(sign*.35,.8,.65));
-    reach('arm_'+side,'forearm_'+side,'hand_'+side,new THREE.Vector3(sign*.249,.8844,.5636),new THREE.Vector3(sign*.42,1.18,.3));
+    reach('thigh_'+side,'shin_'+side,'foot_'+side,new THREE.Vector3(sign*.285/widthScale,.368,.0155),new THREE.Vector3(sign*.35,.8,.65));
+    reach('arm_'+side,'forearm_'+side,'hand_'+side,new THREE.Vector3(sign*.249/widthScale,.8844,.5636),new THREE.Vector3(sign*.42,1.18,.3));
     bones['foot_'+side].quaternion.copy(bones['foot_'+side].parent.getWorldQuaternion(new THREE.Quaternion()).invert().multiply(g.getWorldQuaternion(new THREE.Quaternion())).multiply(neutral['foot_'+side]));
    }
    g.updateMatrixWorld(true);

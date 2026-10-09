@@ -3,117 +3,117 @@
     {
       "scene": "p1-scene_01",
       "view": "01_MASTER_SPATIAL.png",
-      "drawCalls": 2276,
-      "triangles": 8093946,
+      "drawCalls": 2287,
+      "triangles": 7985886,
       "path": "artifacts/scenes/p1-scene_01-01_MASTER_SPATIAL.png"
     },
     {
       "scene": "p1-scene_01",
       "view": "02_PLAYER_GAMEPLAY.png",
-      "drawCalls": 5798,
-      "triangles": 19684734,
+      "drawCalls": 3499,
+      "triangles": 10832622,
       "path": "artifacts/scenes/p1-scene_01-02_PLAYER_GAMEPLAY.png"
     },
     {
       "scene": "p1-scene_02",
       "view": "01_MASTER_SPATIAL.png",
-      "drawCalls": 1970,
-      "triangles": 7211778,
+      "drawCalls": 2018,
+      "triangles": 7275978,
       "path": "artifacts/scenes/p1-scene_02-01_MASTER_SPATIAL.png"
     },
     {
       "scene": "p1-scene_02",
       "view": "02_PLAYER_GAMEPLAY.png",
-      "drawCalls": 3022,
-      "triangles": 9165041,
+      "drawCalls": 1978,
+      "triangles": 6619616,
       "path": "artifacts/scenes/p1-scene_02-02_PLAYER_GAMEPLAY.png"
     },
     {
       "scene": "p1-scene_03",
       "view": "01_MASTER_SPATIAL.png",
       "drawCalls": 2962,
-      "triangles": 9703001,
+      "triangles": 9365049,
       "path": "artifacts/scenes/p1-scene_03-01_MASTER_SPATIAL.png"
     },
     {
       "scene": "p1-scene_03",
       "view": "02_PLAYER_GAMEPLAY.png",
-      "drawCalls": 4051,
-      "triangles": 14270963,
+      "drawCalls": 2640,
+      "triangles": 8888437,
       "path": "artifacts/scenes/p1-scene_03-02_PLAYER_GAMEPLAY.png"
     },
     {
       "scene": "p1-scene_04",
       "view": "01_MASTER_SPATIAL.png",
-      "drawCalls": 1994,
-      "triangles": 5958663,
+      "drawCalls": 1975,
+      "triangles": 6093054,
       "path": "artifacts/scenes/p1-scene_04-01_MASTER_SPATIAL.png"
     },
     {
       "scene": "p1-scene_04",
       "view": "02_PLAYER_GAMEPLAY.png",
-      "drawCalls": 2882,
-      "triangles": 8704020,
+      "drawCalls": 1951,
+      "triangles": 6583743,
       "path": "artifacts/scenes/p1-scene_04-02_PLAYER_GAMEPLAY.png"
     },
     {
       "scene": "p2-scene_01",
       "view": "01_MASTER_SPATIAL.png",
-      "drawCalls": 2557,
-      "triangles": 6730221,
+      "drawCalls": 2573,
+      "triangles": 6798978,
       "path": "artifacts/scenes/p2-scene_01-01_MASTER_SPATIAL.png"
     },
     {
       "scene": "p2-scene_01",
       "view": "02_PLAYER_GAMEPLAY.png",
-      "drawCalls": 3860,
-      "triangles": 13206388,
+      "drawCalls": 2599,
+      "triangles": 7441971,
       "path": "artifacts/scenes/p2-scene_01-02_PLAYER_GAMEPLAY.png"
     },
     {
       "scene": "p2-scene_02",
       "view": "01_MASTER_SPATIAL.png",
-      "drawCalls": 1817,
-      "triangles": 4824409,
+      "drawCalls": 1812,
+      "triangles": 4688926,
       "path": "artifacts/scenes/p2-scene_02-01_MASTER_SPATIAL.png"
     },
     {
       "scene": "p2-scene_02",
       "view": "02_PLAYER_GAMEPLAY.png",
-      "drawCalls": 3013,
-      "triangles": 10380578,
+      "drawCalls": 2061,
+      "triangles": 6025035,
       "path": "artifacts/scenes/p2-scene_02-02_PLAYER_GAMEPLAY.png"
     },
     {
       "scene": "p2-scene_03",
       "view": "01_MASTER_SPATIAL.png",
-      "drawCalls": 2526,
-      "triangles": 6407237,
+      "drawCalls": 2523,
+      "triangles": 6299573,
       "path": "artifacts/scenes/p2-scene_03-01_MASTER_SPATIAL.png"
     },
     {
       "scene": "p2-scene_03",
       "view": "02_PLAYER_GAMEPLAY.png",
-      "drawCalls": 3463,
-      "triangles": 11382382,
+      "drawCalls": 2353,
+      "triangles": 6429834,
       "path": "artifacts/scenes/p2-scene_03-02_PLAYER_GAMEPLAY.png"
     },
     {
       "scene": "p2-scene_04",
       "view": "01_MASTER_SPATIAL.png",
-      "drawCalls": 1327,
-      "triangles": 4124029,
+      "drawCalls": 1337,
+      "triangles": 4129411,
       "path": "artifacts/scenes/p2-scene_04-01_MASTER_SPATIAL.png"
     },
     {
       "scene": "p2-scene_04",
       "view": "02_PLAYER_GAMEPLAY.png",
-      "drawCalls": 2033,
-      "triangles": 7669298,
+      "drawCalls": 1409,
+      "triangles": 4661062,
       "path": "artifacts/scenes/p2-scene_04-02_PLAYER_GAMEPLAY.png"
     }
   ],
   "errors": [],
-  "checkedAt": "2026-10-09T16:25:39.495Z",
-  "bundle": "assets/main-BVbuBO4j.js"
+  "checkedAt": "2026-10-09T18:07:06.595Z",
+  "bundle": "assets/main-DVKh1ut7.js"
 }

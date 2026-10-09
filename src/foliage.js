@@ -21,7 +21,7 @@ export function createFoliage(renderer){
  const frond=material(maps.frond,'#fff6df'),banana=material(maps.banana,'#c5e794'),leaves=[material(maps.branch,'#cee693'),material(maps.branch,'#9fc481'),material(maps.branch,'#e0d985')];
  frond.emissive.set('#567520');frond.emissiveIntensity=.07;
  const loader=new THREE.TextureLoader(),ready=Promise.all([loader.loadAsync(new URL('textures/frond.png',document.baseURI).href).then(t=>{t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());t.repeat.set(.5,1);t.offset.set(.25,0);banana.map=t;banana.color.set('#b7d7c8');banana.needsUpdate=true}),loader.loadAsync(new URL('textures/branch.png',document.baseURI).href).then(t=>{t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;for(const [i,m]of leaves.entries()){m.map=t;m.color.set(['#b1c7b8','#a3bdb0','#bed0ad'][i]);m.emissive.set('#25420b');m.emissiveIntensity=.04;m.needsUpdate=true}})]);
- const palmReady=loader.loadAsync(new URL('textures/coconut-frond.png',document.baseURI).href).then(t=>{t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;frond.map=t;frond.needsUpdate=true;});
+ const palmReady=loader.loadAsync(new URL('textures/coconut-frond-smooth.png',document.baseURI).href).then(t=>{t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;frond.map=t;frond.needsUpdate=true;});
  const trunkCanvas=document.createElement('canvas');trunkCanvas.width=128;trunkCanvas.height=1024;const ctx=trunkCanvas.getContext('2d');ctx.fillStyle='#aa8867';ctx.fillRect(0,0,128,1024);
  for(let y=0,i=0;y<1024;y+=18+(i++%5)*3){ctx.strokeStyle='#61472f60';ctx.lineWidth=1.5;ctx.beginPath();for(let x=0;x<=128;x+=8)ctx.lineTo(x,y+Math.sin(x*.06+i)*2.5);ctx.stroke();ctx.strokeStyle='#e0c5a035';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,y+4);ctx.lineTo(128,y+6);ctx.stroke();}
  for(let i=0;i<2800;i++){ctx.fillStyle=i%3?'#503e2d0b':'#e9d4b719';ctx.fillRect((i*73)%128,(i*113)%1024,1,2+i%5);}
@@ -41,9 +41,9 @@ export function createFoliage(renderer){
  function palm(height=10,seed=0){
   const root=new THREE.Group(),lean=.6+Math.sin(seed*2.1)*.7,top=new THREE.Vector3(lean,height,.35);
   tube(root,[new THREE.Vector3(),new THREE.Vector3(lean*.15,height*.35,.08),new THREE.Vector3(lean*.5,height*.7,.17),top],.29);
-  for(let i=0;i<11;i++){
-   const angle=i*2.399963+seed*.71,length=3.7+(i%5)*.29,tilt=.55*Math.sin(i*2.1+seed);
-   const leaf=surface(length,2.65,t=>new THREE.Vector3(Math.sin(t*Math.PI)*.16*Math.sin(i),Math.sin(t*Math.PI)*(.95+tilt)-t*t*(2.6-tilt),-length*t),frond);
+  for(let i=0;i<10;i++){
+   const angle=i*2.399963+seed*.71,length=3.5+(i%5)*.25,tilt=.55*Math.sin(i*2.1+seed);
+   const leaf=surface(length,2.05,t=>new THREE.Vector3(Math.sin(t*Math.PI)*.16*Math.sin(i),Math.sin(t*Math.PI)*(1.35+tilt)-t*t*(1.85-tilt),-length*t),frond);
    leaf.position.copy(top);leaf.rotation.y=angle;leaf.castShadow=leaf.receiveShadow=true;root.add(leaf);
   }
   for(let i=0;i<5;i++)add(root,coconutGeometry,bark).position.set(top.x+Math.cos(i*2.4)*.25,height-.15,top.z+Math.sin(i*2.4)*.25);

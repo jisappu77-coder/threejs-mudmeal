@@ -18,7 +18,7 @@ export function createWater(color,sky){
     float fresnel=.12+.45*pow(1.0-max(dot(normal,eye),0.0),3.0);
     float depth=clamp((waterPosition.x-81.0)/65.0,0.0,1.0);
     vec3 base=mix(vec3(.025,.52,.46),seaColor,depth)*(.95+.13*a+.08*b);
-    vec3 halfVector=normalize(eye+normalize(vec3(60.0,55.0,35.0)));
+    vec3 halfVector=normalize(eye+normalize(vec3(60.0,55.0,-35.0)));
     float sparkle=pow(max(dot(normal,halfVector),0.0),90.0);
     gl_FragColor=vec4(mix(base,reflected,fresnel)+vec3(1.0,.96,.77)*sparkle*.7,1.0);
     #include <tonemapping_fragment>

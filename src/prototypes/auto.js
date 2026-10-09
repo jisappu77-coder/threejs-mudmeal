@@ -5,7 +5,7 @@ import { RoundedBoxGeometry } from 'three/addons/geometries/RoundedBoxGeometry.j
 export function buildAuto({yellowBody=false,classicFace=false}={}){
  const root=new THREE.Group();root.name='Mud C3 · modern Kerala autorickshaw';
  const paint=new THREE.MeshPhysicalMaterial({color:yellowBody?'#efac27':'#d5a62c',metalness:.22,roughness:.42,clearcoat:.32,clearcoatRoughness:.3});
- const frame=new THREE.MeshStandardMaterial({color:'#272a28',metalness:.5,roughness:.44}),rubber=new THREE.MeshStandardMaterial({color:'#191b1a',roughness:.97}),chrome=new THREE.MeshStandardMaterial({color:'#9b9c93',metalness:.9,roughness:.3}),cloth=new THREE.MeshStandardMaterial({color:'#343631',roughness:.88,side:THREE.DoubleSide}),seat=new THREE.MeshStandardMaterial({color:'#322c25',roughness:.87});
+ const frame=new THREE.MeshStandardMaterial({color:'#272a28',metalness:.5,roughness:.44}),rubber=new THREE.MeshStandardMaterial({color:'#191b1a',roughness:.97}),chrome=new THREE.MeshStandardMaterial({color:'#9b9c93',metalness:.9,roughness:.3}),cloth=new THREE.MeshStandardMaterial({color:classicFace?'#303738':'#343631',roughness:classicFace?.62:.88,side:THREE.DoubleSide}),seat=new THREE.MeshStandardMaterial({color:'#322c25',roughness:.87});
  cloth.userData.surface='cloth';seat.userData.surface='cloth';paint.userData.surface='paint';
  const nosePaint=classicFace?new THREE.MeshPhysicalMaterial({color:'#303630',roughness:.55,clearcoat:.2}):paint;
  const add=(geometry,material,p=[0,0,0],rotation=[0,0,0])=>{const o=new THREE.Mesh(geometry,material);o.position.set(...p);o.rotation.set(...rotation);o.castShadow=o.receiveShadow=true;root.add(o);return o;};
@@ -46,7 +46,7 @@ export function buildAuto({yellowBody=false,classicFace=false}={}){
   const mirror=add(new THREE.SphereGeometry(1,40,28),frame,[side*.785,1.448,-.956]);mirror.scale.set(.053,.082,.019);
   const mirrorGlass=add(new THREE.SphereGeometry(1,40,28),chrome,[side*.785,1.448,-.934]);mirrorGlass.scale.set(.046,.075,.006);
   box(.087,.056,.025,.009,new THREE.MeshStandardMaterial({color:'#a86718',roughness:.25}),[side*.53,.97,-.979]);
-  box(.087,.128,.027,.012,new THREE.MeshPhysicalMaterial({color:'#cf3827',roughness:.28,clearcoat:1}),[side*.51,.69,1.292]);
+  if(classicFace){box(.12,.20,.03,.025,rubber,[side*.51,.71,1.302]);box(.09,.11,.016,.017,new THREE.MeshPhysicalMaterial({color:'#e7452b',roughness:.2,clearcoat:1,emissive:'#76160b',emissiveIntensity:.08}),[side*.51,.752,1.326]);box(.09,.057,.016,.01,new THREE.MeshPhysicalMaterial({color:'#f1e4c9',roughness:.2,clearcoat:1}),[side*.51,.655,1.326]);}else box(.087,.128,.027,.012,new THREE.MeshPhysicalMaterial({color:'#cf3827',roughness:.28,clearcoat:1}),[side*.51,.69,1.292]);
   if(classicFace){
    const x=side*.40,z=nose(.79,x),rim=cylinder(.107,.027,chrome,[x,.79,z-.02],[Math.PI/2,0,0]);rim.rotateZ(-side*.3);
    cylinder(.092,.014,new THREE.MeshPhysicalMaterial({color:'#fff4cc',roughness:.2,clearcoat:1}),[x,.79,z-.043],[Math.PI/2,0,0]);
@@ -77,12 +77,12 @@ export function buildAuto({yellowBody=false,classicFace=false}={}){
  surface(18,40,(u,v)=>{const t=u*2-1;return[t*.628,.425+v*.485,1.278+.013*(1-t*t)*Math.sin(v*Math.PI)];},paint).material.side=THREE.DoubleSide;
  for(const side of[-1,1])tube([[side*.45,.56,1.294],[side*.45,.72,1.294]],.012,rubber);
  // Rear curtains are built around their opening, not layered over opaque panels.
- box(1.26,.22,.033,.016,cloth,[0,.955,1.225]);box(1.26,.17,.033,.016,cloth,[0,1.585,1.225]);
- for(const side of[-1,1])box(.39,.44,.033,.012,cloth,[side*.436,1.282,1.225]);
- box(.48,.43,.018,.018,glazing,[0,1.282,1.242]);
- for(const z of[1.253,1.257]){
-  for(const side of[-1,1])box(.014,.43,.009,.003,chrome,[side*.247,1.282,z]);
-  for(const y of[1.06,1.504])box(.50,.014,.009,.003,chrome,[0,y,z]);
+ if(classicFace){
+  box(1.26,.30,.038,.035,cloth,[0,.99,1.225]);box(1.26,.23,.038,.035,cloth,[0,1.56,1.225]);for(const side of[-1,1])box(.415,.325,.038,.03,cloth,[side*.422,1.295,1.225]);
+  const rounded=(w,h,r)=>{const q=new THREE.Shape(),x=-w/2,y=-h/2;q.moveTo(x+r,y);q.lineTo(x+w-r,y);q.quadraticCurveTo(x+w,y,x+w,y+r);q.lineTo(x+w,y+h-r);q.quadraticCurveTo(x+w,y+h,x+w-r,y+h);q.lineTo(x+r,y+h);q.quadraticCurveTo(x,y+h,x,y+h-r);q.lineTo(x,y+r);q.quadraticCurveTo(x,y,x+r,y);return q;};const rearFrame=rounded(.41,.30,.04);rearFrame.holes.push(rounded(.37,.26,.035));add(new THREE.ExtrudeGeometry(rearFrame,{depth:.025,bevelEnabled:false}),rubber,[0,1.295,1.240]);box(.37,.26,.012,.035,new THREE.MeshPhysicalMaterial({color:'#68766e',roughness:.18,transparent:true,opacity:.40,depthWrite:false}),[0,1.295,1.265]);
+ }else{
+  box(1.26,.22,.033,.016,cloth,[0,.955,1.225]);box(1.26,.17,.033,.016,cloth,[0,1.585,1.225]);for(const side of[-1,1])box(.39,.44,.033,.012,cloth,[side*.436,1.282,1.225]);box(.48,.43,.018,.018,glazing,[0,1.282,1.242]);
+  for(const z of[1.253,1.257]){for(const side of[-1,1])box(.014,.43,.009,.003,chrome,[side*.247,1.282,z]);for(const y of[1.06,1.504])box(.50,.014,.009,.003,chrome,[0,y,z]);}
  }
  for(let y=.51;y<.65;y+=.033)box(.46,.012,.012,.004,rubber,[0,y,1.298]);
  box(.29,.075,.012,.005,new THREE.MeshStandardMaterial({color:'#efbb31',roughness:.55}),[0,.445,1.299]);
