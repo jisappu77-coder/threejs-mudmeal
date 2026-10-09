@@ -17,15 +17,20 @@ export function createFoliage(renderer){
   const t=new THREE.CanvasTexture(c);t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());return t;
  };
  const maps={frond:leafMap('frond'),banana:leafMap('banana'),branch:leafMap('branch')};
- const material=(map,color)=>new THREE.MeshStandardMaterial({map,color,alphaTest:.45,side:THREE.DoubleSide,roughness:.64});
- const frond=material(maps.frond,'#d7e5ad'),banana=material(maps.banana,'#c5e794'),leaves=[material(maps.branch,'#cee693'),material(maps.branch,'#9fc481'),material(maps.branch,'#e0d985')];
+ const material=(map,color)=>new THREE.MeshStandardMaterial({map,color,alphaTest:.45,side:THREE.DoubleSide,roughness:.86});
+ const frond=material(maps.frond,'#fff6df'),banana=material(maps.banana,'#c5e794'),leaves=[material(maps.branch,'#cee693'),material(maps.branch,'#9fc481'),material(maps.branch,'#e0d985')];
+ frond.emissive.set('#567520');frond.emissiveIntensity=.07;
  const loader=new THREE.TextureLoader(),ready=Promise.all([loader.loadAsync(new URL('textures/frond.png',document.baseURI).href).then(t=>{t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=Math.min(8,renderer.capabilities.getMaxAnisotropy());t.repeat.set(.5,1);t.offset.set(.25,0);banana.map=t;banana.color.set('#b7d7c8');banana.needsUpdate=true}),loader.loadAsync(new URL('textures/branch.png',document.baseURI).href).then(t=>{t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=4;for(const [i,m]of leaves.entries()){m.map=t;m.color.set(['#b1c7b8','#a3bdb0','#bed0ad'][i]);m.emissive.set('#25420b');m.emissiveIntensity=.04;m.needsUpdate=true}})]);
- const trunkCanvas=document.createElement('canvas');trunkCanvas.width=128;trunkCanvas.height=512;const ctx=trunkCanvas.getContext('2d');ctx.fillStyle='#b69868';ctx.fillRect(0,0,128,512);for(let y=0;y<512;y+=19){ctx.strokeStyle='#6e59388a';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(128,y+4);ctx.stroke();ctx.strokeStyle='#d1b37d';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(0,y+5);ctx.lineTo(128,y+9);ctx.stroke()}const barkMap=new THREE.CanvasTexture(trunkCanvas);barkMap.colorSpace=THREE.SRGBColorSpace;barkMap.wrapS=barkMap.wrapT=THREE.RepeatWrapping;
- const bark=new THREE.MeshStandardMaterial({color:'#e8d7bd',map:barkMap,roughness:.95});
+ const palmReady=loader.loadAsync(new URL('textures/coconut-frond.png',document.baseURI).href).then(t=>{t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=8;frond.map=t;frond.needsUpdate=true;});
+ const trunkCanvas=document.createElement('canvas');trunkCanvas.width=128;trunkCanvas.height=1024;const ctx=trunkCanvas.getContext('2d');ctx.fillStyle='#aa8867';ctx.fillRect(0,0,128,1024);
+ for(let y=0,i=0;y<1024;y+=18+(i++%5)*3){ctx.strokeStyle='#61472f60';ctx.lineWidth=1.5;ctx.beginPath();for(let x=0;x<=128;x+=8)ctx.lineTo(x,y+Math.sin(x*.06+i)*2.5);ctx.stroke();ctx.strokeStyle='#e0c5a035';ctx.lineWidth=3;ctx.beginPath();ctx.moveTo(0,y+4);ctx.lineTo(128,y+6);ctx.stroke();}
+ for(let i=0;i<2800;i++){ctx.fillStyle=i%3?'#503e2d0b':'#e9d4b719';ctx.fillRect((i*73)%128,(i*113)%1024,1,2+i%5);}
+ const barkMap=new THREE.CanvasTexture(trunkCanvas);barkMap.colorSpace=THREE.SRGBColorSpace;barkMap.wrapS=barkMap.wrapT=THREE.RepeatWrapping;
+ const bark=new THREE.MeshStandardMaterial({color:'#fff7e8',map:barkMap,bumpMap:barkMap,bumpScale:.025,roughness:.95});
  const flowerMaterials=['#e96787','#f6c838','#fbf1d2'].map(color=>new THREE.MeshStandardMaterial({color,roughness:.8}));
  const branchGeometry=new THREE.PlaneGeometry(1,1,1,1),petalGeometry=new THREE.SphereGeometry(.035,6,4),coconutGeometry=new THREE.SphereGeometry(.17,9,6);
  function add(root,g,m){const mesh=new THREE.Mesh(g,m);mesh.castShadow=mesh.receiveShadow=true;root.add(mesh);return mesh}
- function tube(root,points,r){const g=new THREE.TubeGeometry(new THREE.CatmullRomCurve3(points),Math.max(5,points.length*4),r,12,false),uv=g.attributes.uv;for(let i=0;i<uv.count;i++){const u=uv.getX(i);uv.setXY(i,uv.getY(i),u)}return add(root,g,bark)}
+ function tube(root,points,r){const curve=new THREE.CatmullRomCurve3(points),g=new THREE.TubeGeometry(curve,Math.max(5,points.length*4),r,12,false),uv=g.attributes.uv,p=g.attributes.position;for(let i=0;i<uv.count;i++){const u=uv.getX(i),center=curve.getPointAt(u),scale=1-u*.32;p.setXYZ(i,center.x+(p.getX(i)-center.x)*scale,center.y+(p.getY(i)-center.y)*scale,center.z+(p.getZ(i)-center.z)*scale);uv.setXY(i,uv.getY(i),u)}g.computeVertexNormals();return add(root,g,bark)}
  function surface(length,width,at,material,segments=16){
   const pos=[],uv=[],idx=[];for(let i=0;i<=segments;i++){const t=i/segments,c=at(t),w=width;for(const side of[-1,1]){pos.push(c.x+side*w/2,c.y-Math.abs(w)*.12,c.z);uv.push((side+1)/2,t)}if(i<segments){const j=i*2;idx.push(j,j+2,j+1,j+1,j+2,j+3)}}
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(pos,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();return new THREE.Mesh(g,material);
@@ -36,9 +41,9 @@ export function createFoliage(renderer){
  function palm(height=10,seed=0){
   const root=new THREE.Group(),lean=.6+Math.sin(seed*2.1)*.7,top=new THREE.Vector3(lean,height,.35);
   tube(root,[new THREE.Vector3(),new THREE.Vector3(lean*.15,height*.35,.08),new THREE.Vector3(lean*.5,height*.7,.17),top],.29);
-  for(let i=0;i<14;i++){
-   const angle=i*Math.PI*2/14+seed*.31,length=3.9+(i%4)*.37,tilt=i<5?.7:i<10?.1:-.55;
-   const leaf=surface(length,2.4,t=>new THREE.Vector3(0,Math.sin(t*Math.PI)*(.8+tilt)-t*t*(1.4-tilt),-length*t),frond);
+  for(let i=0;i<11;i++){
+   const angle=i*2.399963+seed*.71,length=3.7+(i%5)*.29,tilt=.55*Math.sin(i*2.1+seed);
+   const leaf=surface(length,2.65,t=>new THREE.Vector3(Math.sin(t*Math.PI)*.16*Math.sin(i),Math.sin(t*Math.PI)*(.95+tilt)-t*t*(2.6-tilt),-length*t),frond);
    leaf.position.copy(top);leaf.rotation.y=angle;leaf.castShadow=leaf.receiveShadow=true;root.add(leaf);
   }
   for(let i=0;i<5;i++)add(root,coconutGeometry,bark).position.set(top.x+Math.cos(i*2.4)*.25,height-.15,top.z+Math.sin(i*2.4)*.25);
@@ -65,5 +70,5 @@ export function createFoliage(renderer){
   }return finish(root);
  }
  const cache=new Map();const cached=(key,make)=>{if(!cache.has(key))cache.set(key,make());return cache.get(key).clone(true)};
- return {ready,palm:(h,seed=0)=>cached(`palm:${h}:${seed%3}`,()=>palm(h,seed%3)),plant:(s,seed=0)=>cached(`plant:${s}:${seed%3}`,()=>plant(s,seed%3)),shrub:(s,f=false,seed=0)=>cached(`shrub:${s}:${f}:${seed%3}`,()=>shrub(s,f,seed%3)),tree:(h,r,seed=0)=>cached(`tree:${h}:${r}:${seed%3}`,()=>tree(h,r,seed%3))};
+ return {ready:Promise.all([ready,palmReady]),palm:(h,seed=0)=>cached(`palm:${h}:${seed%3}`,()=>palm(h,seed%3)),plant:(s,seed=0)=>cached(`plant:${s}:${seed%3}`,()=>plant(s,seed%3)),shrub:(s,f=false,seed=0)=>cached(`shrub:${s}:${f}:${seed%3}`,()=>shrub(s,f,seed%3)),tree:(h,r,seed=0)=>cached(`tree:${h}:${r}:${seed%3}`,()=>tree(h,r,seed%3))};
 }
