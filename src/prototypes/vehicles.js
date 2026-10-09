@@ -217,7 +217,7 @@ export function createMotorcycle(style='city',color){
     const spoke=add(new THREE.CylinderGeometry(.003,.003,direction.length(),5),alloy,start.clone().add(end).multiplyScalar(.5).toArray(),[0,0,0],axle);
     spoke.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),direction.normalize());
    }
-  }else wheel(0,z,radius,scooter?.13:.11);
+  }else wheel(0,z,radius,scooter?.13:.17);
   surface(8,28,(u,v)=>{const a=.08*Math.PI+u*.84*Math.PI;return [(v-.5)*(scooter?.22:.18),radius+.015+(radius+.04)*Math.sin(a),z+(radius+.04)*Math.cos(a)];},z===front?paint:trim);
  }
  for(const side of [-1,1]){
@@ -230,7 +230,7 @@ export function createMotorcycle(style='city',color){
   tube([[side*.10,.96,-.47],[side*.249,.9594,-.4536]],.017,alloy);
   tube([[side*.21,.9594,-.4536],[side*.285,.9594,-.4536]],.027,rubber);
   tube([[side*.21,.97,-.47],[side*.32,1.17,-.54]],.011,alloy);
-  box(.09,.07,.02,.022,trim,[side*.32,1.20,-.54]);box(.075,.055,.006,.016,alloy,[side*.32,1.20,-.553]);
+  const mirror=add(new THREE.SphereGeometry(.058,16,10),trim,[side*.32,1.20,-.54]);mirror.scale.z=.24;const mirrorGlass=add(new THREE.CircleGeometry(.05,20),alloy,[side*.32,1.20,-.524]);mirrorGlass.rotation.y=0;
   box(.055,.035,.03,.013,amber,[side*.21,.89,-.62]);box(.045,.03,.03,.011,amber,[side*.22,.68,.92]);
  }
  box(.40,.115,.66,.04,saddle,[0,.867,.26]);

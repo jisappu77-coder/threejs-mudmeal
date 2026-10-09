@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
-import {normalize,worldPoint,roadWidth,canRide,stepBike} from '../src/layout.js';
+import {normalize,worldPoint,roadWidth,canRide,stepBike,calibrateWaterfront} from '../src/layout.js';
 const manifest=JSON.parse(await readFile(new URL('../public/scenes/manifest.json',import.meta.url)));
 const scenes=await Promise.all(manifest.map(async m=>normalize(JSON.parse(await readFile(new URL('../public/'+m.spec,import.meta.url))),m.key)));
 assert.equal(scenes.length,8);assert.deepEqual(worldPoint([12,20,3],[5,100,0]),[17,3,-120]);
@@ -23,3 +23,13 @@ let state={x:0,y:0,heading:0,speed:0};for(let i=0;i<100;i++)stepBike(state,{forw
 const before=state.y;for(let i=0;i<10;i++)stepBike(state,{forward:true,brake:false,steer:0},.1,(_x,y)=>y<before+.4);assert.ok(state.y<before+.4);assert.equal(state.speed,0);
 for(let i=0;i<20;i++)stepBike(state,{forward:false,brake:true,steer:0},.05,()=>true);assert.ok(state.speed<0);assert.ok(state.y<before);
 console.log(`Verified 8 scenes, 33 exact building footprints, ${seams} reciprocal road/path seams, camera assets, tapered road, bridge/water collision, acceleration, reverse and wall stopping.`);
+
+const calibrated=await Promise.all(manifest.map(async m=>normalize(calibrateWaterfront(JSON.parse(await readFile(new URL('../public/'+m.spec,import.meta.url)))),m.key)));
+assert.equal(canRide(83,50,calibrated.filter(s=>s.phase===1),[]),false);assert.equal(canRide(119,50,calibrated.filter(s=>s.phase===1),[]),false);assert.equal(canRide(72,100.1,calibrated.filter(s=>s.phase===1),[]),true);
+for(const s of calibrated)for(const c of s.connections){if(!c.matches||!/^SCENE_\d+\./.test(c.matches))continue;const [id,key]=c.matches.split('.'),other=calibrated.find(o=>o.phase===s.phase&&o.scene.id===id),mate=other.connections.find(o=>o.id===key);assert.deepEqual(worldPoint(c.position,s.origin),worldPoint(mate.position,other.origin));assert.equal(c.width_m,mate.width_m);}
+console.log('Calibrated waterfront retains road/path seams and blocks the full sea region.');
+
+for(const s of calibrated)for(const bay of s.bays){const [a,b,c,d]=bay.rect,x=(a+c)/2,y=(b+d)/2;assert.ok(a<c&&b<d,`${s.key}:${bay.id} has positive area`);assert.ok(s.buildings.every(building=>x<building.rect[0]||x>building.rect[2]||y<building.rect[1]||y>building.rect[3]),`${s.key}:${bay.id} is outside building collision footprints`);}
+console.log('All calibrated pickup bay centers remain outside buildings.');
+
+const urban=calibrated.filter(s=>s.phase===2);assert.equal(canRide(60,230,urban,[]),true);assert.equal(canRide(40,230,urban,[]),false);

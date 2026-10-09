@@ -9,7 +9,7 @@ export async function loadCrowd(){
  const templates=crowdStyles.map(style=>scene.getObjectByName(style));
  if(templates.some(t=>!t))throw Error('Crowd asset is missing a clothing style');
  const palettes=['#ffffff','#dcc9b6','#98adb0','#cab098','#adb99b','#d6b6bb'];
- return function makeCharacter(variant=0,seated=false){
+ return function makeCharacter(variant=0,seated=false,shorts=false){
   const styleIndex=variant%templates.length,g=clone(templates[styleIndex]);
   const bones={},rest={},neutral={},axisX={},axisY={},axisZ={};
   g.updateMatrixWorld(true);
@@ -40,6 +40,10 @@ export async function loadCrowd(){
    if(m.name.startsWith('Brown eyes')){m.color.set('#eee9df');m.alphaTest=.35;m.transparent=false;m.side=THREE.FrontSide;}
   });
   for(const name of jointNames)if(!bones[name])throw Error('Missing customer joint: '+name);
+  if(shorts){
+   g.updateMatrixWorld(true);const point=new THREE.Vector3();g.traverse(o=>{if(!o.isSkinnedMesh||!o.name.startsWith('Trousers'))return;const geometry=o.geometry.clone(),indices=geometry.index.array,keep=[];for(let i=0;i<indices.length;i+=3){let height=0;for(let k=0;k<3;k++){point.fromBufferAttribute(geometry.attributes.position,indices[i+k]);o.applyBoneTransform(indices[i+k],point);height+=point.applyMatrix4(o.matrixWorld).y;}if(height/3>.62)keep.push(indices[i],indices[i+1],indices[i+2]);}geometry.setIndex(keep);geometry.computeBoundingBox();geometry.computeBoundingSphere();o.geometry=geometry;});
+   const skin=new THREE.MeshStandardMaterial({color:'#b98b67',roughness:.9});for(const side of['l','r'])for(const [first,last,r0,r1]of[['thigh','shin',.07,.055],['shin','foot',.055,.038]]){const a=g.worldToLocal(bones[first+'_'+side].getWorldPosition(new THREE.Vector3())),b=g.worldToLocal(bones[last+'_'+side].getWorldPosition(new THREE.Vector3())),delta=b.clone().sub(a),leg=new THREE.Mesh(new THREE.CylinderGeometry(r1,r0,delta.length(),12),skin);leg.position.copy(a.add(b).multiplyScalar(.5));leg.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.normalize());leg.castShadow=leg.receiveShadow=true;g.add(leg);bones[first+'_'+side].attach(leg);}
+  }
   const build=[1,.97,1.035][Math.floor(variant/4)%3];g.scale.x*=build;g.scale.z*=build;
   g.userData={...g.userData,variant,style:crowdStyles[styleIndex],seated,rigged:true};
   const q=new THREE.Quaternion();

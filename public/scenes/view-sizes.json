@@ -1,0 +1,254 @@
+{
+  "p1-scene_04": {
+    "05_ARCHITECTURE.png": [
+      1113,
+      1000
+    ],
+    "01_MASTER_SPATIAL.png": [
+      1111,
+      1000
+    ],
+    "02_PLAYER_GAMEPLAY.png": [
+      1600,
+      900
+    ],
+    "08_CONNECTION.png": [
+      1113,
+      1000
+    ],
+    "06_ENVIRONMENT_PROPS.png": [
+      1113,
+      1000
+    ],
+    "03_REVERSE_GAMEPLAY.png": [
+      1600,
+      900
+    ],
+    "04_SIDE_CROSS_STREET.png": [
+      1600,
+      900
+    ]
+  },
+  "p2-scene_01": {
+    "05_ARCHITECTURE.png": [
+      1500,
+      1000
+    ],
+    "01_MASTER_SPATIAL.png": [
+      1500,
+      1000
+    ],
+    "02_PLAYER_GAMEPLAY.png": [
+      1500,
+      1000
+    ],
+    "08_CONNECTION.png": [
+      1500,
+      1000
+    ],
+    "06_ENVIRONMENT_PROPS.png": [
+      1500,
+      1000
+    ],
+    "03_REVERSE_GAMEPLAY.png": [
+      1500,
+      1000
+    ],
+    "04_SIDE_CROSS_STREET.png": [
+      1500,
+      1000
+    ]
+  },
+  "p2-scene_03": {
+    "05_ARCHITECTURE.png": [
+      1500,
+      1000
+    ],
+    "01_MASTER_SPATIAL.png": [
+      1500,
+      1000
+    ],
+    "02_PLAYER_GAMEPLAY.png": [
+      1500,
+      1000
+    ],
+    "08_CONNECTION.png": [
+      1500,
+      1000
+    ],
+    "06_ENVIRONMENT_PROPS.png": [
+      1500,
+      1000
+    ],
+    "03_REVERSE_GAMEPLAY.png": [
+      1500,
+      1000
+    ],
+    "04_SIDE_CROSS_STREET.png": [
+      1500,
+      1000
+    ]
+  },
+  "p2-scene_04": {
+    "05_ARCHITECTURE.png": [
+      1500,
+      1000
+    ],
+    "01_MASTER_SPATIAL.png": [
+      1200,
+      1000
+    ],
+    "02_PLAYER_GAMEPLAY.png": [
+      1500,
+      1000
+    ],
+    "07_LANDMARK.png": [
+      1500,
+      1000
+    ],
+    "08_CONNECTION.png": [
+      1200,
+      1000
+    ],
+    "06_ENVIRONMENT_PROPS.png": [
+      1500,
+      1000
+    ],
+    "03_REVERSE_GAMEPLAY.png": [
+      1200,
+      1000
+    ],
+    "04_SIDE_CROSS_STREET.png": [
+      1500,
+      1000
+    ]
+  },
+  "p1-scene_03": {
+    "05_ARCHITECTURE.png": [
+      1113,
+      1000
+    ],
+    "01_MASTER_SPATIAL.png": [
+      1111,
+      1000
+    ],
+    "02_PLAYER_GAMEPLAY.png": [
+      1600,
+      900
+    ],
+    "07_LANDMARK.png": [
+      1113,
+      1000
+    ],
+    "08_CONNECTION.png": [
+      1333,
+      1000
+    ],
+    "06_ENVIRONMENT_PROPS.png": [
+      1113,
+      1000
+    ],
+    "03_REVERSE_GAMEPLAY.png": [
+      1405,
+      1000
+    ],
+    "04_SIDE_CROSS_STREET.png": [
+      1576,
+      998
+    ]
+  },
+  "p1-scene_01": {
+    "05_ARCHITECTURE.png": [
+      1500,
+      1000
+    ],
+    "01_MASTER_SPATIAL.png": [
+      1500,
+      1000
+    ],
+    "02_PLAYER_GAMEPLAY.png": [
+      1600,
+      900
+    ],
+    "08_CONNECTION.png": [
+      1500,
+      1000
+    ],
+    "06_ENVIRONMENT_PROPS.png": [
+      1500,
+      1000
+    ],
+    "03_REVERSE_GAMEPLAY.png": [
+      1500,
+      1000
+    ],
+    "04_SIDE_CROSS_STREET.png": [
+      1500,
+      1000
+    ]
+  },
+  "p1-scene_02": {
+    "05_ARCHITECTURE.png": [
+      1333,
+      1000
+    ],
+    "01_MASTER_SPATIAL.png": [
+      1333,
+      1000
+    ],
+    "02_PLAYER_GAMEPLAY.png": [
+      1333,
+      1000
+    ],
+    "07_LANDMARK.png": [
+      1333,
+      1000
+    ],
+    "08_CONNECTION.png": [
+      1500,
+      1000
+    ],
+    "06_ENVIRONMENT_PROPS.png": [
+      1333,
+      1000
+    ],
+    "03_REVERSE_GAMEPLAY.png": [
+      1333,
+      1000
+    ],
+    "04_SIDE_CROSS_STREET.png": [
+      1333,
+      1000
+    ]
+  },
+  "p2-scene_02": {
+    "05_ARCHITECTURE.png": [
+      1500,
+      1000
+    ],
+    "01_MASTER_SPATIAL.png": [
+      1200,
+      1000
+    ],
+    "02_PLAYER_GAMEPLAY.png": [
+      1500,
+      1000
+    ],
+    "08_CONNECTION.png": [
+      1500,
+      1000
+    ],
+    "06_ENVIRONMENT_PROPS.png": [
+      1200,
+      1000
+    ],
+    "03_REVERSE_GAMEPLAY.png": [
+      1500,
+      1000
+    ],
+    "04_SIDE_CROSS_STREET.png": [
+      1500,
+      1000
+    ]
+  }
+}
