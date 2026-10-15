@@ -23,6 +23,10 @@ export function createSceneArt(renderer,skyTexture) {
   let seed=127;const rand=()=>{let t=seed+=0x6D2B79F5;t=Math.imul(t^t>>>15,t|1);t^=t+Math.imul(t^t>>>7,t|61);return((t^t>>>14)>>>0)/4294967296};
   for(let i=0;i<42000;i++){ctx.fillStyle=rand()>.5?(kind==='plaster'?'#ffffff04':'#ffffff12'):(kind==='plaster'?'#00000003':'#00000015');ctx.fillRect(rand()*512,rand()*512,.5+rand(),.5+rand())}
   if(kind==='plaster'){for(let i=0;i<45;i++){const x=rand()*512,y=rand()*512,r=12+rand()*56,g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,'#9576490a');g.addColorStop(1,'#95764900');ctx.fillStyle=g;ctx.fillRect(x-r,y-r,r*2,r*2);}}
+  if(kind==='grass'){
+   for(let i=0;i<250;i++){const x=rand()*512,y=rand()*512,r=8+rand()*40,g=ctx.createRadialGradient(x,y,0,x,y,r);g.addColorStop(0,i%3?'#496b3530':'#dac38738');g.addColorStop(1,'#496b3500');ctx.fillStyle=g;ctx.fillRect(x-r,y-r,r*2,r*2);}
+   for(let i=0;i<18000;i++){const x=rand()*512,y=rand()*512;ctx.strokeStyle=i%3?'#456f3426':'#e2db9c38';ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+rand()*2-1,y-2-rand()*3);ctx.stroke();}
+  }
   if(kind==='tile'||kind==='stone'||kind==='paving'){
    const step=kind==='tile'?32:64;ctx.strokeStyle=kind==='tile'?'#56231865':'#785f4c55';ctx.lineWidth=kind==='tile'?2:1;
    for(let y=0;y<512;y+=step){ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(512,y);ctx.stroke();for(let x=(y/step%2)*step/2;x<512;x+=step){ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x,y+step);ctx.stroke();}}
@@ -58,7 +62,7 @@ export function createSceneArt(renderer,skyTexture) {
   let current,origin;
   const vec=p=>new THREE.Vector3(...worldPoint(p,origin));
   function mesh(g,m,p=[0,0,0],rotation=[0,0,0],parent=root){const o=new THREE.Mesh(g,m);o.position.copy(vec(p));o.rotation.set(...rotation);o.castShadow=!m.transparent;o.receiveShadow=true;parent.add(o);return o;}
-  function box(w,d,h,m,p,rotation=0){return mesh(geometry(`box:${w}:${d}:${h}`,()=>w<=2&&d<=2&&h<=2&&Math.min(w,d,h)>.07?new RoundedBoxGeometry(w,h,d,2,Math.min(.025,w*.05,h*.08,d*.05)):new THREE.BoxGeometry(w,h,d)),m,p,[0,rotation,0]);}
+  function box(w,d,h,m,p,rotation=0){return mesh(geometry(`box:${w}:${d}:${h}`,()=>Math.min(w,d,h)>.07?new RoundedBoxGeometry(w,h,d,2,Math.min(.045,w*.05,h*.08,d*.05)):new THREE.BoxGeometry(w,h,d)),m,p,[0,rotation,0]);}
   function beam(a,b,r,m=wood){const aa=vec(a),bb=vec(b),delta=bb.clone().sub(aa);const o=new THREE.Mesh(geometry(`cyl:${r}:${delta.length().toFixed(3)}`,()=>new THREE.CylinderGeometry(r,r,delta.length(),7)),m);o.position.copy(aa.add(bb).multiplyScalar(.5));o.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),delta.normalize());o.castShadow=o.receiveShadow=true;root.add(o);return o;}
   function poly(points,m){const g=new THREE.BufferGeometry(),positions=points.map(p=>worldPoint(p,origin)).flat(),normal=new THREE.Vector3(...points[1]).sub(new THREE.Vector3(...points[0])).cross(new THREE.Vector3(...points[2]).sub(new THREE.Vector3(...points[0]))),vertical=Math.abs(normal.z)<Math.max(Math.abs(normal.x),Math.abs(normal.y)),uvScale=m.userData.kind==='paving'?6:3,uv=points.flatMap(p=>vertical?[p[Math.abs(normal.x)>Math.abs(normal.y)?1:0]/uvScale,p[2]/uvScale]:[p[0]/uvScale,p[1]/uvScale]);g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));const idx=[];for(let i=1;i<points.length-1;i++)idx.push(0,i,i+1);g.setIndex(idx);g.computeVertexNormals();const o=new THREE.Mesh(g,m);o.castShadow=!points.every(p=>p[2]===points[0][2]);o.receiveShadow=true;root.add(o);return o;}
   function rect(r,m,z=.01){if(phase===1&&r[3]-r[1]>12){let result;for(let y=r[1];y<r[3];y+=8)result=poly([[r[0],y,z],[r[2],y,z],[r[2],Math.min(y+8,r[3]),z],[r[0],Math.min(y+8,r[3]),z]],m);return result;}return poly([[r[0],r[1],z],[r[2],r[1],z],[r[2],r[3],z],[r[0],r[3],z]],m);}
@@ -99,9 +103,10 @@ export function createSceneArt(renderer,skyTexture) {
    const world=points.map(vec),base=world[0],u=world[1].clone().sub(base).normalize(),normal=world[1].clone().sub(base).cross(world[2].clone().sub(base)).normalize();if(normal.y<0)normal.negate();if(normal.y<.15)return;
    const v=u.clone().cross(normal).normalize(),outline=world.map(p=>{const q=p.clone().sub(base);return[q.dot(u),q.dot(v)]}),r=bounds(outline),tiles=[];
    function contained(x,y){let found=false;for(let i=0,j=outline.length-1;i<outline.length;j=i++){const a=outline[i],b=outline[j];if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])found=!found}return found;}
-   for(let x=r[0]+.15;x<r[2]-.14;x+=.31)for(let y=r[1];y<r[3]-.21;y+=.43)if(contained(x-.13,y+.04)&&contained(x+.13,y+.43)&&contained(x+.13,y+.04)&&contained(x-.13,y+.43))tiles.push(base.clone().addScaledVector(u,x).addScaledVector(v,y).addScaledVector(normal,.014));
+   const tileScale=phase===1?1.35:1;
+   for(let x=r[0]+.15*tileScale;x<r[2]-.14*tileScale;x+=.31*tileScale)for(let y=r[1];y<r[3]-.21*tileScale;y+=.43*tileScale)if(contained(x-.13*tileScale,y+.04)&&contained(x+.13*tileScale,y+.43*tileScale)&&contained(x+.13*tileScale,y+.04)&&contained(x-.13*tileScale,y+.43*tileScale))tiles.push(base.clone().addScaledVector(u,x).addScaledVector(v,y).addScaledVector(normal,.014));
    const g=geometry('barrelTile',()=>{const g=new THREE.BufferGeometry(),p=[],uv=[],idx=[];for(let row=0;row<4;row++)for(let i=0;i<=8;i++){const t=i/8*Math.PI;p.push((i/8-.5)*.32,Math.sin(t)*.075+(row===3?.028:row===2?.008:0),[0,.22,.445,.465][row]);uv.push(i/8,row/3)}for(let row=0;row<3;row++)for(let i=0;i<8;i++){const j=row*9+i;idx.push(j,j+9,j+1,j+1,j+9,j+10)}g.setAttribute('position',new THREE.Float32BufferAttribute(p,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));g.setIndex(idx);g.computeVertexNormals();return g;});
-   const inst=new THREE.InstancedMesh(g,mat('#ffffff'),tiles.length),rotation=new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(u,normal,v)),matrix=new THREE.Matrix4();tiles.forEach((p,i)=>{matrix.compose(p,rotation,new THREE.Vector3(1,1,1));inst.setMatrixAt(i,matrix);inst.setColorAt(i,new THREE.Color().setHSL(.035+(i%7)*.0015,.70,.47+(i%11)*.004,THREE.SRGBColorSpace));});inst.castShadow=inst.receiveShadow=true;root.add(inst);
+   const inst=new THREE.InstancedMesh(g,mat('#ffffff'),tiles.length),rotation=new THREE.Quaternion().setFromRotationMatrix(new THREE.Matrix4().makeBasis(u,normal,v)),matrix=new THREE.Matrix4();tiles.forEach((p,i)=>{matrix.compose(p,rotation,new THREE.Vector3(tileScale,tileScale,tileScale));inst.setMatrixAt(i,matrix);const variation=Math.sin(i*127.1+points[0][0]*31.7)*43758.5453,f=variation-Math.floor(variation);inst.setColorAt(i,new THREE.Color().setHSL(.027+f*.012,.65,.40+f*.085,THREE.SRGBColorSpace));});inst.castShadow=inst.receiveShadow=true;root.add(inst);
   }
   function cafeFurniture(x,y){
    box(.9,.72,.085,wood,[x,y,.78]);for(const dx of[-.36,.36])for(const dy of[-.26,.26])beam([x+dx,y+dy,.05],[x+dx,y+dy,.76],.033,wood);
@@ -147,6 +152,10 @@ export function createSceneArt(renderer,skyTexture) {
    }
    if(/lilac/.test(b.walls))for(const dir of ['east','west','north','south'])if(!openDirs.includes(dir)){const f=facade(dir);box(f.length,.25,shopTop,mat(palettes.teal,'plaster'),f.place(0,shopTop/2,.02),f.angle);}
    box(w+.15,d+.15,.18,concrete,[cx,cy,.09]);for(let i=1;i<=b.floors;i++)box(w+.25,d+.25,.12,concrete,[cx,cy,e*i/b.floors]);
+   if(phase===1){
+    box(w+.38,d+.38,.16,concrete,[cx,cy,e-.16]);box(w+.5,d+.5,.09,concrete,[cx,cy,e-.04]);
+    for(const x of[x0+.1,x1-.1])for(const y of[y0+.1,y1-.1])box(.3,.3,Math.max(.2,e-shopTop),concrete,[x,y,shopTop+Math.max(.2,e-shopTop)/2]);
+   }
    roof(b);if(current.key==='p1-scene_04'&&b.id==='B_BAKERY'){box(.8,.14,1.05,concrete,[x0-.05,cy,5],-Math.PI/2);box(.59,.16,.86,darkWood,[x0-.14,cy,5],-Math.PI/2);box(.43,.02,.68,glass,[x0-.24,cy,5],-Math.PI/2);}
    if(b.id==='B_CAFE'){box(w+.25,d+.25,.16,concrete,[cx,cy,waterfrontCafe?3.2:2.65]);box(w+.18,d+.18,.09,concrete,[cx,cy,waterfrontCafe?3.4:2.85]);}
    const faces=[['east',x1,cy,d,-Math.PI/2],['west',x0,cy,d,Math.PI/2],['north',cx,y1,w,0],['south',cx,y0,w,Math.PI]];
@@ -163,7 +172,8 @@ export function createSceneArt(renderer,skyTexture) {
      box(.07,.06,1.4,mat('#594532'),place(along,z,.24),angle);box(ww,.06,.06,mat('#594532'),place(along,z,.24),angle);
      if(phase===1)for(const side of [-1,1]){box(.36,.09,1.5,mat('#39765c'),place(along+side*(ww/2+.2),z,.12),angle);for(let slat=0;slat<18;slat++)box(.35,.1,.04,mat('#315e4d'),place(along+side*(ww/2+.2),z-.66+slat*.075,.15),angle);}
      box(ww+.4,.35,.12,concrete,place(along,z-.85,.14),angle);trim.name='Window surround';
-     if(phase===1&&b.awning&&floor===1){box(ww+.4,.4,.24,wood,place(along,z-.87,.3),angle);const p=place(along,z-.78,.42);shrub(p[0],p[1],.7,true,p[2]);}
+     if(phase===1){box(ww+.5,.3,.12,concrete,place(along,z+.94,.1),angle);for(const side of[-1,1])box(.12,.28,.22,concrete,place(along+side*(ww/2+.1),z-.95,.1),angle);}
+     if(phase===1&&b.awning&&floor===1){box(ww+.4,.4,.24,wood,place(along,z-.87,.3),angle);const p=place(along,z-.78,.42);shrub(p[0],p[1],.95,true,p[2]);}
     }
    }
    const dir=b.direction,ew=dir==='east'||dir==='west',out=dir==='east'||dir==='north'?1:-1,angle=dir==='east'?Math.PI/2:dir==='west'?-Math.PI/2:dir==='north'?Math.PI:0;
@@ -210,7 +220,7 @@ export function createSceneArt(renderer,skyTexture) {
     const a=pts[i],q=pts[(i+1)%pts.length];wall(a,q,b.compound.wall_height_m,concrete,gap);
     if(segmentDistance(gap.position[0],gap.position[1],a,q)<.1){const dx=q[0]-a[0],dy=q[1]-a[1],len=Math.hypot(dx,dy),p=gap.position,at=t=>[p[0]+dx/len*t,p[1]+dy/len*t],left=at(-gap.width/2),right=at(gap.width/2),iron=mat('#39443a');railing(left,right,1.35,iron);for(let t=-gap.width/2;t<=gap.width/2;t+=.13){const q=at(t);beam([...q,0],[...q,1.35],.016,iron);}collide(bounds([left,right]).map((v,i)=>v+(i<2?-.03:.03)),'compound-gate');}
    }}
-   for(const side of[-1,1])for(let i=0;i<9;i++){const px=cx+side*(w/2+2.6),py=y0+1+i*(d-2)/8;if(current.roads.every(r=>roadDistance(r,px,py)>r.width_m/2+1)&&Math.hypot(px-fx,py-fy)>4)shrub(px,py,.65,i%3===0);}
+   for(const side of[-1,1])for(let i=0;i<9;i++){const px=cx+side*(w/2+2.6),py=y0+1+i*(d-2)/8;if(current.roads.every(r=>roadDistance(r,px,py)>r.width_m/2+1.8)&&Math.hypot(px-fx,py-fy)>4)shrub(px,py,phase===1?1.15:.65,i%3===0);}
    for(const p of [[x0-3,y0-3],[x1+3,y1+3]])if(current.roads.every(r=>roadDistance(r,...p)>r.width_m/2+2.5)){plant(p[0],p[1],2.3);shrub(p[0]+1,p[1],1);}
    if(b.bell_tower){const p=b.bell_tower.position,h=b.bell_tower.height_m,white=mat('#fffdf4'),base=h-3;
     const front=facade('south');
@@ -245,6 +255,11 @@ export function createSceneArt(renderer,skyTexture) {
      if(phase===2&&['SCENE_01','SCENE_02'].includes(current.scene.id))for(const side of[-1,1])box(.25,len/steps,.015,mat('#cd9580','paving'),[mx+nx*side*(wa+.18),my+ny*side*(wa+.18),.12],-Math.atan2(dx,dy));
      if(i%3===0)box(.12,2,.012,mat('#eee8cd'),[mx,my,.075],-Math.atan2(dx,dy));
      for(const side of [-1,1]){const x=mx+nx*side*(wa+.7),y=my+ny*side*(wa+.7);box(1.4,len/steps+.01,.1,paving,[x,y,.06],-Math.atan2(dx,dy));box(.12,len/steps,.013,mat('#eee8d8'),[mx+nx*side*(wa-.18),my+ny*side*(wa-.18),.08],-Math.atan2(dx,dy));}
+     if(phase===1)for(const side of[-1,1]){
+      const x=mx+nx*side*(wa+.13),y=my+ny*side*(wa+.13),angle=-Math.atan2(dx,dy);
+      box(.24,len/steps-.035,.18,mat('#e1d6c0','stone'),[x,y,.11],angle);
+      box(.12,len/steps,.014,mat('#6f716b','stone'),[mx+nx*side*(wa-.04),my+ny*side*(wa-.04),.072],angle);
+     }
     }
    }
    for(const spur of r.spurs||[])road({...r,centerline:spur,spurs:[]});
@@ -328,6 +343,8 @@ export function createSceneArt(renderer,skyTexture) {
    if(s.key==='p1-scene_01'){
     wall([49,10],[65,10],1.1,concrete,{position:[61,10],width:2.4});wall([49,10],[49,32],1.1);
     for(const [x,y,h]of[[48,5,10],[48,39,11],[55,38,8],[49,57,10],[45,91,13]]){palm(x,y,h);tree(x-3,y,h-2,3.4);}
+    for(let x=25;x<43;x+=2.8)for(const y of[39.5,43]){shrub(x,y,1.6,true);if(Math.floor(x)%2)plant(x+.7,y+1,1.8);}
+    for(let y=13;y<32;y+=3)shrub(49,y,1.4,true,.6);
     for(const [x,y]of[[65.5,13],[65.5,29],[52,10],[58,10],[65.5,65],[65.5,79]]){plant(x,y,1.7,true);shrub(x,y,1.1,true,.6);}
     for(const [x,y]of[[99,28],[105,72],[117,92]])boat([x,y,-1.2]);
     for(const [x,y]of[[74,12],[74,39],[74,76]])vehicle(auto,[x,y,.07],0,'REFERENCE_AUTO');

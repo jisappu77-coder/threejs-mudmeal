@@ -10,66 +10,66 @@
     {
       "scene": "p1-scene_01",
       "view": "01_MASTER_SPATIAL.png",
-      "drawCalls": 2122,
-      "triangles": 11937992,
+      "drawCalls": 3285,
+      "triangles": 19975195,
       "path": "artifacts/scenes/p1-scene_01-01_MASTER_SPATIAL.png",
-      "checkedAt": "2026-10-15T12:14:25.115Z"
+      "checkedAt": "2026-10-15T17:06:56.514Z"
     },
     {
       "scene": "p1-scene_01",
       "view": "02_PLAYER_GAMEPLAY.png",
-      "drawCalls": 1604,
-      "triangles": 10120437,
+      "drawCalls": 2490,
+      "triangles": 16349936,
       "path": "artifacts/scenes/p1-scene_01-02_PLAYER_GAMEPLAY.png",
-      "checkedAt": "2026-10-15T12:14:25.115Z"
+      "checkedAt": "2026-10-15T17:06:56.514Z"
     },
     {
       "scene": "p1-scene_02",
       "view": "01_MASTER_SPATIAL.png",
-      "drawCalls": 1632,
-      "triangles": 8892634,
+      "drawCalls": 2417,
+      "triangles": 13724682,
       "path": "artifacts/scenes/p1-scene_02-01_MASTER_SPATIAL.png",
-      "checkedAt": "2026-10-15T12:14:25.115Z"
+      "checkedAt": "2026-10-15T17:06:56.514Z"
     },
     {
       "scene": "p1-scene_02",
       "view": "02_PLAYER_GAMEPLAY.png",
-      "drawCalls": 1511,
-      "triangles": 8783259,
+      "drawCalls": 2141,
+      "triangles": 12355155,
       "path": "artifacts/scenes/p1-scene_02-02_PLAYER_GAMEPLAY.png",
-      "checkedAt": "2026-10-15T12:14:25.115Z"
+      "checkedAt": "2026-10-15T17:06:56.514Z"
     },
     {
       "scene": "p1-scene_03",
       "view": "01_MASTER_SPATIAL.png",
-      "drawCalls": 2355,
-      "triangles": 13051592,
+      "drawCalls": 3587,
+      "triangles": 21717599,
       "path": "artifacts/scenes/p1-scene_03-01_MASTER_SPATIAL.png",
-      "checkedAt": "2026-10-15T12:14:25.115Z"
+      "checkedAt": "2026-10-15T17:06:56.514Z"
     },
     {
       "scene": "p1-scene_03",
       "view": "02_PLAYER_GAMEPLAY.png",
-      "drawCalls": 2145,
-      "triangles": 11865463,
+      "drawCalls": 3247,
+      "triangles": 18835122,
       "path": "artifacts/scenes/p1-scene_03-02_PLAYER_GAMEPLAY.png",
-      "checkedAt": "2026-10-15T12:14:25.115Z"
+      "checkedAt": "2026-10-15T17:06:56.514Z"
     },
     {
       "scene": "p1-scene_04",
       "view": "01_MASTER_SPATIAL.png",
-      "drawCalls": 1859,
-      "triangles": 9465130,
+      "drawCalls": 2819,
+      "triangles": 15202152,
       "path": "artifacts/scenes/p1-scene_04-01_MASTER_SPATIAL.png",
-      "checkedAt": "2026-10-15T12:14:25.115Z"
+      "checkedAt": "2026-10-15T17:06:56.514Z"
     },
     {
       "scene": "p1-scene_04",
       "view": "02_PLAYER_GAMEPLAY.png",
-      "drawCalls": 1664,
-      "triangles": 9091036,
+      "drawCalls": 2412,
+      "triangles": 13624770,
       "path": "artifacts/scenes/p1-scene_04-02_PLAYER_GAMEPLAY.png",
-      "checkedAt": "2026-10-15T12:14:25.115Z"
+      "checkedAt": "2026-10-15T17:06:56.514Z"
     },
     {
       "scene": "p2-scene_01",
@@ -129,6 +129,6 @@
     }
   ],
   "errors": [],
-  "checkedAt": "2026-10-15T12:14:25.115Z",
-  "bundle": "assets/main-DqnXG4uz.js"
+  "checkedAt": "2026-10-15T17:06:56.514Z",
+  "bundle": "assets/main-DFM8PXXP.js"
 }

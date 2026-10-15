@@ -23,7 +23,7 @@ export function createFoliage(renderer){
  const barkMap=new THREE.CanvasTexture(trunkCanvas);barkMap.colorSpace=THREE.SRGBColorSpace;barkMap.wrapS=barkMap.wrapT=THREE.RepeatWrapping;
  const bark=new THREE.MeshStandardMaterial({color:'#dab381',map:barkMap,bumpMap:barkMap,bumpScale:.025,roughness:.95});
  const flowerMaterials=['#e96787','#f6c838','#fbf1d2'].map(color=>new THREE.MeshStandardMaterial({color,roughness:.8}));
- const branchGeometry=new THREE.PlaneGeometry(1,1,1,1),petalGeometry=new THREE.SphereGeometry(.035,6,4),coconutGeometry=new THREE.SphereGeometry(.17,9,6);
+ const branchGeometry=new THREE.PlaneGeometry(1,1,1,1),petalGeometry=new THREE.SphereGeometry(.055,6,4),coconutGeometry=new THREE.SphereGeometry(.17,9,6);
  function add(root,g,m){const mesh=new THREE.Mesh(g,m);mesh.castShadow=mesh.receiveShadow=true;root.add(mesh);return mesh}
  function tube(root,points,r){const curve=new THREE.CatmullRomCurve3(points),g=new THREE.TubeGeometry(curve,Math.max(5,points.length*4),r,12,false),uv=g.attributes.uv,p=g.attributes.position;for(let i=0;i<uv.count;i++){const u=uv.getX(i),center=curve.getPointAt(u),scale=1-u*.32;p.setXYZ(i,center.x+(p.getX(i)-center.x)*scale,center.y+(p.getY(i)-center.y)*scale,center.z+(p.getZ(i)-center.z)*scale);uv.setXY(i,uv.getY(i),u)}g.computeVertexNormals();return add(root,g,bark)}
  function surface(length,width,at,material,segments=16){
@@ -38,8 +38,16 @@ export function createFoliage(renderer){
   const point=(t,x)=>[x,Math.sin(t*Math.PI)*(1.1+tilt)-t*t*(2.2-tilt)-Math.abs(x)*.5,-length*t];
   function strip(at,halfWidth){const first=positions.length/3;for(let row=0;row<=6;row++){const t=row/6,p=at(t),w=halfWidth(t);for(const side of[-1,1]){positions.push(p[0],p[1]-Math.abs(w)*.14,p[2]+side*w);uv.push((side+1)/2,t);}if(row<6){const j=first+row*2;indices.push(j,j+2,j+1,j+1,j+2,j+3);}}}
   if(broad){
-   // The Scene 1 reference uses full, drooping fronds with torn leaf margins.
-   for(let row=0;row<=32;row++){const t=row/32,w=width*.5*Math.pow(Math.sin(Math.PI*t),.7)*(row%2?.86:1);for(const side of[-1,0,1]){positions.push(...point(t,side*w));uv.push((side+1)/2,t);}if(row<32)for(let col=0;col<2;col++){const j=row*3+col;indices.push(j,j+3,j+1,j+1,j+3,j+4);}}
+   // Individual folded leaflets leave real gaps in the silhouette and shadows.
+   strip(t=>point(t,0),()=>.022);
+   for(let row=0;row<26;row++)for(const side of[-1,1]){
+    const t=.075+row*.033,span=width*.5*Math.pow(Math.sin(Math.PI*t),.65),first=positions.length/3;
+    for(let segment=0;segment<=3;segment++){
+     const u=segment/3,p=point(t+u*.065,side*span*u),half=.09*Math.pow(Math.sin(Math.PI*u),.65)+.006;
+     for(const edge of[-1,0,1]){positions.push(p[0],p[1]-.3*u*u-Math.abs(edge)*half*.55,p[2]+edge*half);uv.push((edge+1)/2,u);}
+     if(segment<3)for(let col=0;col<2;col++){const j=first+segment*3+col;indices.push(j,j+3,j+1,j+1,j+3,j+4);}
+    }
+   }
   }else{
    strip(t=>point(t,0),()=>.018);
    for(let row=0;row<24;row++)for(const side of[-1,1]){
@@ -51,12 +59,12 @@ export function createFoliage(renderer){
  }
  const palmCanvas=document.createElement('canvas');palmCanvas.width=128;palmCanvas.height=512;const palmContext=palmCanvas.getContext('2d'),gradient=palmContext.createLinearGradient(0,0,128,0);for(const [stop,color]of [[0,'#567c25'],[.35,'#7ea134'],[.48,'#a5ba48'],[.5,'#c4ce66'],[.52,'#8da72f'],[1,'#567620']])gradient.addColorStop(stop,color);palmContext.fillStyle=gradient;palmContext.fillRect(0,0,128,512);const palmMap=new THREE.CanvasTexture(palmCanvas);palmMap.colorSpace=THREE.SRGBColorSpace;
  const palmMaterial=new THREE.MeshStandardMaterial({map:palmMap,vertexColors:true,side:THREE.DoubleSide,roughness:.78});
- const broadPalmMaterial=palmMaterial.clone();broadPalmMaterial.emissive.set('#4b6419');broadPalmMaterial.emissiveIntensity=.18;
+ const broadPalmMaterial=palmMaterial.clone();broadPalmMaterial.roughness=.87;
  function palm(height=10,seed=0,broad=false){
   const root=new THREE.Group(),lean=.6+Math.sin(seed*2.1)*.7,top=new THREE.Vector3(lean,height,.35);
   tube(root,[new THREE.Vector3(),new THREE.Vector3(lean*.15,height*.35,.08),new THREE.Vector3(lean*.5,height*.7,.17),top],.29);
-  for(let i=0;i<10;i++){
-   const angle=i*2.399963+seed*.71,length=3.5+(i%5)*.25,tilt=(i<3?1.1:0)+.55*Math.sin(i*2.1+seed);
+  for(let i=0;i<(broad?13:10);i++){
+   const angle=i*2.399963+seed*.71,length=(broad?3.9:3.5)+(i%5)*.22,tilt=(i<3?1.1:0)+.55*Math.sin(i*2.1+seed)-(broad&&i>9?.8:0);
    const leaf=new THREE.Mesh(palmBlade(length,2.1+(i%3)*.2,tilt,['#fff9df','#e9efcf','#dce8c9'][i%3],broad),broad?broadPalmMaterial:palmMaterial);
    leaf.position.copy(top);leaf.rotation.y=angle;leaf.castShadow=leaf.receiveShadow=true;root.add(leaf);
   }

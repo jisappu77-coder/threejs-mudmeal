@@ -5,8 +5,8 @@ import {GTAOPass} from 'three/addons/postprocessing/GTAOPass.js';
 import {OutputPass} from 'three/addons/postprocessing/OutputPass.js';
 
 export function createFinish(renderer,scene,camera,sky){
- const target=new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType,samples:4}),composer=new EffectComposer(renderer,target);composer.setPixelRatio(1);composer.addPass(new RenderPass(scene,camera));
- const ao=new GTAOPass(scene,camera,512,512,undefined,{radius:.55,thickness:.12,samples:12,distanceFallOff:.8},{samples:8,radius:4});ao.blendIntensity=.75;
+ const target=new THREE.WebGLRenderTarget(1,1,{type:THREE.HalfFloatType,samples:4}),composer=new EffectComposer(renderer,target);composer.setPixelRatio(renderer.getPixelRatio());composer.addPass(new RenderPass(scene,camera));
+ const ao=new GTAOPass(scene,camera,512,512,undefined,{radius:1.2,thickness:.3,samples:12,distanceFallOff:.8},{samples:8,radius:4});ao.blendIntensity=1;
  // Preserve leaf silhouettes in the depth/normal buffer. Solid card rectangles would
  // otherwise cast artificial contact shading around every transparent leaf sprite.
  const white=new THREE.DataTexture(new Uint8Array([255,255,255,255]),1,1);white.needsUpdate=true;
@@ -17,5 +17,7 @@ export function createFinish(renderer,scene,camera,sky){
   if(o.isMesh&&!o.userData.normalHook){const before=o.onBeforeRender;o.onBeforeRender=function(...args){before.apply(this,args);if(args[4]!==ao.normalMaterial)return;const map=this.material.map;map?.updateMatrix();uniforms.leafMap.value=map||white;uniforms.leafCutoff.value=this.material.alphaTest||0;uniforms.leafTransform.value.copy(map?.matrix||new THREE.Matrix3());ao.normalMaterial.uniformsNeedUpdate=true;};o.userData.normalHook=true;}
  });try{renderAO(...args)}finally{hidden.forEach(o=>o.visible=true)}};
  composer.addPass(ao);composer.addPass(new OutputPass());renderer.info.autoReset=false;let width=0,height=0;
- return {resize(w,h){if(w===width&&h===height)return;width=w;height=h;composer.setSize(w,h);const scale=Math.min(1,1024/w);ao.setSize(Math.round(w*scale),Math.round(h*scale));ao.enabled=w>900;},setAOIntensity(v){ao.blendIntensity=v;},render(){renderer.info.reset();composer.render();}};
+ // Keep contact shading on small screens too; cap its buffer independently of
+ // the sharp, full-resolution color pass.
+ return {resize(w,h){if(w===width&&h===height)return;width=w;height=h;composer.setSize(w,h);const scale=Math.min(.75,768/Math.max(w,h));ao.setSize(Math.round(w*scale),Math.round(h*scale));},setAOIntensity(v){ao.blendIntensity=v;},render(){renderer.info.reset();composer.render();}};
 }
