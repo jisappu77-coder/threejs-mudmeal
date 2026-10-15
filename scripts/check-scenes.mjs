@@ -1,11 +1,10 @@
 import assert from 'node:assert/strict';
 import {readFile} from 'node:fs/promises';
 import {normalize,worldPoint,roadWidth,canRide,stepBike,calibrateWaterfront} from '../src/layout.js';
-import {renderPoint,renderHeading,waterfrontShift} from '../src/projection.js';
+import {renderPoint,renderHeading} from '../src/projection.js';
 assert.deepEqual(renderPoint([-50,0,-198],1),[-50,0,-198]);
 assert.equal(renderHeading(0,198,1,-50),0);
-assert.ok(waterfrontShift(72,198)>0);
-for(const x of[-15,0])assert.ok(Math.abs(waterfrontShift(x-.000001,144)-waterfrontShift(x+.000001,144))<.00001,'Coastal projection is continuous at both transition boundaries');
+assert.deepEqual(renderPoint([72,0,-198],1),[72,0,-198],'V2 keeps coastal roads straight');
 const manifest=JSON.parse(await readFile(new URL('../public/scenes/manifest.json',import.meta.url)));
 const scenes=await Promise.all(manifest.map(async m=>normalize(JSON.parse(await readFile(new URL('../public/'+m.spec,import.meta.url))),m.key)));
 assert.equal(scenes.length,8);assert.deepEqual(worldPoint([12,20,3],[5,100,0]),[17,3,-120]);
@@ -32,9 +31,17 @@ console.log(`Verified 8 scenes, 33 exact building footprints, ${seams} reciproca
 const calibrated=await Promise.all(manifest.map(async m=>normalize(calibrateWaterfront(JSON.parse(await readFile(new URL('../public/'+m.spec,import.meta.url)))),m.key)));
 assert.equal(canRide(83,50,calibrated.filter(s=>s.phase===1),[]),false);assert.equal(canRide(119,50,calibrated.filter(s=>s.phase===1),[]),false);assert.equal(canRide(72,100.1,calibrated.filter(s=>s.phase===1),[]),true);
 for(const s of calibrated)for(const c of s.connections){if(!c.matches||!/^SCENE_\d+\./.test(c.matches))continue;const [id,key]=c.matches.split('.'),other=calibrated.find(o=>o.phase===s.phase&&o.scene.id===id),mate=other.connections.find(o=>o.id===key);assert.deepEqual(worldPoint(c.position,s.origin),worldPoint(mate.position,other.origin));assert.equal(c.width_m,mate.width_m);}
-console.log('Calibrated waterfront retains road/path seams and blocks the full sea region.');
+console.log('Original V2 waterfront widths and seams are retained; the sea remains blocked.');
 
 for(const s of calibrated)for(const bay of s.bays){const [a,b,c,d]=bay.rect,x=(a+c)/2,y=(b+d)/2;assert.ok(a<c&&b<d,`${s.key}:${bay.id} has positive area`);assert.ok(s.buildings.every(building=>x<building.rect[0]||x>building.rect[2]||y<building.rect[1]||y>building.rect[3]),`${s.key}:${bay.id} is outside building collision footprints`);}
 console.log('All calibrated pickup bay centers remain outside buildings.');
 
 const urban=calibrated.filter(s=>s.phase===2);assert.equal(canRide(60,230,urban,[]),true);assert.equal(canRide(40,230,urban,[]),false);
+
+for(const s of scenes.filter(s=>s.phase===1)){assert.deepEqual(calibrateWaterfront(s),s,'V2 source geometry is unchanged');assert.equal(s.reference_views.find(v=>v.file==='02_PLAYER_GAMEPLAY.png').camera_position_m[2],28);}
+assert.equal(p1[0].roads.find(r=>r.id==='R_MAIN').width_m,8);
+assert.deepEqual(p1[0].buildings.find(b=>b.id==='B_CAFE').rect,[50,12,64,30]);
+
+assert.deepEqual(p1[1].seawall.segments,[[[88,0],[88,16]],[[88,24],[88,61]],[[88,69],[88,90]]]);
+assert.equal(canRide(84,120,p1,[]),false,'Net promenade stays pedestrian-only');
+assert.equal(canRide(78,46,p1,[]),true,'Mainland pier delivery bay stays accessible');

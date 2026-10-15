@@ -717,132 +717,132 @@
   ],
   "reference_views": [
     {
-      "file": "01_MASTER_SPATIAL.png",
+      "file": "01_MASTER_SPATIAL.jpg",
       "camera_position_m": [
-        -35,
-        -35,
-        95
+        -11.9,
+        -13.26,
+        85
       ],
       "target_position_m": [
         50,
         45,
-        0
+        1
       ],
-      "purpose": "Elevated southwest master, full block. Horizontal main road and sole north T-arm, five footprints/roof types, chapel compound, shortcut/bays and all three road exits. No extra south branch or giant city.",
+      "purpose": "Elevated oblique whole-block spatial view. Preserve original cardinal view direction and scene_spec geometry; apply 69706.png miniature-city framing. Original view intent retained in CAMERA_HISTORY.json.",
       "projection": "perspective",
-      "camera_coordinates_status": "intended reconstruction coordinates, not recovered calibration"
+      "camera_coordinates_status": "Revised elevated oblique art-direction starting point; not recovered calibration"
     },
     {
-      "file": "02_PLAYER_GAMEPLAY.png",
+      "file": "02_PLAYER_GAMEPLAY.jpg",
       "camera_position_m": [
-        2,
-        35,
-        2.3
+        37.0,
+        35.0,
+        28
       ],
       "target_position_m": [
         65,
         35,
-        1.5
+        1
       ],
-      "purpose": "GROUND-level third-person behind rider, WEST end looking EAST along main road. Pink cafe RIGHT/south foreground, blue bakery RIGHT farther east; ochre home LEFT/north, yellow tea shop LEFT beyond north T-arm. Chapel far northeast background, not blocking road. Horizon midframe, no aerial roofs. Revised: low chase camera, enlarged rider, active traffic and sidewalk actors.",
+      "purpose": "Elevated oblique player gameplay view. Preserve original cardinal view direction and scene_spec geometry; apply 69706.png miniature-city framing. Original view intent retained in CAMERA_HISTORY.json.",
       "projection": "perspective",
-      "camera_coordinates_status": "intended approximate camera; generated elevation can differ"
+      "camera_coordinates_status": "Revised elevated oblique art-direction starting point; not recovered calibration"
     },
     {
-      "file": "03_REVERSE_GAMEPLAY.png",
+      "file": "03_REVERSE_GAMEPLAY.jpg",
       "camera_position_m": [
-        94,
-        35,
-        2.1
+        56.0,
+        35.0,
+        28
       ],
       "target_position_m": [
         28,
         35,
-        1.5
+        1
       ],
-      "purpose": "GROUND-level opposite EAST end looking WEST. Blue bakery LEFT/south foreground, pink cafe LEFT farther west; yellow tea shop RIGHT/north foreground; north branch joins RIGHT at x50. Home farther north/right. Actual reverse viewpoint, not mirror, no aerial.",
+      "purpose": "Elevated oblique reverse gameplay view. Preserve original cardinal view direction and scene_spec geometry; apply 69706.png miniature-city framing. Original view intent retained in CAMERA_HISTORY.json.",
       "projection": "perspective",
-      "camera_coordinates_status": "intended approximate camera; generated elevation can differ"
+      "camera_coordinates_status": "Revised elevated oblique art-direction starting point; not recovered calibration"
     },
     {
-      "file": "04_SIDE_CROSS_STREET.png",
+      "file": "04_SIDE_CROSS_STREET.jpg",
       "camera_position_m": [
-        50,
-        76,
-        1.8
+        50.0,
+        50.0,
+        28
       ],
       "target_position_m": [
         50,
         22,
-        1.5
+        1
       ],
-      "purpose": "GROUND-level north side street looking SOUTH toward T-junction. Chapel compound LEFT/east, ochre home RIGHT/west; across main road pink cafe to RIGHT/west and blue bakery LEFT/east. Main road crosses ahead and no drivable southern continuation. Reveal chapel side access and home gate. No whole-block aerial.",
+      "purpose": "Elevated oblique side street view. Preserve original cardinal view direction and scene_spec geometry; apply 69706.png miniature-city framing. Original view intent retained in CAMERA_HISTORY.json.",
       "projection": "perspective",
-      "camera_coordinates_status": "intended reconstruction coordinates, not recovered calibration"
+      "camera_coordinates_status": "Revised elevated oblique art-direction starting point; not recovered calibration"
     },
     {
-      "file": "05_ARCHITECTURE.png",
+      "file": "05_ARCHITECTURE.jpg",
       "camera_position_m": [
-        23,
-        43,
-        1.7
+        22.44,
+        35.94,
+        14
       ],
       "target_position_m": [
         21,
         18,
-        4
+        1
       ],
-      "purpose": "Close GROUND-level pink cafe NORTH facade from opposite side of main road looking SOUTH. TWO floors, red hipped roof silhouette, narrow balcony, beige awning, pickup door and stopping bay. Same footprint/doors/roof, asphalt foreground. No view down onto roof; do not relocate cafe.",
+      "purpose": "Elevated oblique architecture detail. Preserve original cardinal view direction and scene_spec geometry; apply 69706.png miniature-city framing. Original view intent retained in CAMERA_HISTORY.json.",
       "projection": "perspective",
-      "camera_coordinates_status": "intended reconstruction coordinates, not recovered calibration"
+      "camera_coordinates_status": "Revised elevated oblique art-direction starting point; not recovered calibration"
     },
     {
-      "file": "06_ENVIRONMENT_PROPS.png",
+      "file": "06_ENVIRONMENT_PROPS.jpg",
       "camera_position_m": [
-        38,
-        18,
-        1.7
+        38.0,
+        34.0,
+        8
       ],
       "target_position_m": [
         38,
         45,
-        1.5
+        1
       ],
-      "purpose": "GROUND-level shortcut detail looking NORTH along the3m alley EAST of pink cafe. Cafe east service wall on LEFT/west, lane drains, modest bin/crates, overhead service wire; main road crosses ahead, home-side access beyond. Show motorcycle clearance and drain crossing. No isolated prop board, aerial or new road.",
+      "purpose": "Elevated oblique environment detail. Preserve original cardinal view direction and scene_spec geometry; apply 69706.png miniature-city framing. Original view intent retained in CAMERA_HISTORY.json.",
       "projection": "perspective",
-      "camera_coordinates_status": "intended reconstruction coordinates, not recovered calibration"
+      "camera_coordinates_status": "Revised elevated oblique art-direction starting point; not recovered calibration"
     },
     {
-      "file": "07_LANDMARK.png",
+      "file": "07_LANDMARK.jpg",
       "camera_position_m": [
-        70,
-        57,
-        1.8
+        70.21,
+        59.09,
+        14
       ],
       "target_position_m": [
         72,
         77,
-        4
+        1
       ],
-      "purpose": "GROUND-level chapel compound view at its SOUTH gate looking NORTH. Same small white chapel, red north-south gable roof, small south bell tower, modest wall/gate, path and shrubs. No monumental cathedral, redesign or road into church. North side street stays WEST/left outside compound.",
+      "purpose": "Elevated oblique landmark view. Preserve original cardinal view direction and scene_spec geometry; apply 69706.png miniature-city framing. Original view intent retained in CAMERA_HISTORY.json.",
       "projection": "perspective",
-      "camera_coordinates_status": "intended reconstruction coordinates, not recovered calibration"
+      "camera_coordinates_status": "Revised elevated oblique art-direction starting point; not recovered calibration"
     },
     {
-      "file": "08_CONNECTION.png",
+      "file": "08_CONNECTION.jpg",
       "camera_position_m": [
-        88,
-        35,
-        2.5
+        92.0,
+        35.0,
+        28
       ],
       "target_position_m": [
         120,
         35,
-        1.5
+        1
       ],
-      "purpose": "GROUND-level EAST seam looking EAST toward adjacent Scene2 west service street. Heritage cafe/bakery/chapel are BEHIND camera; do not show whole block. Continuous6m asphalt to Scene2 west side approach; further ahead net workshop LEFT/north, ochre home RIGHT/south, mint shop LEFT at far T-mouth, rust-red seafood RIGHT, sea beyond. No near extra junction, dead end or barrier.",
+      "purpose": "Elevated oblique connection view. Preserve original cardinal view direction and scene_spec geometry; apply 69706.png miniature-city framing. Original view intent retained in CAMERA_HISTORY.json.",
       "projection": "perspective",
-      "camera_coordinates_status": "intended reconstruction coordinates, not recovered calibration"
+      "camera_coordinates_status": "Revised elevated oblique art-direction starting point; not recovered calibration"
     }
   ],
   "style": {
@@ -875,7 +875,7 @@
   },
   "visual_style": {
     "name": "Approved colorful modeled 3D game style",
-    "approved_reference": "SCENE_01_Waterfront_Delivery_Block/02_PLAYER_GAMEPLAY.png",
+    "approved_reference": "SCENE_01_Waterfront_Delivery_Block/02_PLAYER_GAMEPLAY.jpg",
     "treatment": [
       "smooth modeled characters and vehicles",
       "bold bright tropical foliage",

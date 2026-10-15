@@ -1,50 +1,13 @@
-# Art Direction
+# Mud Meals art direction
 
-## Visual target
-The supplied Mud Meals reference image is the primary visual acceptance target.
+Phase 1 follows the 15 October 2026 V2 archive recorded in [phase1-source.json](phase1-source.json). Its four Fort Kochi scenes and 30 reference images supersede the earlier close chase-camera direction. The archive's `ART_DIRECTION.md`, `BUILD_GUIDE.md` and per-scene quality reviews are retained under `/workspace/references/phase1-v2/`.
 
-Use only [the images shared by the user](kochi-image-references.md) for layout, building construction, frontage, props, palette and presentation. Do not consult external maps, satellite imagery, Google Images, tourism photos or generated concept boards. Author original playable arrangements from the supplied compositions.
+Use an elevated oblique miniature-city camera, moderate perspective, visible roofs, compact readable actors, warm cream/ochre/teal/pink plaster, terracotta barrel tiles, grouped tropical planting and turquoise water. Keep the ground filling the gameplay frame. Fit cameras to each street direction; the heritage street needs a side view of its east–west route and north junction. The existing HUD is separate from world art.
 
-The goal is a premium stylized 3D scene with:
-- dense Kerala-inspired roadside composition
-- high-detail authored GLB assets
-- believable but vibrant PBR materials
-- red tiled roofs, painted plaster, tropical vegetation, turquoise backwater
-- strong contact/ambient shading
-- warm sunlight with cool environmental fill
-- cinematic atmospheric depth
-- polished mobile-game readability
+Keep the original metre-scale footprints, road widths, entrances, delivery bays and reciprocal connections. Do not move buildings or compress the waterfront to imitate a conflicting generated illustration. Decorative planting and furniture must leave roads, pickup approaches, gates and the chapel footpath clear. The net promenade is pedestrian-only; the pier delivery stops on the mainland.
 
-## Graphics-first rule
-Graphics is the first project gate. Gameplay/system expansion is paused until the hero scene is visually close to the supplied reference.
+The four scenes share modeled storefront glazing, striped awnings, shutter windows, planters, rounded vehicles and people. Scene details include the delivery pier, paired cantilever fishing nets, chapel/bell tower, workshop loading yard, fruit stalls, clothing display and residential balconies. Geometry stays fixed across camera presets.
 
-## Rendering
-- Three.js Neutral tone mapping in gameplay scenes to preserve the reference palette
-- PMREM image-based/environment lighting
-- desktop SSAO/contact shading
-- SMAA post-process antialiasing
-- high-quality key shadows
-- mobile-safe direct rendering path
-- restrained fog / atmospheric perspective
-- physically plausible material response
+The renderer uses ACES tone mapping, a warm directional sun, environment/hemisphere fill, filtered shadows and alpha-aware GTAO on larger viewports. Static scenery is batched by material and spatial cell, while vehicles and people retain their actor transforms. Source images are displayed only in the labelled comparison overlay and gallery. Actual renders come from Chromium/WebGL captures.
 
-## Asset quality
-Prototype procedural geometry and tiny placeholder GLBs are not considered final art.
-
-Production assets should include:
-- meaningful geometry detail
-- authored base-color/albedo
-- normal maps
-- roughness maps
-- AO where useful
-- sensible pivots/scales
-- LOD-ready topology
-- compressed textures for web/mobile delivery
-
-Current committed GLBs remain temporary visual stand-ins until replaced by production-quality assets.
-
-## Implemented Fort Kochi slice
-
-The approved waterfront direction is implemented in an original image-inspired game world using original procedural game assets: a tiled Mud Meals restaurant, occupied shore stalls, authored shoreline, fishing nets, jetty/boats and a fictional waterfront chapel. The raised follow view and portrait HUD are captured from the running game by `npm run check:maps:browser`. These captures establish current runtime fidelity; the user-provided images remain the visual target.
-
-The current renderer uses official RenderPass/SSAOPass/OutputPass with a multisampled render target, sunlight shadows and environment lighting. SMAA and production scanned GLB replacements above remain aspirations. Rigid vehicle batching preserves shape and materials, while a 30/60 FPS budget and paused/hidden rendering controls address device load. See [measured performance](rendering-performance.md).
+Graphics remains the project gate. Functional checks establish source geometry, connected access, camera rendering and controls; they do not certify pixel identity or physical-phone performance. The independently generated V2 views are not calibrated images of a shared original mesh. Current authored materials and models remain visibly different from those illustrations.

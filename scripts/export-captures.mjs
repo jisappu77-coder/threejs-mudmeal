@@ -3,7 +3,8 @@ import {readFile,writeFile,stat} from 'node:fs/promises';
 import {chromium} from 'playwright';
 
 const audit=JSON.parse(await readFile('artifacts/scenes/audit.json','utf8'));
-assert.equal(audit.reports.length,16);
+assert.equal(audit.reports.length,audit.phase===1?8:16);
+if(audit.phase===1)assert.ok(audit.reports.every(r=>r.scene.startsWith('p1-')));
 assert.deepEqual(audit.errors,[]);
 audit.checkedAt=(await stat('artifacts/scenes/audit.json')).mtime.toISOString();
 audit.bundle=(await readFile('dist/index.html','utf8')).match(/assets\/main-[^" ]+\.js/)?.[0];
@@ -19,6 +20,12 @@ try{
   },png.toString('base64'));
   await writeFile(`public/scenes/${report.scene}/${report.view.replace('.png','')}-render.webp`,Buffer.from(encoded,'base64'));
  }
+ const exported=audit.reports.length;
+ for(const report of audit.reports)report.checkedAt=audit.checkedAt;
+ if(audit.phase===1){
+  const previous=JSON.parse(await readFile('public/phase1-comparison/audit.json','utf8'));
+  audit.reports.push(...previous.reports.filter(r=>!r.scene.startsWith('p1-')));
+ }
  await writeFile('public/phase1-comparison/audit.json',JSON.stringify(audit,null,2));
- console.log('Exported 16 actual browser captures to the reference gallery.');
+ console.log(`Exported ${exported} actual browser captures to the reference gallery.`);
 }finally{await browser.close()}

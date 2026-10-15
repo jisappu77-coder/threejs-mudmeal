@@ -33,25 +33,31 @@ export function createFoliage(renderer){
  function finish(root){
   root.updateMatrixWorld(true);const groups=new Map();root.traverse(o=>{if(!o.isMesh)return;const g=o.geometry.clone().applyMatrix4(o.matrixWorld);if(!g.index)g.setIndex(Array.from({length:g.attributes.position.count},(_,i)=>i));const gs=groups.get(o.material)||[];gs.push(g);groups.set(o.material,gs)});root.clear();for(const [m,gs]of groups){add(root,mergeGeometries(gs),m);gs.forEach(g=>g.dispose())}return root;
  }
- function palmBlade(length,width,tilt,tint){
+ function palmBlade(length,width,tilt,tint,broad=false){
   const positions=[],indices=[],uv=[];
   const point=(t,x)=>[x,Math.sin(t*Math.PI)*(1.1+tilt)-t*t*(2.2-tilt)-Math.abs(x)*.5,-length*t];
   function strip(at,halfWidth){const first=positions.length/3;for(let row=0;row<=6;row++){const t=row/6,p=at(t),w=halfWidth(t);for(const side of[-1,1]){positions.push(p[0],p[1]-Math.abs(w)*.14,p[2]+side*w);uv.push((side+1)/2,t);}if(row<6){const j=first+row*2;indices.push(j,j+2,j+1,j+1,j+2,j+3);}}}
-  strip(t=>point(t,0),()=>.018);
-  for(let row=0;row<24;row++)for(const side of[-1,1]){
-   const t=.10+row*.035,span=width*.5*Math.pow(Math.sin(Math.PI*t),.65);
-   strip(u=>point(t+u*.06,side*span*u),u=>.14*Math.pow(Math.sin(Math.PI*u),.65)+.001);
+  if(broad){
+   // The Scene 1 reference uses full, drooping fronds with torn leaf margins.
+   for(let row=0;row<=32;row++){const t=row/32,w=width*.5*Math.pow(Math.sin(Math.PI*t),.7)*(row%2?.86:1);for(const side of[-1,0,1]){positions.push(...point(t,side*w));uv.push((side+1)/2,t);}if(row<32)for(let col=0;col<2;col++){const j=row*3+col;indices.push(j,j+3,j+1,j+1,j+3,j+4);}}
+  }else{
+   strip(t=>point(t,0),()=>.018);
+   for(let row=0;row<24;row++)for(const side of[-1,1]){
+    const t=.10+row*.035,span=width*.5*Math.pow(Math.sin(Math.PI*t),.65);
+    strip(u=>point(t+u*.06,side*span*u),u=>.14*Math.pow(Math.sin(Math.PI*u),.65)+.001);
+   }
   }
   const g=new THREE.BufferGeometry();g.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));g.setAttribute('uv',new THREE.Float32BufferAttribute(uv,2));const color=new THREE.Color(tint),colors=[];for(let i=0;i<positions.length;i+=3)colors.push(color.r,color.g,color.b);g.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));g.setIndex(indices);g.computeVertexNormals();return g;
  }
  const palmCanvas=document.createElement('canvas');palmCanvas.width=128;palmCanvas.height=512;const palmContext=palmCanvas.getContext('2d'),gradient=palmContext.createLinearGradient(0,0,128,0);for(const [stop,color]of [[0,'#567c25'],[.35,'#7ea134'],[.48,'#a5ba48'],[.5,'#c4ce66'],[.52,'#8da72f'],[1,'#567620']])gradient.addColorStop(stop,color);palmContext.fillStyle=gradient;palmContext.fillRect(0,0,128,512);const palmMap=new THREE.CanvasTexture(palmCanvas);palmMap.colorSpace=THREE.SRGBColorSpace;
  const palmMaterial=new THREE.MeshStandardMaterial({map:palmMap,vertexColors:true,side:THREE.DoubleSide,roughness:.78});
- function palm(height=10,seed=0){
+ const broadPalmMaterial=palmMaterial.clone();broadPalmMaterial.emissive.set('#4b6419');broadPalmMaterial.emissiveIntensity=.18;
+ function palm(height=10,seed=0,broad=false){
   const root=new THREE.Group(),lean=.6+Math.sin(seed*2.1)*.7,top=new THREE.Vector3(lean,height,.35);
   tube(root,[new THREE.Vector3(),new THREE.Vector3(lean*.15,height*.35,.08),new THREE.Vector3(lean*.5,height*.7,.17),top],.29);
   for(let i=0;i<10;i++){
    const angle=i*2.399963+seed*.71,length=3.5+(i%5)*.25,tilt=(i<3?1.1:0)+.55*Math.sin(i*2.1+seed);
-   const leaf=new THREE.Mesh(palmBlade(length,2.1+(i%3)*.2,tilt,['#fff9df','#e9efcf','#dce8c9'][i%3]),palmMaterial);
+   const leaf=new THREE.Mesh(palmBlade(length,2.1+(i%3)*.2,tilt,['#fff9df','#e9efcf','#dce8c9'][i%3],broad),broad?broadPalmMaterial:palmMaterial);
    leaf.position.copy(top);leaf.rotation.y=angle;leaf.castShadow=leaf.receiveShadow=true;root.add(leaf);
   }
   for(let i=0;i<5;i++)add(root,coconutGeometry,bark).position.set(top.x+Math.cos(i*2.4)*.25,height-.15,top.z+Math.sin(i*2.4)*.25);
@@ -80,5 +86,5 @@ export function createFoliage(renderer){
   }return finish(root);
  }
  const cache=new Map();const cached=(key,make)=>{if(!cache.has(key))cache.set(key,make());return cache.get(key).clone(true)};
- return {ready,palm:(h,seed=0)=>cached(`palm:${h}:${seed%3}`,()=>palm(h,seed%3)),plant:(s,seed=0)=>cached(`plant:${s}:${seed%3}`,()=>plant(s,seed%3)),shrub:(s,f=false,seed=0)=>cached(`shrub:${s}:${f}:${seed%3}`,()=>shrub(s,f,seed%3)),tree:(h,r,seed=0)=>cached(`tree:${h}:${r}:${seed%3}`,()=>tree(h,r,seed%3))};
+ return {ready,palm:(h,seed=0,broad=false)=>cached(`palm:${h}:${seed%3}:${broad}`,()=>palm(h,seed%3,broad)),plant:(s,seed=0)=>cached(`plant:${s}:${seed%3}`,()=>plant(s,seed%3)),shrub:(s,f=false,seed=0)=>cached(`shrub:${s}:${f}:${seed%3}`,()=>shrub(s,f,seed%3)),tree:(h,r,seed=0)=>cached(`tree:${h}:${r}:${seed%3}`,()=>tree(h,r,seed%3))};
 }

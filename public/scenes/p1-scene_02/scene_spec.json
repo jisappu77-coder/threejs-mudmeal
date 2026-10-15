@@ -1059,132 +1059,132 @@
   },
   "reference_views": [
     {
-      "file": "01_MASTER_SPATIAL.png",
+      "file": "01_MASTER_SPATIAL.jpg",
       "camera_position_m": [
-        -25,
-        -38,
-        100
+        -0.82,
+        -14.38,
+        85
       ],
       "target_position_m": [
         60,
         45,
-        0
+        1
       ],
       "projection": "perspective",
-      "purpose": "Whole physical scene, road network, footprints, both net positions and seam",
-      "camera_coordinates_status": "intended positions, not calibrated image metadata"
+      "purpose": "Elevated oblique whole-block spatial view. Preserve original cardinal view direction and scene_spec geometry; apply 69706.png miniature-city framing. Original view intent retained in CAMERA_HISTORY.json.",
+      "camera_coordinates_status": "Revised elevated oblique art-direction starting point; not recovered calibration"
     },
     {
-      "file": "02_PLAYER_GAMEPLAY.png",
+      "file": "02_PLAYER_GAMEPLAY.jpg",
       "camera_position_m": [
-        72,
-        5,
-        2.3
+        72.0,
+        17.0,
+        28
       ],
       "target_position_m": [
         72,
         45,
-        1.5
+        1
       ],
       "projection": "perspective",
-      "purpose": "Northbound player route, seafood pickup, first net and junction approach Revised: low chase camera, enlarged rider, active traffic and sidewalk actors.",
-      "camera_coordinates_status": "intended approximate camera; generated elevation can differ"
+      "purpose": "Elevated oblique player gameplay view. Preserve original cardinal view direction and scene_spec geometry; apply 69706.png miniature-city framing. Original view intent retained in CAMERA_HISTORY.json.",
+      "camera_coordinates_status": "Revised elevated oblique art-direction starting point; not recovered calibration"
     },
     {
-      "file": "03_REVERSE_GAMEPLAY.png",
+      "file": "03_REVERSE_GAMEPLAY.jpg",
       "camera_position_m": [
-        72,
-        82,
-        2.1
+        72.0,
+        53.0,
+        28
       ],
       "target_position_m": [
         72,
         25,
-        1.5
+        1
       ],
       "projection": "perspective",
-      "purpose": "Southbound route, reverse fronts and opposite junction visibility",
-      "camera_coordinates_status": "intended approximate camera; generated elevation can differ"
+      "purpose": "Elevated oblique reverse gameplay view. Preserve original cardinal view direction and scene_spec geometry; apply 69706.png miniature-city framing. Original view intent retained in CAMERA_HISTORY.json.",
+      "camera_coordinates_status": "Revised elevated oblique art-direction starting point; not recovered calibration"
     },
     {
-      "file": "04_SIDE_CROSS_STREET.png",
+      "file": "04_SIDE_CROSS_STREET.jpg",
       "camera_position_m": [
-        28,
-        35,
-        1.8
+        64.0,
+        35.0,
+        28
       ],
       "target_position_m": [
         92,
         35,
-        1.5
+        1
       ],
       "projection": "perspective",
-      "purpose": "Workshop entrance, residential gate, shortcut and west-to-main junction",
-      "camera_coordinates_status": "intended positions, not calibrated image metadata"
+      "purpose": "Elevated oblique side street view. Preserve original cardinal view direction and scene_spec geometry; apply 69706.png miniature-city framing. Original view intent retained in CAMERA_HISTORY.json.",
+      "camera_coordinates_status": "Revised elevated oblique art-direction starting point; not recovered calibration"
     },
     {
-      "file": "05_ARCHITECTURE.png",
+      "file": "05_ARCHITECTURE.jpg",
       "camera_position_m": [
-        68,
-        41,
-        1.7
+        66.78,
+        42.89,
+        14
       ],
       "target_position_m": [
         57,
         58,
-        4
+        1
       ],
       "projection": "perspective",
-      "purpose": "Ground-level oblique south/east facade view from junction: balcony, flat parapet, shop entrances and pickup bay",
-      "camera_coordinates_status": "intended positions, not calibrated image metadata"
+      "purpose": "Elevated oblique architecture detail. Preserve original cardinal view direction and scene_spec geometry; apply 69706.png miniature-city framing. Original view intent retained in CAMERA_HISTORY.json.",
+      "camera_coordinates_status": "Revised elevated oblique art-direction starting point; not recovered calibration"
     },
     {
-      "file": "06_ENVIRONMENT_PROPS.png",
+      "file": "06_ENVIRONMENT_PROPS.jpg",
       "camera_position_m": [
-        33,
-        42,
-        1.7
+        33.0,
+        47.0,
+        8
       ],
       "target_position_m": [
         33,
         58,
-        1.5
+        1
       ],
       "projection": "perspective",
-      "purpose": "Workshop loading yard, nets, rope coils, crates and drainage",
-      "camera_coordinates_status": "intended positions, not calibrated image metadata"
+      "purpose": "Elevated oblique environment detail. Preserve original cardinal view direction and scene_spec geometry; apply 69706.png miniature-city framing. Original view intent retained in CAMERA_HISTORY.json.",
+      "camera_coordinates_status": "Revised elevated oblique art-direction starting point; not recovered calibration"
     },
     {
-      "file": "07_LANDMARK.png",
+      "file": "07_LANDMARK.jpg",
       "camera_position_m": [
-        81,
-        11,
-        1.8
+        83.73,
+        12.29,
+        14
       ],
       "target_position_m": [
         100,
         20,
-        5
+        1
       ],
       "projection": "perspective",
-      "purpose": "Chinese net support, boom, mesh and counterweight assembly",
-      "camera_coordinates_status": "intended positions, not calibrated image metadata"
+      "purpose": "Elevated oblique landmark view. Preserve original cardinal view direction and scene_spec geometry; apply 69706.png miniature-city framing. Original view intent retained in CAMERA_HISTORY.json.",
+      "camera_coordinates_status": "Revised elevated oblique art-direction starting point; not recovered calibration"
     },
     {
-      "file": "08_CONNECTION.png",
+      "file": "08_CONNECTION.jpg",
       "camera_position_m": [
-        72,
-        6,
-        2.5
+        72.0,
+        8.0,
+        28
       ],
       "target_position_m": [
         72,
         -20,
-        1.5
+        1
       ],
       "projection": "perspective",
-      "purpose": "South seam continuing directly into Scene 1",
-      "camera_coordinates_status": "intended positions, not calibrated image metadata"
+      "purpose": "Elevated oblique connection view. Preserve original cardinal view direction and scene_spec geometry; apply 69706.png miniature-city framing. Original view intent retained in CAMERA_HISTORY.json.",
+      "camera_coordinates_status": "Revised elevated oblique art-direction starting point; not recovered calibration"
     }
   ],
   "style": {
@@ -1225,7 +1225,7 @@
   },
   "visual_style": {
     "name": "Approved colorful modeled 3D game style",
-    "approved_reference": "SCENE_01_Waterfront_Delivery_Block/02_PLAYER_GAMEPLAY.png",
+    "approved_reference": "SCENE_01_Waterfront_Delivery_Block/02_PLAYER_GAMEPLAY.jpg",
     "treatment": [
       "smooth modeled characters and vehicles",
       "bold bright tropical foliage",

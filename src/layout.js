@@ -5,15 +5,24 @@ export function bounds(points) {
   return [Math.min(...points.map(p => p[0])), Math.min(...points.map(p => p[1])), Math.max(...points.map(p => p[0])), Math.max(...points.map(p => p[1]))];
 }
 export function normalize(spec, key) {
+  let seawall=spec.seawall;
+  if(seawall&&!seawall.segments){
+    const segments=[];let start=seawall.y[0];
+    for(const [a,b]of seawall.platform_access_intervals_y||[]){segments.push([[seawall.x,start],[seawall.x,a]]);start=b;}
+    segments.push([[seawall.x,start],[seawall.x,seawall.y[1]]]);seawall={...seawall,segments};
+  }
   const buildings = spec.buildings.map(b => {
     const rect = bounds(b.footprint_xy || b.footprint);
     const entrance = b.entrances?.[0]?.position || b.entrance;
     const direction = b.front_direction || (entrance[0] === rect[0] ? 'west' : entrance[0] === rect[2] ? 'east' : entrance[1] === rect[1] ? 'south' : 'north');
     const roof = typeof b.roof === 'string' ? {shape: /hip/.test(b.roof) ? 'hip' : /gable/.test(b.roof) ? 'gable' : 'flat', material: b.roof, ridge_axis: /east-west/.test(b.roof) ? 'east-west' : 'north-south'} : b.roof;
     const height = b.eaves_z_m || b.wall_height_m;
-    return {...b, rect, entrance, direction, roof, height, top: roof.ridge_z_m || b.roof_top_m || b.roof_top_height_m || height + (roof.shape === 'flat' ? .45 : 2)};
+    const loading_door_size_m=b.loading_door_size_m||(spec.phase===1&&['B_SHED','B_WORKSHOP'].includes(b.id)?{width:b.entrances[0].width_m,height:2.6}:undefined);
+    const awning=b.awning||(spec.phase===1&&b.id==='B_TEA'?{color:'beige',edge:'south',projection_m:1.2}:undefined);
+    return {...b, rect, entrance, direction, roof, height, awning, loading_door_size_m, top: roof.ridge_z_m || b.roof_top_m || b.roof_top_height_m || height + (roof.shape === 'flat' ? .45 : 2)};
   });
-  return {...spec, key, origin: spec.scene.zone_origin_m, buildings,
+  // Keep existing camera URLs stable across the PNG and JPEG reference archives.
+  return {...spec, key, origin: spec.scene.zone_origin_m, buildings, seawall, reference_views:spec.reference_views.map(v=>({...v,file:v.file.replace(/\.jpe?g$/i,'.png')})),
     bays: spec.delivery_bays.map(b => ({...b, rect: bounds(b.bounds_xy || b.footprint_xy || b.rect)}))};
 }
 export function roadWidth(road, y) {
@@ -40,6 +49,7 @@ export function canRide(x, y, layouts, obstacles, radius = .48) {
   for (const s of layouts) {
     const lx = x - s.origin[0], ly = y - s.origin[1], size = s.scene.playable_size_m;
     if (!inside(lx, ly, [0, 0, size.east_west, size.north_south])) continue;
+    if(s.phase===1&&s.paths?.some(p=>p.vehicle_access===false&&inside(lx,ly,p.footprint_xy?bounds(p.footprint_xy):[p.x[0],p.y[0],p.x[1],p.y[1]],radius)))return false;
     const water = s.terrain.water_region_xy ? bounds(s.terrain.water_region_xy) : s.terrain.canal_rect;
     if (water && inside(lx, ly, water, radius)) {
       const bridge = s.landmarks?.find(l => l.carriageway_rect);
@@ -65,8 +75,7 @@ export function stepBike(state, input, dt, valid) {
   return state;
 }
 
-// The generated player image has a compact waterfront, unlike the approximate JSON camera/widths.
-// Keep the source archive untouched; apply one fixed visual calibration to both waterfront blocks.
+// Phase 1 v2 keeps source geometry; retain the existing Phase 2 calibration.
 export function calibrateWaterfront(spec) {
   if(spec.phase===2){const s=structuredClone(spec);
    if(s.scene.id!=='SCENE_03'){s.roads.find(r=>r.id==='R_MAIN').width_m=4.5;for(const c of s.connections)if(/NORTH|SOUTH/.test(c.id))c.width_m=4.5;}
@@ -98,43 +107,5 @@ export function calibrateWaterfront(spec) {
    for(const p of s.props)if(/player|rider/.test(p.type.toLowerCase())&&p.heading==='north'&&s.scene.id!=='SCENE_04')p.position[0]=59.5;
    return s;
   }
-  if(spec.phase===1&&!spec.terrain.water_region_xy){const s=structuredClone(spec);
-   function move(id,dx,dy){const b=s.buildings.find(b=>b.id===id);b.footprint_xy=b.footprint_xy.map(([x,y])=>[x+dx,y+dy]);if(b.compound){for(const key of['boundary_xy','footprint_xy'])if(b.compound[key])b.compound[key]=b.compound[key].map(([x,y])=>[x+dx,y+dy]);if(b.compound.gate_position)b.compound.gate_position=[b.compound.gate_position[0]+dx,b.compound.gate_position[1]+dy,...b.compound.gate_position.slice(2)];}for(const e of b.entrances)e.position=[e.position[0]+dx,e.position[1]+dy,...e.position.slice(2)];for(const bay of s.delivery_bays)if(bay.target_building_id===id||b.entrances.some(e=>e.id===bay.target)){const key=bay.bounds_xy?'bounds_xy':'footprint_xy';bay[key]=bay[key].map(([x,y])=>[x+dx,y+dy]);}}
-   if(s.scene.id==='SCENE_03'){const home=s.buildings.find(b=>b.id==='B_HOME');home.eaves_z_m=4.2;home.roof.ridge_z_m=6.5;home.footprint_xy=[[12,44],[22,44],[22,54],[12,54]];home.entrances[0].position=[22,49,0];home.compound.footprint_xy=[[4,42],[24,42],[24,56],[4,56]];home.compound.gate_position=[12,42,0];home.compound.gate_width_m=3;
-    const chapel=s.buildings.find(b=>b.id==='B_CHAPEL');chapel.footprint_xy=[[27,44],[35,44],[35,56],[27,56]];chapel.entrances[0].position=[31,44,0];chapel.compound.footprint_xy=[[25,42],[36,42],[36,58],[25,58]];chapel.compound.gate_position=[31,42,0];chapel.bell_tower.position=[33,44,0];chapel.bell_tower.height_m=9.5;s.landmarks.find(l=>l.id==='L_CHAPEL').footpath_centerline=[[38,42,0],[31,42,0],[31,44,0]];move('B_CAFE',0,2);move('B_BAKERY',0,2);move('B_HOME',0,0);move('B_TEA',-22,-3);const tea=s.buildings.find(b=>b.id==='B_TEA');tea.footprint_xy[1][0]=tea.footprint_xy[2][0]=47;tea.entrances[0].position[0]=44.5;tea.roof.shape='gable';tea.roof.ridge_axis='east-west';tea.roof.ridge_z_m=5.4;const auto=s.props.find(p=>p.id==='V_AUTO');auto.id='REFERENCE_AUTO';auto.position=[44,36.5,0];auto.heading='west';s.props.push({id:'REFERENCE_CAR',type:'silver compact car',position:[28,33.5,0],heading:'west'});}
-   if(s.scene.id==='SCENE_04'){
-    s.buildings.find(b=>b.id==='B_RESTAURANT').balcony='west upper balcony';move('B_GROCERY',7,0);move('B_RESTAURANT',-8,0);move('B_CLOTHING_HOME',7,-34);move('B_BAKERY',-8,-34);
-    for(const b of s.buildings)if(['B_GROCERY','B_RESTAURANT'].includes(b.id)){b.footprint_xy[0][1]=b.footprint_xy[1][1]=0;b.footprint_xy[2][1]=b.footprint_xy[3][1]=13;b.entrances[0].position[1]=9.5;}
-    for(const bay of s.delivery_bays)if(['BAY_GROCERY','BAY_RESTAURANT'].includes(bay.id))bay.footprint_xy=bay.footprint_xy.map(([x,y])=>[x,y-17]);
-    const home=s.buildings.find(b=>b.id==='B_CLOTHING_HOME');home.roof.shape='hip';home.roof.ridge_z_m=9.2;home.roof.material='red clay tiles';home.balcony={secondary_edge:'south'};for(const b of s.buildings)if(['B_CLOTHING_HOME','B_BAKERY'].includes(b.id)){b.footprint_xy[2][1]=b.footprint_xy[3][1]=34;b.entrances[0].position[1]=28;}s.buildings.find(b=>b.id==='B_BAKERY').roof.ridge_z_m=6.6;home.footprint_xy[0][0]=home.footprint_xy[3][0]=35;const bakery=s.buildings.find(b=>b.id==='B_BAKERY');bakery.roof.ridge_axis='east-west';bakery.footprint_xy[1][0]=bakery.footprint_xy[2][0]=66;
-    s.roads.find(r=>r.id==='R_MAIN').width_profile=[{y_m:0,width_m:4},{y_m:12,width_m:6},{y_m:90,width_m:6}];s.roads.find(r=>r.id==='R_CROSS').centerline=[[-20,17,0],[120,17,0]];for(const c of s.connections)if(/WEST|EAST/.test(c.id))c.position[1]=17;
-    s.props.find(p=>p.id==='V_SCOOTER').position=[45.8,10.5,0];for(const p of s.props)if(/STALLS|CRATES/.test(p.id)){p.position[0]=46;p.position[1]-=17;}
-    for(const p of s.props.filter(p=>/POLE/.test(p.id)))p.position[1]=({U_POLE_01:17,U_POLE_02:38,U_POLE_03:70})[p.id];
-    const auto=s.props.find(p=>p.id==='V_AUTO');auto.position=[51.5,19.5,0];auto.heading='south';
-   }
-   return s;
-  }
-  if(spec.phase!==1)return spec;
-  const s=structuredClone(spec),east=x=>x>76?76+(x-76)*.38:x,point=p=>[east(p[0]),...p.slice(1)],polygon=ps=>ps.map(point);
-  const cafe=s.buildings.find(b=>b.id==='B_CAFE');if(cafe){cafe.eaves_z_m=4.8;cafe.roof.ridge_z_m=8.2;cafe.footprint_xy=[[50.1,29.3],[64.1,29.3],[64.1,35.4],[50.1,35.4]];cafe.entrances[0].position=[64.1,33,0];cafe.entrances[1].position=[57.1,29.3,0];const bay=s.delivery_bays.find(b=>b.id==='BAY_CAFE');if(bay)bay.bounds_xy=bay.bounds_xy.map(([x,y])=>[x+.1,y+11]);}
-  if(s.scene.id==='SCENE_01'){
-   const bakery=s.buildings.find(b=>b.id==='B_BAKERY');bakery.roof.ridge_axis='east-west';bakery.footprint_xy=[[57.5,52],[67,52],[67,60],[57.5,60]];bakery.eaves_z_m=4.7;bakery.entrances[0].position=[67,56,0];bakery.entrances[1].position=[62,52,0];const bay=s.delivery_bays.find(b=>b.id==='BAY_BAKERY');if(bay)bay.bounds_xy=[[67.5,54],[70,54],[70,60],[67.5,60]];const west=s.roads.find(r=>r.id==='R_WEST');west.centerline=west.centerline.map(([x,y,z])=>[x,44,z]);s.connections.find(c=>c.id==='C_WEST_ROAD').position=[0,44,0];for(const p of s.props){if(p.id==='V_SCOOTER')p.position=[67.7,26,0];if(p.id==='V_AUTO')p.position=[68.5,56,0];}
-  }
-  if(s.scene.id==='SCENE_01'){const pier=s.landmarks.find(l=>l.id==='L_PIER');pier.footprint_xy= pier.footprint_xy.map(([x,y])=>[x,y-16]);pier.canopy.footprint_xy=pier.canopy.footprint_xy.map(([x,y])=>[x,y-16]);s.seawall.segments=[[[88,0],[88,32]],[[88,36],[88,100]]];s.seawall.opening_for_pier_y=[32,36];const bay=s.delivery_bays.find(b=>b.id==='BAY_PIER');bay.bounds_xy=bay.bounds_xy.map(([x,y])=>[x,y-16]);}
-  if(s.scene.id==='SCENE_02'){
-   s.buildings.find(b=>b.id==='B_SEAFOOD').roof.ridge_z_m=7.3;const provision=s.buildings.find(b=>b.id==='B_PROVISION');provision.eaves_z_m=8.2;provision.footprint_xy=[[58,44],[67,44],[67,55],[58,55]];provision.walls='teal plaster';provision.entrances[0].position=[67,49.5,0];provision.entrances[1].position=[62.5,44,0];s.delivery_bays.find(b=>b.id==='BAY_PROVISION').bounds_xy=[[67,46],[70,46],[70,53],[67,53]];
-   for(const l of s.landmarks){const y=l.id==='L_NET_01'?33:68;l.platform_footprint_xy=[[88,y-4],[110,y-4],[110,y+4],[88,y+4]];l.pivot_position=[94.5,y,7.5];l.counterweights_position=[89.5,y,2.5];l.boom_reach_east_m=9;l.mesh.approx_span_m=9;}
-   s.seawall.platform_access_intervals_y=[[29,37],[64,72]];
-  }
-  const main=s.roads.find(r=>r.id==='R_MAIN');if(main){main.width_m=6.2;main.centerline=main.centerline.map(p=>[p[0]+.4,p[1]]);}for(const c of s.connections)if(c.id.includes('_ROAD')&&c.width_m===8){c.width_m=6.2;c.position[0]+=.4};for(const p of s.props)if(/player|rider/.test(p.type.toLowerCase()))p.position[0]=71.5;
-  s.terrain.water_region_xy=polygon(s.terrain.water_region_xy).map(p=>[p[0]>90?s.scene.playable_size_m.east_west:p[0],p[1]]);
-  for(const p of s.paths||[]){if(p.footprint_xy)p.footprint_xy=polygon(p.footprint_xy);if(p.x)p.x=p.x.map(east);if(p.width_m)p.width_m*=.38;}
-  for(const v of s.vegetation){v.position=point(v.position);if(s.scene.id==='SCENE_01'&&/palm/.test(v.species||v.type)){const placement=({14:[76.45,25.13,6.4],38:[77.46,38.23,7.5],72:[78.8,68.7,8.5],92:[80,94,8.5]})[v.position[1]];if(placement){v.position=[placement[0],placement[1],0];v.height_m=placement[2];}}}
-  for(const p of s.props){if(p.position)p.position=point(p.position);if(p.positions)p.positions=polygon(p.positions);if(s.scene.id==='SCENE_01'&&p.id==='P_BENCH_01')p.position=[77.5,24,0];}
-  for(const l of s.landmarks||[]){for(const key of ['footprint_xy','platform_footprint_xy'])if(l[key])l[key]=polygon(l[key]);for(const key of ['pivot_position','counterweights_position'])if(l[key])l[key]=point(l[key]);if(l.canopy?.footprint_xy)l.canopy.footprint_xy=polygon(l.canopy.footprint_xy);}
-  if(s.seawall?.segments)s.seawall.segments=s.seawall.segments.map(polygon);
-  else if(s.seawall?.x){s.seawall.x=east(s.seawall.x);const [lo,hi]=s.seawall.y,intervals=s.seawall.platform_access_intervals_y||[],segments=[];let start=lo;for(const [a,b]of intervals){segments.push([[s.seawall.x,start],[s.seawall.x,a]]);start=b}segments.push([[s.seawall.x,start],[s.seawall.x,hi]]);s.seawall.segments=segments;}
-  for(const bay of s.delivery_bays)if(bay.bounds_xy)bay.bounds_xy=polygon(bay.bounds_xy);
-  for(const c of s.connections)if(c.position[0]>76){c.position=point(c.position);c.width_m*=.38;}
-  return s;
+  return spec;
 }
