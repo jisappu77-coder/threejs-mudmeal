@@ -119,17 +119,18 @@ async function start(){
  function updateURL(){const u=new URL(location.href);u.searchParams.set('phase',String(phase));u.searchParams.set('scene',current.key);history.replaceState(null,'',u);}
  function syncBike(){bike.position.set(...renderPoint([state.x,.07,-state.y],phase));bike.rotation.y=-renderHeading(state.heading,state.y,phase,state.x);}
  function cameraRide(immediate=false){
-  const settings=phase===1?({'p1-scene_01':[32,34,10,1,10,-4],'p1-scene_02':[32,34,12,1,6,2],'p1-scene_03':[42,48,10,1,26,20],'p1-scene_04':[32,36,20,1,8,-3]})[current.key]:({ 'p2-scene_01':[8.5,4.4,6,1,.4,.35],'p2-scene_02':[6.3,3.8,6,1.1,.4,.35],'p2-scene_03':[7,2.6,6,.85,1.65,-1],'p2-scene_04':[5.2,2.2,6,1.65,1.2,.8]})[current.key];
+  const settings=phase===1?({'p1-scene_01':[24,25,10,1,10,-5],'p1-scene_02':[32,34,12,1,6,2],'p1-scene_03':[42,48,10,1,26,20],'p1-scene_04':[32,36,20,1,8,-3]})[current.key]:({ 'p2-scene_01':[8.5,4.4,6,1,.4,.35],'p2-scene_02':[6.3,3.8,6,1.1,.4,.35],'p2-scene_03':[7,2.6,6,.85,1.65,-1],'p2-scene_04':[5.2,2.2,6,1.65,1.2,.8]})[current.key];
   const [behind,height,ahead,aimHeight,lateral,aimLateral]=settings,direction=phase===1&&current.key==='p1-scene_03'?0:renderHeading(state.heading,state.y,phase,state.x),forward=new THREE.Vector3(Math.sin(direction),0,-Math.cos(direction)),right=new THREE.Vector3(Math.cos(direction),0,Math.sin(direction)),p=bike.position.clone(),eye=p.clone().addScaledVector(forward,-behind).addScaledVector(right,lateral),aim=p.clone().addScaledVector(forward,ahead).addScaledVector(right,aimLateral);eye.y=height;aim.y=aimHeight;if(immediate)camera.position.copy(eye);else camera.position.lerp(eye,.14);camera.lookAt(aim);return aim;
  }
  function setCamera(value){
+  const gameplayFov=phase===1?(current.key==='p1-scene_03'?48:current.key==='p1-scene_01'?44:40):50;
   renderer.shadowMap.needsUpdate=true;
   renderedView=null;pendingView=null;mode=value;controls.enabled=value==='orbit';$('camera-select').value=value==='orbit'?'01_MASTER_SPATIAL.png':value;state.speed=0;keys.clear();held.clear();
-  if(value==='ride'){camera.fov=phase===1?(current.key==='p1-scene_03'?48:40):50;cameraRide(true);if(reference)toggleReference(false)}
+  if(value==='ride'){camera.fov=gameplayFov;cameraRide(true);if(reference)toggleReference(false)}
   else{
    const v=current.reference_views.find(v=>v.file===(value==='orbit'?'01_MASTER_SPATIAL.png':value))||current.reference_views[0];camera.position.set(...renderPoint(worldPoint(v.camera_position_m,current.origin),phase));controls.target.set(...renderPoint(worldPoint(v.target_position_m,current.origin),phase));camera.lookAt(controls.target);camera.fov=phase===1?40:value.startsWith('01')||value==='orbit'?48:56;setReferenceImage(v);
   }
-  if(value==='02_PLAYER_GAMEPLAY.png'){controls.target.copy(cameraRide(true));camera.fov=phase===1?(current.key==='p1-scene_03'?48:40):50;}
+  if(value==='02_PLAYER_GAMEPLAY.png'){controls.target.copy(cameraRide(true));camera.fov=gameplayFov;}
   resize();camera.updateProjectionMatrix();$('ride-view').classList.toggle('active',value==='ride');$('overview').classList.toggle('active',value==='orbit');marker.visible=value==='ride';$('order').style.visibility=value==='ride'?'visible':'hidden';
   if(value!=='ride')for(const n of npcs){n.group.position.copy(n.start);n.person.animate(1.2,0,n.referenceWalking||false,0)}
   lastRender=0;

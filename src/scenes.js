@@ -100,7 +100,9 @@ export function createSceneArt(renderer,skyTexture) {
   }
   function tiledFace(points,m){
    poly(points,m);if(m!==tile)return;
-   const world=points.map(vec),base=world[0],u=world[1].clone().sub(base).normalize(),normal=world[1].clone().sub(base).cross(world[2].clone().sub(base)).normalize();if(normal.y<0)normal.negate();if(normal.y<.15)return;
+   const world=points.map(vec),base=world[0],normal=world[1].clone().sub(base).cross(world[2].clone().sub(base)).normalize();if(normal.y<0)normal.negate();if(normal.y<.15)return;
+   // Rows follow the level eaves; each barrel then runs down the roof slope.
+   const u=new THREE.Vector3(0,1,0).cross(normal).normalize();
    const v=u.clone().cross(normal).normalize(),outline=world.map(p=>{const q=p.clone().sub(base);return[q.dot(u),q.dot(v)]}),r=bounds(outline),tiles=[];
    function contained(x,y){let found=false;for(let i=0,j=outline.length-1;i<outline.length;j=i++){const a=outline[i],b=outline[j];if((a[1]>y)!==(b[1]>y)&&x<(b[0]-a[0])*(y-a[1])/(b[1]-a[1])+a[0])found=!found}return found;}
    const tileScale=phase===1?1.35:1;
@@ -120,13 +122,18 @@ export function createSceneArt(renderer,skyTexture) {
    if(b.roof.shape==='single_pitch'){poly([a,bb,[c[0],c[1],top],[d[0],d[1],top]],m);return;}
    const ns=b.roof.ridge_axis==='north-south'||(b.roof.shape==='hip'&&y1-y0>x1-x0),hip=b.roof.shape==='hip',cx=(x0+x1)/2,cy=(y0+y1)/2;
    const inset=hip?Math.min(x1-x0,y1-y0)*.35:0,r1=ns?[cx,y0+inset,top]:[x0+inset,cy,top],r2=ns?[cx,y1-inset,top]:[x1-inset,cy,top];
-   const face=m===tile?tiledFace:poly;
-   if(ns){face([a,bb,r1],hip?m:mat(pigment(b.walls),b.id==='B_WAREHOUSE'?'brick':/laterite|brick/.test(b.walls)?'stone':'plaster'));face([c,d,r2],hip?m:mat(pigment(b.walls),b.id==='B_WAREHOUSE'?'brick':/laterite|brick/.test(b.walls)?'stone':'plaster'));face([a,r1,r2,d],m);face([bb,c,r2,r1],m);}else{face([a,bb,r2,r1],m);face([d,r1,r2,c],m);face([a,r1,d],hip?m:mat(pigment(b.walls),b.id==='B_WAREHOUSE'?'brick':/laterite|brick/.test(b.walls)?'stone':'plaster'));face([bb,c,r2],hip?m:mat(pigment(b.walls),b.id==='B_WAREHOUSE'?'brick':/laterite|brick/.test(b.walls)?'stone':'plaster'));}
-   beam(r1,r2,.15,mat('#d48758'));if(hip){for(const [p,q]of(ns?[[a,r1],[bb,r1],[c,r2],[d,r2]]:[[a,r1],[d,r1],[bb,r2],[c,r2]]))beam(p,q,.14,mat('#d48758'));}
+   const face=m===tile?tiledFace:poly,endMaterial=hip?m:mat(pigment(b.walls),b.id==='B_WAREHOUSE'||current.key==='p1-scene_01'&&b.id==='B_SHED'?'brick':/laterite|brick/.test(b.walls)?'stone':'plaster');
+   if(ns){face([a,bb,r1],endMaterial);face([c,d,r2],endMaterial);face([a,r1,r2,d],m);face([bb,c,r2,r1],m);}else{face([a,bb,r2,r1],m);face([d,r1,r2,c],m);face([a,r1,d],endMaterial);face([bb,c,r2],endMaterial);}
+   function ridge(p,q,r){
+    if(phase!==1){beam(p,q,r,mat('#d48758'));return;}
+    const length=Math.hypot(...p.map((v,i)=>q[i]-v)),count=Math.ceil(length/.52),at=t=>p.map((v,i)=>v+(q[i]-v)*t);
+    for(let i=0;i<count;i++)beam(at(i/count),at(Math.min(1,(i+.95)/count)),r,mat(['#c7683e','#cb7046','#d47a4c'][i%3]));
+   }
+   ridge(r1,r2,.15);if(hip){for(const [p,q]of(ns?[[a,r1],[bb,r1],[c,r2],[d,r2]]:[[a,r1],[d,r1],[bb,r2],[c,r2]]))ridge(p,q,.14);}
    for(const [p,q]of [[a,bb],[bb,c],[c,d],[d,a]])beam(p,q,.07,darkWood);
   }
   function building(b){
-   const waterfrontCafe=current.key==='p1-scene_01'&&b.id==='B_CAFE',waterfrontBakery=current.key==='p1-scene_01'&&b.id==='B_BAKERY';
+   const waterfrontCafe=current.key==='p1-scene_01'&&b.id==='B_CAFE',waterfrontBakery=current.key==='p1-scene_01'&&b.id==='B_BAKERY',waterfrontShed=current.key==='p1-scene_01'&&b.id==='B_SHED';
    const [x0,y0,x1,y1]=b.rect,w=x1-x0,d=y1-y0,cx=(x0+x1)/2,cy=(y0+y1)/2,e=b.height,shopTop=waterfrontCafe?3.0:2.8;
    const view=current.reference_views.find(c=>c.file==='02_PLAYER_GAMEPLAY.png')||current.reference_views[0],dx=view.target_position_m[0]-view.camera_position_m[0],dy=view.target_position_m[1]-view.camera_position_m[1],nearFace=Math.abs(dx)>Math.abs(dy)?(dx>0?'west':'east'):(dy>0?'south':'north'),openDirs=b.loading_door_size_m?[b.direction]:[...new Set([b.direction,nearFace])];
    if(phase===1){openDirs.splice(0,openDirs.length,b.direction);for(const entrance of b.entrances.slice(1)){const [x,y]=entrance.position,dir=x===x0?'west':x===x1?'east':y===y0?'south':'north';if(!openDirs.includes(dir))openDirs.push(dir);}}
@@ -134,10 +141,11 @@ export function createSceneArt(renderer,skyTexture) {
    if(waterfrontCafe)openDirs.splice(0,openDirs.length,'east','south');
    if(waterfrontBakery)openDirs.splice(0,openDirs.length,'south');
    const facade=dir=>{const ew=dir==='east'||dir==='west',out=dir==='east'||dir==='north'?1:-1,fx=ew?(dir==='east'?x1:x0):cx,fy=ew?cy:(dir==='north'?y1:y0),angle=dir==='east'?Math.PI/2:dir==='west'?-Math.PI/2:dir==='north'?Math.PI:0;return{ew,length:ew?d:w,angle,place:(a,z,o)=>ew?[fx+out*o,fy+a,z]:[fx+a,fy+out*o,z]};};
-   rect([x0-1,y0-1,x1+1,y1+1],paving,.15);const shell=box(w,d,e,mat(pigment(b.walls),b.id==='B_WAREHOUSE'?'brick':/laterite|brick/.test(b.walls)?'stone':'plaster'),[cx,cy,e/2]);collide(b.rect,b.id);shell.updateMatrixWorld(true);const measured=new THREE.Box3().setFromObject(shell);objects.at(-1).renderedRect=[measured.min.x-origin[0],-measured.max.z-origin[1],measured.max.x-origin[0],-measured.min.z-origin[1]];objects.at(-1).renderedHeight=measured.max.y-measured.min.y;
+   const wallKind=b.id==='B_WAREHOUSE'||waterfrontShed?'brick':/laterite|brick/.test(b.walls)?'stone':'plaster',wallColor=waterfrontBakery?'#20b5a7':pigment(b.walls);
+   rect([x0-1,y0-1,x1+1,y1+1],paving,.15);const shell=box(w,d,e,mat(wallColor,wallKind),[cx,cy,e/2]);collide(b.rect,b.id);shell.updateMatrixWorld(true);const measured=new THREE.Box3().setFromObject(shell);objects.at(-1).renderedRect=[measured.min.x-origin[0],-measured.max.z-origin[1],measured.max.x-origin[0],-measured.min.z-origin[1]];objects.at(-1).renderedHeight=measured.max.y-measured.min.y;
    if(b.awning){const f=facade(nearFace),lamp=new THREE.PointLight('#ffbc61',8,12,2);lamp.position.copy(vec(f.place(0,2.2,-1.1)));root.add(lamp);}
    if(b.awning||b.loading_door_size_m){
-    root.remove(shell);const gh=Math.min(b.loading_door_size_m?.height||shopTop,e),paint=mat(pigment(b.walls),b.id==='B_WAREHOUSE'?'brick':/laterite|brick/.test(b.walls)?'stone':'plaster');if(e>gh)box(w,d,e-gh,paint,[cx,cy,gh+(e-gh)/2]);for(const dir of['east','west','north','south'])if(!openDirs.includes(dir)){const f=facade(dir);box(f.length,.24,gh,paint,f.place(0,gh/2,0),f.angle);}box(w,d,.12,wood,[cx,cy,.12]);box(w,d,.14,concrete,[cx,cy,gh]);
+    root.remove(shell);const gh=Math.min(b.loading_door_size_m?.height||shopTop,e),paint=mat(wallColor,wallKind);if(e>gh)box(w,d,e-gh,paint,[cx,cy,gh+(e-gh)/2]);for(const dir of['east','west','north','south'])if(!openDirs.includes(dir)){const f=facade(dir);box(f.length,.24,gh,paint,f.place(0,gh/2,0),f.angle);}box(w,d,.12,wood,[cx,cy,.12]);box(w,d,.14,concrete,[cx,cy,gh]);
     for(const x of[x0,x1])for(const y of[y0,y1])box(.42,.42,gh,paint,[x,y,gh/2]);
     for(const dir of['east','west','north','south'])if(!openDirs.includes(dir)){const f=facade(dir);box(f.length-.5,.025,gh-.2,new THREE.MeshStandardMaterial({color:'#bf9860',emissive:'#573d1d',emissiveIntensity:.35,roughness:.9}),f.place(0,gh/2,-.15),f.angle);}
     const interior=/CAFE|BAKERY|RESTAURANT|SEAFOOD|SNACK|TAKEAWAY|TEA|GROCERY|PROVISION/.test(b.id)?(b.id==='B_CAFE'?'cafe':b.id==='B_BAKERY'?'bakery':/GROCERY|PROVISION/.test(b.id)?'grocery':'restaurant'):null;
@@ -155,6 +163,7 @@ export function createSceneArt(renderer,skyTexture) {
    if(phase===1){
     box(w+.38,d+.38,.16,concrete,[cx,cy,e-.16]);box(w+.5,d+.5,.09,concrete,[cx,cy,e-.04]);
     for(const x of[x0+.1,x1-.1])for(const y of[y0+.1,y1-.1])box(.3,.3,Math.max(.2,e-shopTop),concrete,[x,y,shopTop+Math.max(.2,e-shopTop)/2]);
+    if(['hip','gable'].includes(b.roof.shape))box(w+.95,d+.95,.11,mat('#795236','wood'),[cx,cy,e-.025]);
    }
    roof(b);if(current.key==='p1-scene_04'&&b.id==='B_BAKERY'){box(.8,.14,1.05,concrete,[x0-.05,cy,5],-Math.PI/2);box(.59,.16,.86,darkWood,[x0-.14,cy,5],-Math.PI/2);box(.43,.02,.68,glass,[x0-.24,cy,5],-Math.PI/2);}
    if(b.id==='B_CAFE'){box(w+.25,d+.25,.16,concrete,[cx,cy,waterfrontCafe?3.2:2.65]);box(w+.18,d+.18,.09,concrete,[cx,cy,waterfrontCafe?3.4:2.85]);}
@@ -188,13 +197,25 @@ export function createSceneArt(renderer,skyTexture) {
    const shopGlass=new THREE.MeshPhysicalMaterial({color:'#63726a',transparent:true,opacity:/RESTAURANT|CAFE|SEAFOOD|SNACK/.test(b.id)?.08:.22,roughness:.14,metalness:.05,side:THREE.DoubleSide,depthWrite:false});
    if(b.awning){
     if(waterfrontBakery){
-     const f=facade('south'),paint=mat(pigment(b.walls),'plaster'),frame=mat('#79552d','wood');
+     const f=facade('south'),paint=mat(wallColor,'plaster'),frame=mat('#79552d','wood');
      for(const side of[-1,1])box(1.1,.3,shopTop,paint,f.place(side*(w/2-.55),shopTop/2,.06));
      box(w,.3,.55,paint,f.place(0,.275,.06));
      for(const a of[-3.5,-1.75,0,1.75,3.5])box(.14,.18,shopTop-.55,frame,f.place(a,(shopTop+.55)/2,.22));
      for(const z of[.6,1.6,shopTop-.1])box(w-2,.18,.12,frame,f.place(0,z,.22));
      box(1.55,.16,2.5,frame,f.place(.85,1.3,.28));box(1.3,.035,2.1,mat('#574d38'),f.place(.85,1.35,.38));box(.06,.10,.25,mat('#cead63'),f.place(1.3,1.4,.45));
      const door=facade('east');box(1.65,.12,2.8,darkWood,door.place(0,1.4,.18),door.angle);box(1.35,.03,2.4,glass,door.place(0,1.5,.26),door.angle);
+     for(const [center,width]of[[-3.5,4.6],[3.75,3.8]]){
+      box(width,.15,2.15,mat('#6d482a','wood'),f.place(center,1.4,-.55));
+      for(const z of[.7,1.35,2]){
+       box(width,.55,.1,mat('#b77a38','wood'),f.place(center,z,-.25));
+       const count=Math.floor(width/.6);
+       for(let i=0;i<count;i++){
+        const along=center+(i-(count-1)/2)*.59,loaf=mesh(geometry('bakeryLoaf',()=>new THREE.SphereGeometry(.16,12,8)),mat(i%3?'#e8b461':'#ce8d3c','',.95),f.place(along,z+.17,-.14));loaf.scale.set(1.6,.8,.85);
+        for(const cut of[-.12,0,.12])box(.025,.17,.015,mat('#ba7e3c'),f.place(along+cut,z+.29,-.14));
+       }
+      }
+      for(const side of[-1,1])box(.13,.6,2.2,wood,f.place(center+side*width/2,1.42,-.2));
+     }
     }
     for(const dir of openDirs){const f=facade(dir),ew=f.ew,L=f.length-1.4,ang=f.angle,p=f.place;
 
@@ -203,6 +224,15 @@ export function createSceneArt(renderer,skyTexture) {
 
     }
     if(b.id==='B_CAFE'||b.id==='B_SEAFOOD'||phase===1&&b.id==='B_RESTAURANT'){for(const dir of openDirs){const f=facade(dir),count=Math.max(2,Math.floor(f.length/4));for(let i=0;i<count;i++){const p=f.place((i-(count-1)/2)*4,0,f.ew?1.2:1.8);cafeFurniture(p[0],p[1]);}for(const a of[-f.length/2+.7,f.length/2-.7]){const p=f.place(a,0,1.5);plant(p[0],p[1],1.7,true);menuBoard(f,a);}}}
+   }
+   if(waterfrontCafe||waterfrontBakery)for(const dir of openDirs){
+    const f=facade(dir);
+    for(const side of[-1,1]){
+     const along=side*(f.length/2-.85),iron=mat('#4b4936');
+     box(.15,.12,.32,iron,f.place(along,2.25,.18),f.angle);beam(f.place(along,2.4,.18),f.place(along,2.2,.48),.025,iron);
+     mesh(geometry('cafeLampShade',()=>new THREE.ConeGeometry(.22,.18,16)),iron,f.place(along,2.27,.49));mesh(geometry('cafeLampGlobe',()=>new THREE.SphereGeometry(.12,12,8)),glow,f.place(along,2.12,.49));lightHalo(f.place(along,2.12,.49),.7);
+     if(waterfrontCafe)for(let i=0;i<5;i++){const p=f.place(along+Math.sin(i*2.4)*.28,1.2+i*.58,.3);shrub(p[0],p[1],.75+(i%2)*.15,true,p[2]);}
+    }
    }
    if(b.id==='B_GROCERY'&&current.key==='p1-scene_04'){
     const f=facade('east');for(let a=-4;a<=4;a+=2){const colors=['#91b53c','#eabc36','#d86c26','#cf4730','#adc64e'];for(let tier=0;tier<3;tier++){box(1.8,.65,.12,wood,f.place(a,.35+tier*.38,.5+tier*.24),f.angle);for(let k=0;k<18;k++)mesh(geometry('marketFruit',()=>new THREE.SphereGeometry(.075,12,10)),mat(colors[(tier+Math.round(a+4)/2+(k%7===0?3:0))%5],'',.45),f.place(a+(k%6-2.5)*.26,.47+tier*.38,.32+tier*.24+Math.floor(k/6)*.22));}for(const side of[-.8,.8])beam(f.place(a+side,0,.45),f.place(a+side,1.3,1.2),.035,wood);beam(f.place(a,2.55,.2),f.place(a,1.9,.2),.01,rail);for(let k=0;k<7;k++)mesh(geometry('marketBanana',()=>new THREE.TorusGeometry(.09,.028,8,14,2.1)),mat('#ebc22f'),f.place(a+(k%3-1)*.09,1.9-Math.floor(k/3)*.11,.2+(k%2)*.06),[0,f.angle,Math.PI*.2]);}
@@ -304,10 +334,12 @@ export function createSceneArt(renderer,skyTexture) {
    if(s.key==='p2-scene_03')wall([8,55],[30,55],1.1,concrete,{position:[18,55],width:6});
    if(phase===1){
     // Dress original lots, keeping entrances, pickup bays and public paths clear.
-    for(let x=5;x<w-3;x+=6)for(let y=5;y<d-3;y+=6){
+    for(let gridX=5;gridX<w-3;gridX+=6)for(let gridY=5;gridY<d-3;gridY+=6){
+     const waterfront=s.key==='p1-scene_01',x=gridX+(waterfront?Math.sin(gridX*7+gridY*13)*1.5:0),y=gridY+(waterfront?Math.cos(gridX*11-gridY*17)*1.4:0);
      if(s.terrain.water_region_xy&&x>64)continue;
      if(s.roads.some(r=>roadDistance(r,x,y)<r.width_m/2+3)||s.buildings.some(b=>inside(x,y,b.rect,2)||b.entrances?.some(e=>Math.hypot(x-e.position[0],y-e.position[1])<4)||b.compound&&Math.hypot(x-b.compound.gate_position[0],y-b.compound.gate_position[1])<4)||s.bays.some(b=>inside(x,y,b.rect,2))||s.landmarks?.some(l=>l.footpath_centerline?.slice(1).some((p,i)=>segmentDistance(x,y,l.footpath_centerline[i],p)<3)))continue;
-     shrub(x,y,1.8,true);plant(x+1,y+.8,2.2);if((x+y)%4===0&&s.roads.every(r=>roadDistance(r,x,y)>r.width_m/2+8))tree(x-1,y+1,7,3.1);
+     if(waterfront){const bed=mesh(geometry('gardenBed',()=>new THREE.CircleGeometry(1,14)),mat('#8d9766','grass'),[x,y,.015],[-Math.PI/2,0,x+y]);bed.scale.set(2.1,1.45,1);bed.castShadow=false;shrub(x-.8,y+.8,1.3,true);}
+     shrub(x,y,1.8,true);plant(x+1,y+.8,2.2);if((gridX+gridY)%4===0&&s.roads.every(r=>roadDistance(r,x,y)>r.width_m/2+8))tree(x-1,y+1,7,3.1);
     }
     for(const b of s.buildings){
      const [x0,y0,x1,y1]=b.rect,bay=s.bays.find(bay=>bay.target_building_id===b.id||b.entrances.some(e=>e.id===bay.target));
